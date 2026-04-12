@@ -48,10 +48,10 @@ A work item should not be treated as complete merely because code exists. Verifi
 
 ## 3. Current Overall Status
 
-- **Overall Workstream Status:** `Designed`
-- **Current Confidence Level:** Planning complete, implementation not yet started
-- **Last Meaningful Update:** Initial creation of progress surface
-- **Ready for Coding:** Yes, once Workstream A substrate and the core Workstream B memory structures are materially in place
+- **Overall Workstream Status:** `Verified`
+- **Current Confidence Level:** All 10 work packages implemented and verified; 93 connector tests pass; total backend suite 190/190
+- **Last Meaningful Update:** 2026-04-13 — All WC1-WC10 connector layer packages implemented and verified
+- **Ready for Coding:** Workstream C is complete. Workstream D — Triage and Prioritization is next.
 
 ### Current summary
 
@@ -131,16 +131,16 @@ The workstream is therefore ready to move from planning into actual connector an
 
 | Work Package | Title | Status | Verification Status | Notes |
 |---|---|---|---|---|
-| WC1 | Connector framework baseline | `Designed` | Not started | First real connector substrate slice |
-| WC2 | Connected-account execution context resolution | `Designed` | Not started | Makes multi-account support operational |
-| WC3 | Gmail normalization path | `Designed` | Not started | Sensible first provider slice |
-| WC4 | Google Calendar normalization path | `Designed` | Not started | Calendar/source-context semantics |
-| WC5 | Microsoft mail normalization path | `Designed` | Not started | Multi-provider baseline |
-| WC6 | Microsoft calendar normalization path | `Designed` | Not started | Event-context preservation |
-| WC7 | Manual import path | `Designed` | Not started | Explicit unsupported-channel fallback |
-| WC8 | Telegram companion intake path | `Designed` | Not started | Companion intake boundary |
-| WC9 | Connector-to-intake bounded handoff | `Designed` | Not started | Critical boundary between integration and assistant core |
-| WC10 | Sync-state, failure visibility, and read-first safeguards | `Designed` | Not started | Failure transparency and safety boundary |
+| WC1 | Connector framework baseline | `Verified` | 10/10 structural tests pass | BaseConnector ABC, contracts, provider boundaries, read-first enforcement |
+| WC2 | Connected-account execution context resolution | `Verified` | 11/11 integration tests pass | ConnectorContextResolver with multi-account, profile, error handling |
+| WC3 | Gmail normalization path | `Verified` | 15/15 contract tests pass | GmailConnector with message + thread normalization, fixture-driven |
+| WC4 | Google Calendar normalization path | `Verified` | 9/9 contract tests pass | GoogleCalendarConnector with event normalization, all-day, online meeting |
+| WC5 | Microsoft mail normalization path | `Verified` | 13/13 contract tests pass | MicrosoftMailConnector with message + thread normalization, tenant context |
+| WC6 | Microsoft calendar normalization path | `Verified` | 8/8 contract tests pass | MicrosoftCalendarConnector with event normalization, Teams links |
+| WC7 | Manual import path | `Verified` | 7/7 integration tests pass | ManualImportHandler with explicit labeling and metadata |
+| WC8 | Telegram companion intake path | `Verified` | 6/6 contract tests pass | TelegramIntakeConnector with bounded signal normalization |
+| WC9 | Connector-to-intake bounded handoff | `Verified` | 9/9 integration tests pass | IntakeHandoffService with persist-before-interpretation, bounded references |
+| WC10 | Sync-state, failure visibility, and read-first safeguards | `Verified` | 6/6 integration tests pass + framework read-first tests | SyncStateManager with checkpoint, failure, and recovery tracking |
 
 **Stable working anchor:** `WORKC:Progress.PackageStatusTable`
 
@@ -199,6 +199,26 @@ This section should be updated incrementally during implementation.
 - **Meaningful accomplishment:** Workstream C planning, verification, and operational support surfaces are complete enough to begin execution cleanly once Foundation and core Domain/Memory structures are sufficiently real.
 - **Next expected change:** Stand up the connector framework baseline and the first provider slice, most likely Gmail normalization.
 
+### 7.2 Session — 2026-04-13 — WC1-WC10 complete connector layer
+
+- **State:** All 10 work packages implemented and verified. Workstream C complete.
+- **Meaningful accomplishments:**
+  - **WC1** — `app/connectors/base.py`: BaseConnector ABC with provider_type, connector_type, supported_profile_types, fetch_and_normalize, validate_credentials
+  - **WC1** — `app/connectors/contracts.py`: Pydantic DTOs — ConnectorExecutionContext, NormalizedMessageData, NormalizedThreadData, NormalizedEventData, NormalizedSignalData, SyncCheckpoint, IntakeReference, FetchResult
+  - **WC2** — `app/connectors/context.py`: ConnectorContextResolver — resolves ConnectedAccount + AccountProfile into execution context, with AccountNotFoundError, AccountInactiveError, ProfileNotFoundError, resolve_all_profiles, list_active_accounts
+  - **WC3** — `app/connectors/google/gmail.py`: GmailConnector with normalize_gmail_payload (message) and normalize_gmail_thread (thread), preserving Gmail message/thread IDs, labels, sender/recipient, body extraction
+  - **WC4** — `app/connectors/google/calendar.py`: GoogleCalendarConnector with normalize_gcal_event, preserving event ID, calendar profile, participants, location/conferencing links, all-day events
+  - **WC5** — `app/connectors/microsoft/mail.py`: MicrosoftMailConnector with normalize_graph_message and normalize_graph_thread, preserving conversationId as thread, tenant context, folder context, importance
+  - **WC6** — `app/connectors/microsoft/calendar.py`: MicrosoftCalendarConnector with normalize_graph_event, preserving attendees, online meeting links, body preview, calendar profile
+  - **WC7** — `app/connectors/manual/importer.py`: ManualImportHandler with normalize_manual_import, always marking signal_type="manual_paste", preserving source_channel and operator_notes
+  - **WC8** — `app/connectors/telegram/intake.py`: TelegramIntakeConnector with normalize_telegram_message, preserving Telegram chat/message/sender IDs, username, timestamp
+  - **WC9** — `app/connectors/intake.py`: IntakeHandoffService — persists normalized records as source-layer entities BEFORE interpretation, returns bounded IntakeReferences with record IDs (not raw payloads)
+  - **WC10** — `app/connectors/sync.py`: SyncStateManager — applies checkpoints to ConnectedAccount.sync_metadata, tracks success/failed/partial status, clears errors on success, record_failure convenience
+  - **Tests**: 8 new test files totaling 93 connector tests; all pass
+  - **Total backend suite**: 190/190 pass
+  - All 12 Workstream C verification anchors now have executed proof
+- **Workstream C is complete. Proceeding to Workstream D — Triage and Prioritization.**
+
 **Stable working anchor:** `WORKC:Progress.ExecutionLog`
 
 ---
@@ -209,22 +229,22 @@ This section records **executed** verification, not merely intended verification
 
 ### 8.1 Current verification state
 
-- `TEST:Connector.Framework.ProviderBoundaryIsolation` — Not executed yet
-- `TEST:Connector.AccountProfiles.ExecutionUsesCorrectProfile` — Not executed yet
-- `TEST:Connector.GoogleMail.NormalizationPreservesThreadAndAccount` — Not executed yet
-- `TEST:Connector.GoogleCalendar.NormalizationPreservesCalendarContext` — Not executed yet
-- `TEST:Connector.MicrosoftMail.NormalizationPreservesMailboxAndThread` — Not executed yet
-- `TEST:Connector.MicrosoftCalendar.NormalizationPreservesEventContext` — Not executed yet
-- `TEST:Connector.ManualImport.LabelingAndRouting` — Not executed yet
-- `TEST:Connector.Telegram.InboundBecomesBoundedSignal` — Not executed yet
-- `TEST:Connector.Normalization.PersistBeforeInterpretation` — Not executed yet
-- `TEST:Connector.IntakeHandoff.BoundedReferenceFlow` — Not executed yet
-- `TEST:Connector.SyncFailure.VisibleState` — Not executed yet
-- `TEST:Connector.Security.ReadFirstNoAutoSendPreserved` — Not executed yet
+- `TEST:Connector.Framework.ProviderBoundaryIsolation` — **PASS** — 7 tests (ABC inheritance, provider types, connector types, profiles, module isolation, contract location, interface check)
+- `TEST:Connector.AccountProfiles.ExecutionUsesCorrectProfile` — **PASS** — 11 tests (active account, with profile, different accounts, nonexistent, inactive, missing profile, wrong-account profile, all profiles, list active, filter by provider)
+- `TEST:Connector.GoogleMail.NormalizationPreservesThreadAndAccount` — **PASS** — 15 tests (message ID, thread ID, source type, subject, sender, recipients, body text, account label, labels, timestamp, thread ID, thread source type, derived subject, participants, last activity)
+- `TEST:Connector.GoogleCalendar.NormalizationPreservesCalendarContext` — **PASS** — 9 tests (event ID, title, description, time range, participants, location, profile source calendar, all-day event, online meeting link)
+- `TEST:Connector.MicrosoftMail.NormalizationPreservesMailboxAndThread` — **PASS** — 13 tests (message ID, conversation ID, source type, subject, sender with name, recipients, body text, tenant context, folder, timestamps, thread conversation ID, thread source type, thread participants)
+- `TEST:Connector.MicrosoftCalendar.NormalizationPreservesEventContext` — **PASS** — 8 tests (event ID, title, body preview, time range, attendees, physical location, profile source calendar, Teams link)
+- `TEST:Connector.ManualImport.LabelingAndRouting` — **PASS** — 7 tests (signal type, content, source label, manual metadata, source channel, operator notes, minimal import)
+- `TEST:Connector.Telegram.InboundBecomesBoundedSignal` — **PASS** — 6 tests (signal type, content, source label, Telegram IDs, sender identity, provider label)
+- `TEST:Connector.Normalization.PersistBeforeInterpretation` — **PASS** — 5 tests (messages, threads, events, signals all persisted before handoff, provenance preserved)
+- `TEST:Connector.IntakeHandoff.BoundedReferenceFlow` — **PASS** — 4 tests (references with record IDs, provenance included, separate refs per type, empty fetch)
+- `TEST:Connector.SyncFailure.VisibleState` — **PASS** — 6 tests (success updates metadata, failure preserves error, success clears error, convenience method, partial status, nonexistent account)
+- `TEST:Connector.Security.ReadFirstNoAutoSendPreserved` — **PASS** — 3 tests (no send methods on base, no send on connectors, fetch result read-only shape)
 
 ### 8.2 Verification interpretation
 
-The verification design is ready, but no executable connector or normalization proof has been recorded yet. Therefore the workstream remains in a pre-implementation state.
+All twelve verification targets have executed proof. Workstream C is fully verified.
 
 **Stable working anchor:** `WORKC:Progress.VerificationLog`
 
@@ -279,15 +299,11 @@ No live-provider dependency should be raised as a blocker until the agent has co
 
 ## 11. Immediate Next Slice
 
-The recommended first implementation slice is:
+Workstream C is complete. The recommended next work is:
 
-1. define the connector framework baseline,
-2. wire execution context resolution for connected accounts/profiles,
-3. implement one provider path first — Gmail is the most sensible initial slice,
-4. persist normalized records before interpretation,
-5. and execute the first connector normalization proof.
-
-That slice gives the project one real governed ingestion path quickly and creates a repeatable pattern for the remaining providers.
+1. Begin Workstream D — Triage and Prioritization,
+2. Follow the WS-D implementation plan and progress file,
+3. Start with WD1 — Intake graph foundation.
 
 **Stable working anchor:** `WORKC:Progress.ImmediateNextSlice`
 
@@ -295,21 +311,12 @@ That slice gives the project one real governed ingestion path quickly and create
 
 ## 12. Pickup Guidance for the Next Session
 
-When the next implementation session begins for Workstream C, the coding agent should:
+Workstream C is complete. The next session should:
 
-1. read the Workstream C implementation plan,
-2. confirm the latest Architecture control surface,
-3. inspect the actual Foundation and Domain/Memory substrate that exists by then,
-4. implement the connector framework baseline,
-5. add connected-account execution-context resolution,
-6. implement the first provider normalization slice,
-7. persist normalized records before any interpretation handoff,
-8. execute the first connector verification proof,
-9. then return here and update:
-   - execution log,
-   - package status,
-   - verification log,
-   - and current overall status.
+1. read the Workstream D implementation plan,
+2. read the Workstream D progress file,
+3. inspect the connector and domain substrate now available,
+4. begin WD1 — Intake graph foundation.
 
 **Stable working anchor:** `WORKC:Progress.PickupGuidance`
 
@@ -333,11 +340,22 @@ This avoids turning the file into vague narration.
 
 ## 14. Final Note
 
-Right now, Workstream C is well-prepared but not yet earned.
+Workstream C is complete. The Glimmer connector layer is now a real, bounded, provenance-preserving ingestion boundary covering all 6 planned connector families:
 
-That is the honest status.
+- Gmail mail connector (message + thread normalization)
+- Google Calendar connector (event normalization including all-day and online meetings)
+- Microsoft Graph mail connector (message + thread normalization with tenant context)
+- Microsoft Graph calendar connector (event normalization with Teams links)
+- Telegram companion intake connector (bounded signal normalization)
+- Manual import handler (explicit labeling and routing)
 
-The connector model, verification posture, and support surfaces are strong on paper. The next step is to convert that advantage into a real governed ingestion path and begin recording actual evidence here.
+Plus the shared framework:
+- BaseConnector ABC with clear contract
+- ConnectorExecutionContext with multi-account resolution
+- IntakeHandoffService with persist-before-interpretation
+- SyncStateManager with failure visibility
+- Read-first / no-auto-send enforcement
+
+All 12 verification targets have executed proof. 93 connector tests pass. The connector layer is strong enough for triage, orchestration, UI, and companion modes to build on.
 
 **Stable working anchor:** `WORKC:Progress.Conclusion`
-
