@@ -1,0 +1,1 @@
+../../apps/web/e2e/workspace-navigation.spec.ts

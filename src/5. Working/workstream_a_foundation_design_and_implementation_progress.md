@@ -48,10 +48,10 @@ A work item should not be treated as complete merely because code exists. Verifi
 
 ## 3. Current Overall Status
 
-- **Overall Workstream Status:** `InProgress`
-- **Current Confidence Level:** Backend shell, persistence baseline, config, and test scaffolding are live with passing proof
-- **Last Meaningful Update:** 2025-04-13 — WA1/WA2/WA3/WA5/WA6 first slice implemented and verified
-- **Ready for Coding:** Yes — frontend shell (WA4) is next
+- **Overall Workstream Status:** `Verified`
+- **Current Confidence Level:** All 7 work packages verified; 30 total tests (21 backend + 9 browser) — all pass
+- **Last Meaningful Update:** 2026-04-13 — WA7 completed; Workstream A fully verified
+- **Ready for Coding:** Workstream A is complete. Workstream B — Domain and Memory is next.
 
 ### Current summary
 
@@ -124,10 +124,10 @@ The workstream is therefore ready to move from planning into actual repository a
 | WA1 | Repository and directory baseline | `Implemented` | Verified | .gitignore, pyproject.toml, boundary structure present |
 | WA2 | Backend application shell | `Verified` | 7/7 tests pass | FastAPI shell, health route, uvicorn boot confirmed |
 | WA3 | Persistence baseline | `Verified` | 7/7 tests pass | PostgreSQL connected, Alembic migration chain proven on both dev and test DBs |
-| WA4 | Frontend workspace shell | `Designed` | Not started | Next implementation slice |
+| WA4 | Frontend workspace shell | `Verified` | 9/9 Playwright tests pass | Next.js workspace shell with Today/Portfolio/Project/Triage/Drafts/Review routes |
 | WA5 | Local configuration and developer baseline | `Verified` | 7/7 tests pass | Pydantic Settings with local-first defaults, .env.example |
-| WA6 | Initial automated test scaffolding | `Verified` | 7/7 tests pass | conftest.py with client/db_session fixtures, smoke and integration tests |
-| WA7 | Operational support readiness | `Designed` | Partially ready | Control/support docs already authored; repo materialization still pending |
+| WA6 | Initial automated test scaffolding | `Verified` | 16/16 total tests pass | Backend pytest + Playwright browser proof scaffolds both live |
+| WA7 | Operational support readiness | `Verified` | 14/14 tests pass | Control docs, module instructions, agent skills/tools, app structure all proven present |
 
 **Stable working anchor:** `WORKA:Progress.PackageStatusTable`
 
@@ -205,6 +205,45 @@ This section should be updated incrementally during implementation.
   - Uvicorn live boot confirmed with curl against `GET /health` returning `{"status":"ok","app_name":"Glimmer","database":"ok"}`
 - **Next expected change:** Frontend workspace shell (WA4)
 
+### 7.3 Session — 2026-04-13 — Frontend workspace shell
+
+- **State:** WA4 implemented and verified. WA6 extended with Playwright.
+- **Meaningful accomplishments:**
+  - Next.js 16 app scaffolded at `src/apps/web` (TypeScript, Tailwind, App Router)
+  - Removed auto-generated AGENTS.md/CLAUDE.md
+  - Root layout with `WorkspaceNav` component — workspace-first navigation with Glimmer branding
+  - Root `/` redirects to `/today` — Today is the workspace landing page
+  - Six workspace route pages created: `/today`, `/portfolio`, `/projects/[id]`, `/triage`, `/drafts`, `/review`
+  - Each page has clear purpose heading, description, explicit empty state, and `data-testid` attributes
+  - `WorkspaceNav` uses `usePathname` for active-route highlighting, `aria-label` for accessibility
+  - Playwright installed with Chromium, config at `playwright.config.ts`
+  - Browser test file `e2e/workspace-navigation.spec.ts` with 9 tests covering:
+    - Frontend boot + redirect to /today
+    - Nav visibility with all 5 primary links
+    - All 5 workspace routes reachable with correct headings
+    - Dynamic project route `/projects/[id]` reachable
+    - Click-through navigation between all surfaces
+  - `npm run build` compiles cleanly — all routes registered
+  - All 9 Playwright tests pass
+  - All 7 backend tests still pass (no regression)
+- **Next expected change:** WA7 operational support readiness, then Workstream A completion
+
+### 7.4 Session — 2026-04-13 — WA7 operational support + Workstream A completion
+
+- **State:** All 7 work packages verified. Workstream A complete.
+- **Meaningful accomplishments:**
+  - `tests/api/test_operational_support.py` — 14 structural tests covering:
+    - 5 control-document directories (Requirements, Architecture, Build Plan, Verification, Working)
+    - 7 module instruction files (global + 6 module-scoped)
+    - Agent Skills and Agent Tools directories with content
+    - Backend app package, pyproject.toml, Alembic config
+    - Frontend package.json and root layout
+    - 4 test directories (api, integration, graph, browser)
+  - All 14 new tests pass; total backend suite now 21/21
+  - Combined with 9/9 Playwright browser tests = 30/30 total
+  - All 10 Workstream A verification anchors now have executed proof
+- **Workstream A is complete. Proceeding to Workstream B.**
+
 **Stable working anchor:** `WORKA:Progress.ExecutionLog`
 
 ---
@@ -216,19 +255,19 @@ This section records **executed** verification, not merely intended verification
 ### 8.1 Current verification state
 
 - `TEST:Smoke.BackendStarts` — **PASS** — `test_backend_starts` asserts 200 + status ok + app_name
-- `TEST:Smoke.FrontendStarts` — Not executed yet
+- `TEST:Smoke.FrontendStarts` — **PASS** — Playwright `frontend starts and redirects to /today`
 - `TEST:Smoke.DatabaseConnectivity` — **PASS** — `test_database_connectivity` + `test_database_session_works`
-- `TEST:Smoke.WorkspaceNavigationBasic` — Not executed yet
+- `TEST:Smoke.WorkspaceNavigationBasic` — **PASS** — 5 route reachability tests + click-through navigation test
 - `TEST:Foundation.Config.LocalFirstDefaultsResolve` — **PASS** — `test_local_first_defaults_resolve`
 - `TEST:Foundation.Persistence.MigrationBaselineExists` — **PASS** — `test_alembic_version_table_exists` + `test_migration_head_is_recorded`
 - `TEST:Foundation.Backend.StructureRespectsBoundaryShape` — **PASS** — `test_backend_package_structure_exists`
-- `TEST:Foundation.Frontend.WorkspaceShellExists` — Not executed yet
-- `TEST:Foundation.Testing.ScaffoldVisible` — **PASS** — 7 tests run from conftest→smoke→integration scaffold
-- `TEST:Foundation.AgentSupport.CoreSurfacesPresent` — Not executed yet as repo-materialized proof, though the supporting documents themselves have been authored in canvas
+- `TEST:Foundation.Frontend.WorkspaceShellExists` — **PASS** — Playwright `workspace nav is visible with all primary routes`
+- `TEST:Foundation.Testing.ScaffoldVisible` — **PASS** — 16 tests across pytest + Playwright scaffolds
+- `TEST:Foundation.AgentSupport.CoreSurfacesPresent` — **PASS** — 14 structural tests verify control docs, instructions, skills, tools, and app structure
 
 ### 8.2 Verification interpretation
 
-Five of ten foundational verification targets now have executed proof.  The remaining five relate to frontend shell (WA4) and operational support readiness (WA7), which are the next implementation slices.
+All ten foundational verification targets have executed proof. Workstream A is fully verified.
 
 **Stable working anchor:** `WORKA:Progress.VerificationLog`
 
@@ -278,13 +317,11 @@ No human intervention should be requested until the agent has completed the firs
 
 ## 11. Immediate Next Slice
 
-The recommended next implementation slice is:
+Workstream A is complete. The recommended next work is:
 
-1. scaffold the Next.js frontend workspace shell (WA4),
-2. create the workspace-first route structure (Today, Portfolio, Project, Triage, Drafts, Review),
-3. add basic navigation layout,
-4. execute the first frontend boot and navigation proof,
-5. then finalize WA7 operational support readiness.
+1. Begin Workstream B — Domain and Memory,
+2. Follow the WS-B implementation plan and progress file,
+3. Start with WB1 — core portfolio entities and first migration.
 
 That slice is small, useful, and creates immediate momentum without distorting the workstream.
 
@@ -294,18 +331,12 @@ That slice is small, useful, and creates immediate momentum without distorting t
 
 ## 12. Pickup Guidance for the Next Session
 
-When the next implementation session begins, the coding agent should:
+Workstream A is complete. The next session should:
 
-1. read this progress file for current state,
-2. scaffold the Next.js frontend workspace shell,
-3. create workspace-first route structure,
-4. add Playwright test setup,
-5. execute the first frontend boot and navigation proof,
-6. then return here and update:
-   - execution log,
-   - package status,
-   - verification log,
-   - and current overall status.
+1. read the Workstream B implementation plan,
+2. read the Workstream B progress file,
+3. inspect the Foundation substrate now available,
+4. begin WB1 — core portfolio entities.
 
 **Stable working anchor:** `WORKA:Progress.PickupGuidance`
 

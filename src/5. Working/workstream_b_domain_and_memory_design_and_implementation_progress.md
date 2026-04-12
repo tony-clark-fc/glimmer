@@ -48,10 +48,10 @@ A work item should not be treated as complete merely because code exists. Verifi
 
 ## 3. Current Overall Status
 
-- **Overall Workstream Status:** `Designed`
-- **Current Confidence Level:** Planning complete, implementation not yet started
-- **Last Meaningful Update:** Initial creation of progress surface
-- **Ready for Coding:** Yes, once Workstream A substrate is materially in place
+- **Overall Workstream Status:** `Verified`
+- **Current Confidence Level:** All 10 work packages implemented and verified; 64 domain integration tests pass; total backend suite 97/97
+- **Last Meaningful Update:** 2026-04-13 — All WB1-WB10 domain entities implemented, migrated, and verified
+- **Ready for Coding:** Workstream B is complete. Workstream C — Connectors is next.
 
 ### Current summary
 
@@ -137,16 +137,16 @@ The workstream is therefore ready to move from planning into actual domain and p
 
 | Work Package | Title | Status | Verification Status | Notes |
 |---|---|---|---|---|
-| WB1 | Core portfolio entities | `Designed` | Not started | First practical slice once substrate is ready |
-| WB2 | Stakeholder and identity model | `Designed` | Not started | Depends on core portfolio layer existing |
-| WB3 | Connected accounts, profiles, and provenance-bearing source layer | `Designed` | Not started | Foundational for later connector work |
-| WB4 | Interpretation-layer artifacts and review-state model | `Designed` | Not started | High-risk boundary to preserve carefully |
-| WB5 | Accepted operational artifact layer | `Designed` | Not started | Must remain distinct from interpretation layer |
-| WB6 | Drafting, briefing, and focus artifacts | `Designed` | Not started | Supports later planner and UI work |
-| WB7 | Persona assets and classification records | `Designed` | Not started | Managed asset layer only, not ad hoc file handling |
-| WB8 | Channel-session continuity records | `Designed` | Not started | Supports later Telegram/voice continuity |
-| WB9 | Summary, refresh, and lineage model | `Designed` | Not started | Must remain explicit and traceable |
-| WB10 | Audit and trace layer | `Designed` | Not started | Should not be left to logs alone |
+| WB1 | Core portfolio entities | `Verified` | 12/12 integration tests pass | Project, ProjectWorkstream, Milestone — models, migration, persistence proven |
+| WB2 | Stakeholder and identity model | `Verified` | 10/10 integration tests pass | Stakeholder, StakeholderIdentity, StakeholderProjectLink — multi-identity proven |
+| WB3 | Connected accounts, profiles, and provenance-bearing source layer | `Verified` | 13/13 integration tests pass | ConnectedAccount, AccountProfile, Message, MessageThread, CalendarEvent, ImportedSignal |
+| WB4 | Interpretation-layer artifacts and review-state model | `Verified` | 9/9 integration tests pass | MessageClassification, ExtractedAction, ExtractedDecision, ExtractedDeadlineSignal; review-state lifecycle proven |
+| WB5 | Accepted operational artifact layer | `Verified` | 7/7 integration tests pass | WorkItem, DecisionRecord, RiskRecord, BlockerRecord, WaitingOnRecord |
+| WB6 | Drafting, briefing, and focus artifacts | `Verified` | 7/7 integration tests pass | Draft, DraftVariant, BriefingArtifact, FocusPack |
+| WB7 | Persona assets and classification records | `Verified` | 4/4 integration tests pass | PersonaAsset, PersonaClassification, PersonaSelectionEvent |
+| WB8 | Channel-session continuity records | `Verified` | 5/5 integration tests pass | ChannelSession, TelegramConversationState, VoiceSessionState |
+| WB9 | Summary, refresh, and lineage model | `Verified` | 4/4 integration tests pass | ProjectSummary (with supersession), RefreshEvent |
+| WB10 | Audit and trace layer | `Verified` | 5/5 integration tests pass | AuditRecord with entity/action/actor/state capture |
 
 **Stable working anchor:** `WORKB:Progress.PackageStatusTable`
 
@@ -205,6 +205,44 @@ This section should be updated incrementally during implementation.
 - **Meaningful accomplishment:** Workstream B planning, verification, and operational support surfaces are complete enough to begin execution cleanly once Foundation is sufficiently real.
 - **Next expected change:** Stand up the first core portfolio entity slice and its migration.
 
+### 7.2 Session — 2026-04-13 — WB1 core portfolio entities
+
+- **State:** WB1 implemented and verified.
+- **Meaningful accomplishments:**
+  - `app/models/portfolio.py` — `Project`, `ProjectWorkstream`, `Milestone` SQLAlchemy models with:
+    - UUID primary keys
+    - Typed fields matching ARCH:ProjectStateModel, ARCH:ProjectWorkstreamModel, ARCH:MilestoneModel
+    - Timezone-aware timestamps with auto-generation
+    - Foreign key relationships with cascade delete
+    - ORM relationships (project→workstreams, project→milestones)
+  - `app/models/__init__.py` updated to register portfolio models with Base.metadata
+  - Alembic migration `add_portfolio_entities` auto-generated and applied to both dev and test DBs
+  - `tests/integration/test_domain_portfolio.py` — 12 integration tests covering:
+    - Project create, fields, update, archive, multiple coexistence (5 tests)
+    - Workstream belongs-to-project, many workstreams, field round-trip (3 tests)
+    - Milestone belongs-to-project, many milestones, completion, field round-trip (4 tests)
+  - All 12 tests pass; total backend suite 33/33
+- **Next expected change:** WB2 — Stakeholder and identity model
+
+### 7.3 Session — 2026-04-13 — WB2-WB10 complete domain memory spine
+
+- **State:** All 10 work packages implemented and verified. Workstream B complete.
+- **Meaningful accomplishments:**
+  - **WB2** — `app/models/stakeholder.py`: Stakeholder, StakeholderIdentity, StakeholderProjectLink
+  - **WB3** — `app/models/source.py`: ConnectedAccount, AccountProfile, MessageThread, Message, CalendarEvent, ImportedSignal
+  - **WB4** — `app/models/interpretation.py`: MessageClassification, ExtractedAction, ExtractedDecision, ExtractedDeadlineSignal; VALID_REVIEW_STATES set
+  - **WB5** — `app/models/execution.py`: WorkItem, DecisionRecord, RiskRecord, BlockerRecord, WaitingOnRecord
+  - **WB6** — `app/models/drafting.py`: Draft, DraftVariant, BriefingArtifact, FocusPack
+  - **WB7** — `app/models/persona.py`: PersonaAsset, PersonaClassification, PersonaSelectionEvent
+  - **WB8** — `app/models/channel.py`: ChannelSession, TelegramConversationState, VoiceSessionState
+  - **WB9** — `app/models/summary.py`: ProjectSummary (with supersession/lineage), RefreshEvent
+  - **WB10** — `app/models/audit.py`: AuditRecord with entity/action/actor/previous_state/new_state
+  - **Migrations**: 4 Alembic migrations total (portfolio, stakeholder, source_layer, remaining_domain_entities)
+  - **Tests**: 8 new test files totaling 64 domain integration tests; all pass
+  - **Total backend suite**: 97/97 pass
+  - All 14 Workstream B verification anchors now have executed proof
+- **Workstream B is complete. Proceeding to Workstream C — Connectors.**
+
 **Stable working anchor:** `WORKB:Progress.ExecutionLog`
 
 ---
@@ -215,24 +253,24 @@ This section records **executed** verification, not merely intended verification
 
 ### 8.1 Current verification state
 
-- `TEST:Domain.ProjectLifecycle.BasicPersistence` — Not executed yet
-- `TEST:Domain.ProjectPortfolio.WorkstreamsAndMilestonesPersist` — Not executed yet
-- `TEST:Domain.StakeholderIdentity.MultiIdentityLinking` — Not executed yet
-- `TEST:Domain.MultiAccount.ProvenancePersistence` — Not executed yet
-- `TEST:Domain.SourceRecords.MessagesThreadsEventsPersistSeparately` — Not executed yet
-- `TEST:Domain.InterpretedVsAccepted.Separation` — Not executed yet
-- `TEST:Domain.Interpretation.ReviewStateLifecyclePersists` — Not executed yet
-- `TEST:Domain.Execution.AcceptedArtifactsPersistSeparately` — Not executed yet
-- `TEST:Domain.Drafting.DraftsAndVariantsPersistWithIntent` — Not executed yet
-- `TEST:Domain.Briefings.FocusAndBriefingArtifactsPersist` — Not executed yet
-- `TEST:Domain.Persona.AssetsAndClassificationPersist` — Not executed yet
-- `TEST:Domain.ChannelSessions.TelegramAndVoiceStatePersist` — Not executed yet
-- `TEST:Domain.SummaryRefresh.Lineage` — Not executed yet
-- `TEST:Domain.Audit.MeaningfulStateMutation` — Not executed yet
+- `TEST:Domain.ProjectLifecycle.BasicPersistence` — **PASS** — 5 tests (create, fields, update, archive, multi-project)
+- `TEST:Domain.ProjectPortfolio.WorkstreamsAndMilestonesPersist` — **PASS** — 7 tests (3 workstream + 4 milestone)
+- `TEST:Domain.StakeholderIdentity.MultiIdentityLinking` — **PASS** — 7 tests (multi-email, cross-channel, tenant context, separation, no-auto-merge, project links)
+- `TEST:Domain.MultiAccount.ProvenancePersistence` — **PASS** — 6 tests (google, microsoft, multi-account, profile, message provenance, event provenance)
+- `TEST:Domain.SourceRecords.MessagesThreadsEventsPersistSeparately` — **PASS** — 7 tests (thread, message-thread link, standalone message, event, signal, signal-no-account, full provenance chain)
+- `TEST:Domain.InterpretedVsAccepted.Separation` — **PASS** — 2 tests (classification separate from project, action stays pending)
+- `TEST:Domain.Interpretation.ReviewStateLifecyclePersists` — **PASS** — 7 tests (valid states, accepted, rejected, amended, superseded, decision lifecycle, deadline lifecycle)
+- `TEST:Domain.Execution.AcceptedArtifactsPersistSeparately` — **PASS** — 7 tests (work item, workstream link, decision, risk, blocker, waiting-on, coexistence)
+- `TEST:Domain.Drafting.DraftsAndVariantsPersistWithIntent` — **PASS** — 4 tests (draft with intent, multiple variants, versioning, stakeholder IDs)
+- `TEST:Domain.Briefings.FocusAndBriefingArtifactsPersist` — **PASS** — 3 tests (daily focus, meeting prep, focus pack)
+- `TEST:Domain.Persona.AssetsAndClassificationPersist` — **PASS** — 4 tests (asset, classifications, selection event, default flags)
+- `TEST:Domain.ChannelSessions.TelegramAndVoiceStatePersist` — **PASS** — 5 tests (session, telegram state, voice state, voice completion, web session)
+- `TEST:Domain.SummaryRefresh.Lineage` — **PASS** — 4 tests (summary, supersession lineage, refresh event, refresh completion)
+- `TEST:Domain.Audit.MeaningfulStateMutation` — **PASS** — 5 tests (basic, state change, promotion, system actor, multiple audits)
 
 ### 8.2 Verification interpretation
 
-The verification design is ready, but no executable domain/persistence proof has been recorded yet. Therefore the workstream remains in a pre-implementation state.
+All fourteen verification targets have executed proof. Workstream B is fully verified.
 
 **Stable working anchor:** `WORKB:Progress.VerificationLog`
 
@@ -282,15 +320,11 @@ No human intervention should be requested until the agent has completed the firs
 
 ## 11. Immediate Next Slice
 
-The recommended first implementation slice is:
+Workstream B is complete. The recommended next work is:
 
-1. define the project/workstream/milestone entities,
-2. create the first migration for the core portfolio layer,
-3. add repository/query support for basic project persistence,
-4. execute the first domain persistence proof,
-5. and then expand into stakeholder identity and provenance-bearing source records.
-
-That slice creates a real memory backbone quickly without prematurely mixing in interpretation or UI concerns.
+1. Begin Workstream C — Connectors,
+2. Follow the WS-C implementation plan and progress file,
+3. Start with WC1 — Google connector foundation.
 
 **Stable working anchor:** `WORKB:Progress.ImmediateNextSlice`
 
@@ -298,19 +332,12 @@ That slice creates a real memory backbone quickly without prematurely mixing in 
 
 ## 12. Pickup Guidance for the Next Session
 
-When the next implementation session begins for Workstream B, the coding agent should:
+Workstream B is complete. The next session should:
 
-1. read the Workstream B implementation plan,
-2. confirm the latest Architecture control surface,
-3. inspect the actual Foundation substrate that exists by then,
-4. implement the core portfolio entity slice,
-5. create and run the first migration,
-6. execute the first domain persistence proof,
-7. then return here and update:
-   - execution log,
-   - package status,
-   - verification log,
-   - and current overall status.
+1. read the Workstream C implementation plan,
+2. read the Workstream C progress file,
+3. inspect the Domain and Memory substrate now available,
+4. begin WC1 — Google connector foundation.
 
 **Stable working anchor:** `WORKB:Progress.PickupGuidance`
 
@@ -334,10 +361,19 @@ This avoids turning the file into vague narration.
 
 ## 14. Final Note
 
-Right now, Workstream B is well-prepared but not yet earned.
+Workstream B is complete. The Glimmer memory spine is now a real, queryable, persistence-backed model covering all 10 planned memory categories:
 
-That is the honest status.
+- portfolio entities (Project, ProjectWorkstream, Milestone)
+- stakeholder and identity entities (Stakeholder, StakeholderIdentity, StakeholderProjectLink)
+- connected accounts and source-layer records (ConnectedAccount, AccountProfile, Message, MessageThread, CalendarEvent, ImportedSignal)
+- interpretation-layer artifacts (MessageClassification, ExtractedAction, ExtractedDecision, ExtractedDeadlineSignal)
+- accepted operational records (WorkItem, DecisionRecord, RiskRecord, BlockerRecord, WaitingOnRecord)
+- drafts and briefing artifacts (Draft, DraftVariant, BriefingArtifact, FocusPack)
+- persona assets (PersonaAsset, PersonaClassification, PersonaSelectionEvent)
+- channel-session continuity (ChannelSession, TelegramConversationState, VoiceSessionState)
+- summaries and lineage (ProjectSummary, RefreshEvent)
+- audit and trace (AuditRecord)
 
-The memory model, verification posture, and support surfaces are strong on paper. The next step is to convert that advantage into a real persistence-backed memory spine and begin recording actual evidence here.
+All 14 verification targets have executed proof. 97 backend tests pass. The domain model is strong enough for connectors, orchestration, UI, and companion modes to build on.
 
 **Stable working anchor:** `WORKB:Progress.Conclusion`
