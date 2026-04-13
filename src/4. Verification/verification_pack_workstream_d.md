@@ -46,15 +46,15 @@ This pack is the first verification surface that proves Glimmer’s assistant co
 
 This verification pack is derived from and aligned to:
 
-- the **Agentic Delivery Framework**, especially its authority model, work-package operating model, verification model, evidence-of-completion posture, and requirements-to-proof traceability, fileciteturn27file0
-- the **Testing Strategy Companion**, especially automation-first proof, graph/state-machine testing, failure-path testing, browser/API layering, and evidence-backed completion, fileciteturn27file1
-- the **Glimmer Agentic Delivery Document Set**, which explicitly defines `verification-pack-workstream-d.md` as part of the canonical verification family, fileciteturn27file2
-- the **Glimmer Requirements**, especially contextual message classification, action/deadline/decision extraction, prioritization, work-breakdown support, explainability, project memory, and human approval boundaries, fileciteturn27file3
-- the latest **Architecture** state, especially the intake, triage, planner, review-gate, project-memory refresh, UI-surface, and graph-verification anchors, including the current manually maintained architecture document, fileciteturn27file16turn27file5
-- the **Build Plan**, **Build Strategy and Scope**, and **Workstream D — Triage and Prioritization**, which explicitly define Glimmer’s assistant-core workflows and why they come after memory and connectors, fileciteturn27file6turn27file7turn27file11
-- the **Glimmer Testing Strategy** and **Workstream G — Testing and Regression**, which define graph verification, review-gate proof, explainability expectations, and regression-pack design, fileciteturn27file4turn27file14
-- the **Governance and Process** document, which requires evidence-backed completion and surfaced drift for meaningful work, fileciteturn27file15
-- and the current **Test Catalog**, which already defines the core triage, planning, drafting-boundary, and security `TEST:` anchors this pack should organize and extend. fileciteturn27file17
+- the **Agentic Delivery Framework**, especially its authority model, work-package operating model, verification model, evidence-of-completion posture, and requirements-to-proof traceability,
+- the **Testing Strategy Companion**, especially automation-first proof, graph/state-machine testing, failure-path testing, browser/API layering, and evidence-backed completion,
+- the **Glimmer Agentic Delivery Document Set**, which explicitly defines `verification-pack-workstream-d.md` as part of the canonical verification family,
+- the **Glimmer Requirements**, especially contextual message classification, action/deadline/decision extraction, prioritization, work-breakdown support, explainability, project memory, and human approval boundaries,
+- the latest **Architecture** state, especially the intake, triage, planner, review-gate, project-memory refresh, UI-surface, and graph-verification anchors, including the current manually maintained architecture document,
+- the **Build Plan**, **Build Strategy and Scope**, and **Workstream D — Triage and Prioritization**, which explicitly define Glimmer’s assistant-core workflows and why they come after memory and connectors,
+- the **Glimmer Testing Strategy** and **Workstream G — Testing and Regression**, which define graph verification, review-gate proof, explainability expectations, and regression-pack design,
+- the **Governance and Process** document, which requires evidence-backed completion and surfaced drift for meaningful work,
+- and the current **Test Catalog**, which already defines the core triage, planning, drafting-boundary, and security `TEST:` anchors this pack should organize and extend.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamD.ControlSurfaceAlignment`
 
@@ -62,7 +62,7 @@ This verification pack is derived from and aligned to:
 
 ## 4. Why This Pack Is Load-Bearing
 
-The build strategy and architecture are explicit that Glimmer is meant to become a **reviewable, structured, advisory operating system for project coordination**, not a black-box assistant that guesses and commits silently. fileciteturn27file16
+The build strategy and architecture are explicit that Glimmer is meant to become a **reviewable, structured, advisory operating system for project coordination**, not a black-box assistant that guesses and commits silently.
 
 Workstream D is where that claim becomes real through:
 
@@ -73,7 +73,7 @@ Workstream D is where that claim becomes real through:
 - review interrupts for ambiguity,
 - planner and focus-pack generation,
 - project-memory refresh integration,
-- and next-step/work-breakdown support. fileciteturn27file11
+- and next-step/work-breakdown support.
 
 If this pack is weak, Glimmer may still appear smart while actually depending on:
 
@@ -124,78 +124,78 @@ Those belong to adjacent and later packs.
 
 ## 6. Source `TEST:` Anchors Included in This Pack
 
-The Workstream D pack is built primarily from the triage-and-interpretation, planning-and-prioritization, drafting-boundary, and security scenario groups in the canonical Test Catalog, with a small number of workstream-specific extensions where needed. fileciteturn27file17
+The Workstream D pack is built primarily from the triage-and-interpretation, planning-and-prioritization, drafting-boundary, and security scenario groups in the canonical Test Catalog, with a small number of workstream-specific extensions where needed.
 
 ### 6.1 Canonical triage and interpretation anchors already defined in the Test Catalog
 
 #### `TEST:Triage.Intake.SourceRoutesCorrectly`
 - **Scenario name:** Normalized source records route into the correct intake path
 - **Layers:** `graph`
-- **Role in this pack:** Proves intake routing is source-aware and bounded. fileciteturn27file17
+- **Role in this pack:** Proves intake routing is source-aware and bounded.
 
 #### `TEST:Triage.ProjectClassification.SingleStrongMatch`
 - **Scenario name:** Strong project match is classified correctly
 - **Layers:** `graph`, `integration`
-- **Role in this pack:** Proves memory- and provenance-aware classification can find a clear project match. fileciteturn27file17
+- **Role in this pack:** Proves memory- and provenance-aware classification can find a clear project match.
 
 #### `TEST:Triage.ProjectClassification.AmbiguousMatchRequiresReview`
 - **Scenario name:** Ambiguous project classification creates structured review state
 - **Layers:** `graph`, `integration`
-- **Role in this pack:** Proves ambiguity does not silently harden into accepted truth. fileciteturn27file17
+- **Role in this pack:** Proves ambiguity does not silently harden into accepted truth.
 
 #### `TEST:Triage.StakeholderInterpretation.UncertainIdentityRequiresReview`
 - **Scenario name:** Uncertain stakeholder interpretation does not silently merge identities
 - **Layers:** `graph`, `integration`
-- **Role in this pack:** Proves stakeholder uncertainty is review-safe. fileciteturn27file17
+- **Role in this pack:** Proves stakeholder uncertainty is review-safe.
 
 #### `TEST:Triage.ActionExtraction.ClearRequestBecomesCandidateAction`
 - **Scenario name:** Clear follow-up request becomes persisted candidate action
 - **Layers:** `graph`, `integration`
-- **Role in this pack:** Proves clear operational meaning becomes reviewable structured output. fileciteturn27file17
+- **Role in this pack:** Proves clear operational meaning becomes reviewable structured output.
 
 #### `TEST:Triage.ActionExtraction.UncertainMeaningRequiresReview`
 - **Scenario name:** Uncertain extracted action remains reviewable candidate state
 - **Layers:** `graph`, `integration`
-- **Role in this pack:** Proves uncertain extraction does not become accepted work automatically. fileciteturn27file17
+- **Role in this pack:** Proves uncertain extraction does not become accepted work automatically.
 
 ### 6.2 Canonical planning and prioritization anchors already defined in the Test Catalog
 
 #### `TEST:Planner.FocusPack.GeneratesExplainablePriorities`
 - **Scenario name:** Focus pack generation produces explainable priorities
 - **Layers:** `graph`, `integration`
-- **Role in this pack:** Proves planner output is not opaque urgency theater. fileciteturn27file17
+- **Role in this pack:** Proves planner output is not opaque urgency theater.
 
 #### `TEST:Planner.WorkBreakdown.SuggestsNextStepWithoutSilentRestructure`
 - **Scenario name:** Work-breakdown assistance proposes next steps without silent structural mutation
 - **Layers:** `graph`, `integration`
-- **Role in this pack:** Proves planning help remains advisory and review-safe. fileciteturn27file17
+- **Role in this pack:** Proves planning help remains advisory and review-safe.
 
 #### `TEST:Planner.ProjectMemoryRefresh.TriggerIsTraceable`
 - **Scenario name:** Project-memory refresh trigger is explicit and traceable
 - **Layers:** `integration`, `graph`
-- **Role in this pack:** Proves memory evolution caused by triage/planner activity remains visible. fileciteturn27file17
+- **Role in this pack:** Proves memory evolution caused by triage/planner activity remains visible.
 
 ### 6.3 Canonical drafting-boundary and security anchors already defined in the Test Catalog
 
 #### `TEST:Drafting.DraftGeneration.CreatesReviewableDraft`
 - **Scenario name:** Draft generation creates a reviewable draft artifact
 - **Layers:** `graph`, `integration`, `api`
-- **Role in this pack:** Proves assistant-core workflows can hand off into drafting as durable reviewable output. fileciteturn27file17
+- **Role in this pack:** Proves assistant-core workflows can hand off into drafting as durable reviewable output.
 
 #### `TEST:Drafting.NoAutoSend.BoundaryPreserved`
 - **Scenario name:** Draft workflow does not create outbound send behavior
 - **Layers:** `graph`, `api`, `integration`
-- **Role in this pack:** Proves no-auto-send discipline is preserved in the assistant core. fileciteturn27file17
+- **Role in this pack:** Proves no-auto-send discipline is preserved in the assistant core.
 
 #### `TEST:Security.NoAutoSend.GlobalBoundaryPreserved`
 - **Scenario name:** No-auto-send boundary is preserved across all channels
 - **Layers:** `integration`, `graph`, `api`
-- **Role in this pack:** Proves the core workflow layer does not create hidden externalization paths. fileciteturn27file17
+- **Role in this pack:** Proves the core workflow layer does not create hidden externalization paths.
 
 #### `TEST:Security.ReviewGate.ExternalImpactRequiresApproval`
 - **Scenario name:** Externally meaningful actions require structured approval
 - **Layers:** `graph`, `api`, `browser`
-- **Role in this pack:** Proves review gates are real and not merely advisory prose. fileciteturn27file17
+- **Role in this pack:** Proves review gates are real and not merely advisory prose.
 
 ### 6.4 Additional Workstream D-specific anchors introduced by this pack
 
@@ -328,7 +328,7 @@ The assistant-core behavior should be provable against controlled normalized inp
 
 ### 9.3 Earlier proof should already exist
 
-This pack assumes Workstream B and Workstream C verification have already made the memory and intake layers trustworthy enough that assistant-core failures can be interpreted as workflow/logic problems rather than substrate chaos. fileciteturn27file9turn27file10
+This pack assumes Workstream B and Workstream C verification have already made the memory and intake layers trustworthy enough that assistant-core failures can be interpreted as workflow/logic problems rather than substrate chaos.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamD.EnvironmentAssumptions`
 
@@ -377,7 +377,7 @@ When the Workstream D pack is executed, evidence reporting should capture at min
 - any `Deferred` entries and why,
 - and a brief statement of whether the assistant-core workflow layer is considered stable enough for richer UI and companion extension.
 
-This should be summarized in the relevant Workstream D progress file and referenced in broader phase-exit or regression summaries where appropriate. fileciteturn27file15turn27file1
+This should be summarized in the relevant Workstream D progress file and referenced in broader phase-exit or regression summaries where appropriate.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamD.EvidenceExpectations`
 
@@ -414,7 +414,7 @@ Later packs should build on it as follows:
 - **Data Integrity** should later absorb the most important candidate-vs-accepted and memory-refresh protections here into long-lived regression proof,
 - and **Release** should compose representative assistant-core proof into cross-workstream confidence.
 
-This progression is consistent with the Glimmer build plan, workstream map, and Workstream G verification-estate design. fileciteturn27file12turn27file13turn27file14
+This progression is consistent with the Glimmer build plan, workstream map, and Workstream G verification-estate design.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamD.RelationshipToLaterPacks`
 

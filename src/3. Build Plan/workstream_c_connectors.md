@@ -43,7 +43,7 @@ At the end of this workstream, Glimmer should be able to receive real or realist
 
 ## 3. Why This Workstream Comes After Domain and Memory
 
-The build plan and strategy documents place external boundary and intake after runtime/memory foundations and before assistant-core workflow sophistication. fileciteturn14file13 fileciteturn14file14
+The build plan and strategy documents place external boundary and intake after runtime/memory foundations and before assistant-core workflow sophistication.
 
 That order is correct because connectors need a real domain substrate to write into:
 
@@ -56,7 +56,7 @@ That order is correct because connectors need a real domain substrate to write i
 - channel session state
 - and provenance-bearing source linkage
 
-If connectors are built first, they tend to invent their own partial storage model or push provider-specific assumptions upward into orchestration and UI layers. This workstream depends on Workstream B making the source-bearing domain model real first. fileciteturn14file5
+If connectors are built first, they tend to invent their own partial storage model or push provider-specific assumptions upward into orchestration and UI layers. This workstream depends on Workstream B making the source-bearing domain model real first.
 
 **Stable plan anchor:** `PLAN:WorkstreamC.Rationale`
 
@@ -74,7 +74,7 @@ This workstream directly supports the following requirements:
 - `REQ:PrivacyAndLeastPrivilege`
 - `REQ:SafeBehaviorDefaults`
 
-These requirements make connector behavior more demanding than simple data import. The system must preserve account identity, provenance, review boundaries, and a safe no-auto-send posture from the start. fileciteturn14file3
+These requirements make connector behavior more demanding than simple data import. The system must preserve account identity, provenance, review boundaries, and a safe no-auto-send posture from the start.
 
 **Stable plan anchor:** `PLAN:WorkstreamC.RequirementsAlignment`
 
@@ -95,7 +95,7 @@ This workstream is primarily implementing the architecture described by:
 - `ARCH:OAuthAndTokenStorage`
 - `ARCH:LeastPrivilegeModel`
 
-These anchors define the connector-family split, normalization discipline, multi-account provenance model, and the security boundary that all connector code must respect. fileciteturn14file12turn14file7turn14file10
+These anchors define the connector-family split, normalization discipline, multi-account provenance model, and the security boundary that all connector code must respect.
 
 **Stable plan anchor:** `PLAN:WorkstreamC.ArchitectureAlignment`
 
@@ -130,7 +130,7 @@ This workstream does **not** include:
 - unsupported unofficial personal-message scraping,
 - or broad enterprise admin tooling for connector management.
 
-This workstream establishes the bounded external signal layer. It does not yet deliver the full assistant loop. fileciteturn14file14
+This workstream establishes the bounded external signal layer. It does not yet deliver the full assistant loop.
 
 **Stable plan anchor:** `PLAN:WorkstreamC.OutOfScope`
 
@@ -149,7 +149,7 @@ By the end of Workstream C, Glimmer should be able to do the following in a stru
 - track sync status and connector errors per connected account,
 - and hand normalized records into the Intake Graph boundary without embedding business classification logic into connector code.
 
-At that point, Glimmer’s external boundary becomes real and later orchestration work can build on a stable substrate. fileciteturn14file7turn14file6
+At that point, Glimmer’s external boundary becomes real and later orchestration work can build on a stable substrate.
 
 **Stable plan anchor:** `PLAN:WorkstreamC.ExpectedOutcome`
 
@@ -458,7 +458,7 @@ The recommended internal order for Workstream C is:
 9. C7 — Telegram companion connector
 10. C10 — Connector sync-state, failure handling, and observability baseline
 
-This order ensures the connector framework and normalization contract exist before provider-specific implementations accumulate. It also keeps Telegram companion behavior from becoming the accidental template for the rest of the connector layer. fileciteturn14file7turn14file14
+This order ensures the connector framework and normalization contract exist before provider-specific implementations accumulate. It also keeps Telegram companion behavior from becoming the accidental template for the rest of the connector layer.
 
 **Stable plan anchor:** `PLAN:WorkstreamC.InternalSequence`
 
@@ -476,7 +476,7 @@ Expected human actions include:
 - confirming exact scope minimization decisions,
 - and supplying or approving any environment-specific secret-handling setup.
 
-The workstream should still be structured so the coding agent can make major progress with abstractions, local flows, fakes, and controlled fixtures before those human actions are completed. This is consistent with the framework’s human–agent responsibility model and the Glimmer strategy doc. fileciteturn14file0turn14file14
+The workstream should still be structured so the coding agent can make major progress with abstractions, local flows, fakes, and controlled fixtures before those human actions are completed. This is consistent with the framework’s human–agent responsibility model and the Glimmer strategy doc.
 
 **Stable plan anchor:** `PLAN:WorkstreamC.HumanDependencies`
 
@@ -501,7 +501,7 @@ Workstream C is complete only when connector behavior is proven to preserve mean
 - connector failures are visible and do not silently corrupt accepted memory
 - connector code respects the read-first/no-auto-send boundary
 
-This aligns directly to the Glimmer testing strategy’s connector, provenance, Telegram, and security verification requirements. fileciteturn14file11turn14file10
+This aligns directly to the Glimmer testing strategy’s connector, provenance, Telegram, and security verification requirements.
 
 **Stable plan anchor:** `PLAN:WorkstreamC.VerificationExpectations`
 
@@ -514,7 +514,7 @@ This workstream should eventually be paired with:
 - `WorkstreamC_Connectors_DESIGN_AND_IMPLEMENTATION_PLAN.md`
 - `WorkstreamC_Connectors_DESIGN_AND_IMPLEMENTATION_PROGRESS.md`
 
-Those files will hold the active implementation state, session handoff, human dependency tracking, and executed verification evidence once coding begins. This follows the framework’s working-document convention. fileciteturn14file0
+Those files will hold the active implementation state, session handoff, human dependency tracking, and executed verification evidence once coding begins. This follows the framework’s working-document convention.
 
 **Stable plan anchor:** `PLAN:WorkstreamC.WorkingDocumentPair`
 

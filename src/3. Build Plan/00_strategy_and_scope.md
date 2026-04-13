@@ -76,6 +76,7 @@ That means the MVP must be able to:
 - maintain structured project and stakeholder memory,
 - generate priorities and focus packs,
 - produce reviewable drafts,
+- escalate tasks that exceed local model capability to a bounded deep-research path,
 - and provide a mobile companion path through Telegram.
 
 Anything that does not materially support those outcomes should be treated cautiously in early delivery.
@@ -168,9 +169,10 @@ Glimmer should mature in this order:
 4. **Connector and ingestion boundaries**
 5. **Triage and prioritization workflows**
 6. **Core web workspace UX**
-7. **Telegram companion UX**
-8. **Voice interaction layer**
-9. **Broader hardening and regression expansion**
+7. **Deep research and escalated reasoning**
+8. **Telegram companion UX**
+9. **Voice interaction layer**
+10. **Broader hardening and regression expansion**
 
 **Stable plan anchor:** `PLAN:RequiredOrderOfMaturity`
 
@@ -255,6 +257,23 @@ This phase should prioritize:
 At the end of this phase, Glimmer should begin to feel like a working chief-of-staff assistant rather than just a structured data layer.
 
 **Stable plan anchor:** `PLAN:PhaseStrategy.Phase3`
+
+### 6.4A Phase 3A — Deep Research and Escalated Reasoning
+
+**Intent:** Give Glimmer the ability to reach beyond local model capability when a task warrants deeper research.
+
+This phase should prioritize:
+
+- Python port of the existing C# research agent,
+- browser-mediated Gemini adapter boundary,
+- research domain models and persistence,
+- orchestration integration for research escalation,
+- failure and degraded-mode handling,
+- and research visibility in the web workspace.
+
+This phase sits after the core assistant workflows and web workspace because research results need somewhere structured to land — the triage, project, and review surfaces must exist first.
+
+**Stable plan anchor:** `PLAN:PhaseStrategy.Phase3A`
 
 ### 6.5 Phase 4 — Companion and Voice Expansion
 
@@ -432,13 +451,14 @@ This strategy document is the parent posture for the detailed workstream files, 
 
 Those belong in:
 
-- `workstream-a-foundation.md`
-- `workstream-b-domain-and-memory.md`
-- `workstream-c-connectors.md`
-- `workstream-d-triage-and-prioritization.md`
-- `workstream-e-drafting-ui.md`
-- `workstream-f-voice.md`
-- `workstream-g-testing-and-regression.md`
+- `workstream_a_foundation.md`
+- `workstream_b_domain_and_memory.md`
+- `workstream_c_connectors.md`
+- `workstream_d_triage_and_prioritization.md`
+- `workstream_e_drafting_ui.md`
+- `workstream_f_voice.md`
+- `workstream_g_testing_and_regression.md`
+- `workstream_h_deep_research.md`
 - and later verification documents.
 
 **Stable plan anchor:** `PLAN:StrategyDocumentBoundary`

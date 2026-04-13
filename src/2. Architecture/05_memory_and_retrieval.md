@@ -54,6 +54,7 @@ The architecture must make it possible to answer questions such as:
 Structured relational records are the primary source of operational truth for Glimmer.
 
 **Stable architecture anchor:** `ARCH:MemoryPrinciple.StructuredPrimary`
+**Stable architecture anchor:** `ARCH:StructuredMemoryModel`
 
 ### 3.2 Summaries are first-class but derived
 
@@ -143,6 +144,7 @@ This layer contains derived but persisted synthesis artifacts such as:
 - stakeholder summaries
 - `FocusPack`
 - `BriefingArtifact`
+- `ResearchSummaryArtifact` (from deep-research runs)
 - channel-specific concise summaries
 
 These artifacts speed decision-making and interaction but must remain linked to their underlying evidence.
@@ -170,6 +172,7 @@ This relational store should hold:
 - work items and decisions,
 - drafts,
 - summaries,
+- research runs and findings,
 - persona assets metadata,
 - and audit/tracing records.
 
@@ -488,7 +491,7 @@ It is not intended to become invasive surveillance of every keystroke or convers
 
 ## 13. Relationship to Repository-Local Documentation Retrieval
 
-The Agentic Delivery Framework defines a repository-local documentation retrieval layer under `9. Agent Tools/` to help coding agents resolve anchors and relevant bounded snippets efficiently. fileciteturn7file0
+The Agentic Delivery Framework defines a repository-local documentation retrieval layer under `9. Agent Tools/` to help coding agents resolve anchors and relevant bounded snippets efficiently.
 
 Glimmer’s product-memory retrieval architecture is separate from that documentation-retrieval layer.
 
@@ -551,7 +554,7 @@ Because Glimmer’s behavior depends so heavily on stored and refreshed memory, 
 - audit trail creation,
 - and state-boundary discipline between interpreted and accepted memory.
 
-This aligns with the framework’s principle that testing and verification are first-class parts of design rather than cleanup work after implementation. fileciteturn7file1
+This aligns with the framework’s principle that testing and verification are first-class parts of design rather than cleanup work after implementation.
 
 **Stable architecture anchor:** `ARCH:MemoryVerificationImplications`
 
@@ -568,11 +571,11 @@ This document defines Glimmer’s memory and retrieval behavior, but it does not
 
 Those concerns are handled in:
 
-- `03-langgraph-orchestration.md`
-- `04-connectors-and-ingestion.md`
-- `06-ui-and-voice.md`
-- `07-security-and-permissions.md`
-- `08-testing-strategy.md`
+- `03_langgraph_orchestration.md`
+- `04_connectors_and_ingestion.md`
+- `06_ui_and_voice.md`
+- `07_security_and_permissions.md`
+- `08_testing_strategy.md` (housed under `4. Verification/`)
 
 **Stable architecture anchor:** `ARCH:MemoryDocumentBoundary`
 

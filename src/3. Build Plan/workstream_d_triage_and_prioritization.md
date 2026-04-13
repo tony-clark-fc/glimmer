@@ -75,7 +75,7 @@ This workstream directly supports the following requirements:
 - `REQ:HumanApprovalBoundaries`
 - `REQ:SafeBehaviorDefaults`
 
-These requirements define Glimmer’s core claim to usefulness: it must not just ingest messages, but understand them in project context, extract likely meaning, surface ambiguity honestly, and help the operator focus on what matters next. fileciteturn15file3
+These requirements define Glimmer’s core claim to usefulness: it must not just ingest messages, but understand them in project context, extract likely meaning, surface ambiguity honestly, and help the operator focus on what matters next.
 
 **Stable plan anchor:** `PLAN:WorkstreamD.RequirementsAlignment`
 
@@ -96,7 +96,7 @@ This workstream is primarily implementing the architecture described by:
 - `ARCH:ReviewGateArchitecture`
 - `ARCH:GraphVerificationStrategy`
 
-These anchors define the core graph workflows, review-gate posture, explainability requirements, project-memory refresh model, and the user-facing priority surfaces that this workstream must make real. fileciteturn15file6turn15file9turn15file8turn15file10turn15file11
+These anchors define the core graph workflows, review-gate posture, explainability requirements, project-memory refresh model, and the user-facing priority surfaces that this workstream must make real.
 
 **Stable plan anchor:** `PLAN:WorkstreamD.ArchitectureAlignment`
 
@@ -498,7 +498,7 @@ Workstream D is complete only when the assistant-core workflow behavior is prove
 - project-summary refresh is triggered and traceable when meaningful new state arrives
 - no workflow bypasses review gates or no-auto-send boundaries
 
-This aligns directly to Glimmer’s testing strategy, which treats graph routing, review-gate enforcement, domain-memory boundaries, and explainable planning as load-bearing proof targets. fileciteturn15file11
+This aligns directly to Glimmer’s testing strategy, which treats graph routing, review-gate enforcement, domain-memory boundaries, and explainable planning as load-bearing proof targets.
 
 **Stable plan anchor:** `PLAN:WorkstreamD.VerificationExpectations`
 

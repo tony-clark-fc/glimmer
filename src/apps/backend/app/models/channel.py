@@ -37,6 +37,11 @@ class ChannelSession(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=_genuuid
     )
+    operator_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("primary_operators.id", ondelete="SET NULL"),
+        nullable=True,
+    )  # nullable for backward compat; single-operator MVP
     channel_type: Mapped[str] = mapped_column(
         String(50), nullable=False
     )  # telegram, voice, web

@@ -13,6 +13,7 @@ class Base(DeclarativeBase):
 
 # Import all model modules so they register with Base.metadata.
 # This import block must be kept current as new model files are added.
+from app.models.operator import PrimaryOperator  # noqa: E402, F401
 from app.models.portfolio import Project, ProjectWorkstream, Milestone  # noqa: E402, F401
 from app.models.stakeholder import Stakeholder, StakeholderIdentity, StakeholderProjectLink  # noqa: E402, F401
 from app.models.source import (  # noqa: E402, F401

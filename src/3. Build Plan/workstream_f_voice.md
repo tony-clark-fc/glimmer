@@ -169,20 +169,28 @@ At that point, Glimmer’s voice capability becomes a real companion operating m
 - session start/stop/init semantics
 - voice-session identity and operator binding
 - initial connection to the application/orchestration layer
-- bounded integration with LiveKit Agents or equivalent voice infrastructure
+- local inference integration using MLX on Apple Silicon (target: Gemma 4 E4B for native audio voice sessions)
+- multi-model routing boundary: voice I/O model vs. reasoning model dispatch
+- evaluation of pipeline (ASR → reasoning → TTS) vs. native audio (speech-to-speech) for the voice session entrypoint
 
 ### Expected outputs
 - voice boundary abstraction
 - session bootstrap flow
+- inference adapter abstraction for local model routing
 - tests for session initialization and operator/session binding where feasible
 
 ### Related anchors
 - `ARCH:VoiceLayeringStrategy`
 - `ARCH:VoiceInteractionArchitecture`
+- `ARCH:VoiceInfrastructureDirection`
+- `ARCH:VoicePipelineArchitecture`
+- `ARCH:LocalInferenceBaseline`
+- `ARCH:LocalModelRouting`
 - `ARCH:SecurityBoundaryMap`
 
 ### Definition of done
 - the codebase has a clear, bounded entrypoint for voice sessions that does not entangle raw voice infrastructure with the whole application
+- the voice boundary supports local model inference as the primary voice infrastructure path
 
 **Stable plan anchor:** `PLAN:WorkstreamF.PackageF1.VoiceBoundaryAndBootstrap`
 

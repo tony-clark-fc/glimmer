@@ -105,6 +105,7 @@ The primary graphs are:
 4. **Drafting Graph**
 5. **Voice Session Graph**
 6. **Telegram Companion Graph**
+7. **Research Escalation Graph**
 
 ### 4.2 Supporting orchestration patterns
 
@@ -115,6 +116,7 @@ These graphs are supported by shared orchestration patterns for:
 - summary refresh,
 - provenance preservation,
 - focus-pack generation,
+- research escalation routing,
 - and memory update handoff.
 
 The architecture should prefer a **small number of coherent graphs** over one giant monolithic graph or an excessive number of micro-graphs.
@@ -537,6 +539,82 @@ Where Telegram interaction leads to draft creation, project-memory mutation, or 
 - or instruct the operator to continue in the web workspace where richer review is possible.
 
 **Stable architecture anchor:** `ARCH:TelegramCompanionReviewBoundary`
+
+---
+
+## 11A. Research Escalation Graph
+
+### 11A.1 Purpose
+
+The Research Escalation Graph manages the lifecycle of deep-research tasks that exceed the local model's practical capability.
+
+This graph coordinates:
+
+- research escalation decisions,
+- research run invocation through the browser-mediated adapter,
+- structured result capture and normalization,
+- research artifact persistence,
+- failure and degraded-mode handling,
+- and re-entry of research results into the appropriate downstream workflow (triage, planner, drafting).
+
+**Stable architecture anchor:** `ARCH:ResearchEscalationGraph`
+
+### 11A.2 Inputs
+
+Typical inputs include:
+
+- research task description or query,
+- triggering context (linked project, message, workflow, or operator request),
+- escalation policy metadata (why this task was routed to research),
+- and relevant project/stakeholder context for query enrichment.
+
+### 11A.3 Outputs
+
+Typical outputs include:
+
+- `ResearchRun` record with completion status,
+- `ResearchFinding` records,
+- `ResearchSourceReference` records,
+- `ResearchSummaryArtifact` with review state,
+- and continuation signal back to the originating workflow (triage, planner, or drafting graph).
+
+### 11A.4 Research escalation policy
+
+The graph should implement a bounded escalation policy that determines when a task should be routed to deep research. Escalation triggers may include:
+
+- explicit operator request,
+- task complexity exceeding a configurable threshold,
+- task type that inherently benefits from multi-source research,
+- or orchestration-level determination that local model output is insufficient.
+
+The escalation policy must be configurable and explainable. The system should not silently escalate every task to browser-mediated research.
+
+**Stable architecture anchor:** `ARCH:ResearchEscalationPolicy`
+
+### 11A.5 Research run lifecycle
+
+The research run lifecycle within this graph follows:
+
+1. **Initiation** — validate escalation context, prepare research query, check browser availability.
+2. **Execution** — invoke the browser-mediated adapter, interact with Gemini, capture responses.
+3. **Normalization** — structure raw results into findings, source references, and summary artifacts.
+4. **Persistence** — store the research run, findings, and summary artifacts with full provenance.
+5. **Re-entry** — return structured results to the originating workflow for integration into triage, planning, or drafting.
+6. **Failure handling** — if browser attachment fails, Gemini is unavailable, or the run times out, record a visible failure state and allow graceful degradation.
+
+**Stable architecture anchor:** `ARCH:ResearchRunLifecycle`
+
+### 11A.6 Review and safety boundaries
+
+Research results enter Glimmer as **interpreted candidate artifacts**, not accepted operational memory. They must pass through the same review model as other interpreted outputs before being hardened into project memory.
+
+The research graph must not:
+
+- silently commit research findings into accepted project state,
+- send external messages based on research results,
+- or allow the browser-mediated adapter to take unbounded action.
+
+**Stable architecture anchor:** `ARCH:ResearchVerificationStrategy`
 
 ---
 

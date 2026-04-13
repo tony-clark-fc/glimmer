@@ -69,6 +69,7 @@ Important outputs such as classifications, extracted actions, and drafts must be
 Where Glimmer asks the operator to act, the interface should surface enough relevant context to support fast, confident judgment.
 
 **Stable architecture anchor:** `ARCH:UiPrinciple.ContextBeforeAction`
+**Stable architecture anchor:** `ARCH:ContextBeforeAction`
 
 ### 3.4 Consistent persona, bounded theatrics
 
@@ -199,6 +200,7 @@ A briefing-oriented presentation mode should support:
 - and review of the most relevant recent changes.
 
 **Stable architecture anchor:** `ARCH:BriefingSurfaceArchitecture`
+**Stable architecture anchor:** `ARCH:PreparedBriefings`
 
 ### 5.3 Review queue surface
 
@@ -207,9 +209,24 @@ A generalized review queue may be used to collect:
 - ambiguous classifications,
 - extracted actions awaiting acceptance,
 - memory updates needing approval,
+- research results awaiting review,
 - and other review-gated artifacts.
 
 **Stable architecture anchor:** `ARCH:ReviewQueueArchitecture`
+
+### 5.4 Research run surface
+
+Research run visibility should be available to show:
+
+- active and completed research runs,
+- research summaries and findings,
+- source references consulted,
+- provenance linkage to triggering context (project, message, workflow),
+- and review controls for accepting or discarding research results.
+
+Research runs may appear as inline context within project or triage views, or as a dedicated lightweight surface. The architecture should not hide research activity from the operator.
+
+**Stable architecture anchor:** `ARCH:ResearchRunSurface`
 
 ---
 
@@ -350,6 +367,7 @@ Glimmer’s persona images are part of the assistant experience layer and reinfo
 They should not override functional clarity, but they should make Glimmer feel present and mode-aware.
 
 **Stable architecture anchor:** `ARCH:VisualPersonaSelection`
+**Stable architecture anchor:** `ARCH:VisualPersonaArchitecture`
 
 ### 10.2 Persona rendering surfaces
 
@@ -390,6 +408,7 @@ Voice interaction should make Glimmer feel easier to use when the operator is mo
 It is not a separate product mode with separate business logic. It is a voice-shaped entrypoint into the same project-memory and orchestration system.
 
 **Stable architecture anchor:** `ARCH:VoiceInteractionArchitecture`
+**Stable architecture anchor:** `ARCH:VoiceLayeringStrategy`
 
 ### 11.2 Voice console surface
 
@@ -424,6 +443,44 @@ These should appear in the same reviewable system surfaces used by non-voice wor
 
 **Stable architecture anchor:** `ARCH:VoiceToStructuredOutputPath`
 
+### 11.5 Voice infrastructure direction
+
+The voice pipeline has two structurally different implementation paths, and Glimmer's target hardware profile supports both.
+
+#### Pipeline architecture (ASR → reasoning model → TTS)
+
+In this approach, voice recognition and voice generation are handled by separate specialized components:
+
+1. **Recognition (operator → Glimmer):** A dedicated ASR model (e.g., Whisper or equivalent) transcribes the operator's speech into text.
+2. **Reasoning:** The transcribed text enters the same orchestration and reasoning layer used by text-based interactions (using a high-capability model such as Gemma 4 31B or 26B A4B).
+3. **Generation (Glimmer → operator):** A dedicated TTS engine converts the model's text response into spoken output.
+
+This approach maximizes reasoning quality and allows the strongest available model to handle all substantive work. The voice layer is purely an I/O bridge.
+
+#### Native audio architecture (speech-to-speech)
+
+In this approach, a model with a native audio encoder processes the operator's speech waveform directly, without a separate ASR step:
+
+1. **Recognition:** The model receives raw audio and can interpret not only words but also tone, prosody, emotion, and urgency.
+2. **Reasoning and generation:** The model produces a response that may include direct audio output.
+
+This approach trades peak reasoning depth for richer input signal. A native-audio model (such as Gemma 4 E4B) can detect whether the operator sounds frustrated, rushed, or relaxed — context that a text transcript strips away.
+
+#### Glimmer's expected voice architecture
+
+The target approach is a **hybrid multi-model voice architecture**:
+
+- **Voice session I/O** uses a native-audio-capable model (E4B class) running locally for low-latency, prosody-aware conversational interaction.
+- **Heavy reasoning tasks** triggered during a voice session (triage decisions, draft generation, prioritization analysis) are routed to the larger local model (31B or 26B class) through the same orchestration core used by text interactions.
+- **TTS for the output side** may use either the native audio model's output, a dedicated local TTS engine, or Apple system speech — depending on quality and persona-fit assessment during Workstream F implementation.
+
+This hybrid approach means that voice sessions benefit from emotional and tonal awareness at the interaction boundary while preserving full reasoning depth for substantive work. It also means the voice layer remains a **mode layered on the shared core**, not a separate intelligence silo.
+
+The specific model versions, quantization levels, and pipeline routing will be confirmed during Workstream F implementation, but the multi-model local inference direction is the approved starting point.
+
+**Stable architecture anchor:** `ARCH:VoiceInfrastructureDirection`
+**Stable architecture anchor:** `ARCH:VoicePipelineArchitecture`
+
 ---
 
 ## 12. Telegram Companion UX
@@ -435,6 +492,7 @@ Telegram is the MVP mobile companion channel for Glimmer.
 Its purpose is to let the operator remain in contact with Glimmer when away from the main workspace, without pretending that Telegram is the full application.
 
 **Stable architecture anchor:** `ARCH:TelegramCompanionUx`
+**Stable architecture anchor:** `ARCH:TelegramCompanionChannel`
 
 ### 12.2 Appropriate Telegram interactions
 
@@ -573,10 +631,10 @@ This document defines Glimmer’s interaction architecture, but it does not defi
 
 Those concerns are handled in:
 
-- `04-connectors-and-ingestion.md`
-- `05-memory-and-retrieval.md`
-- `07-security-and-permissions.md`
-- `08-testing-strategy.md`
+- `04_connectors_and_ingestion.md`
+- `05_memory_and_retrieval.md`
+- `07_security_and_permissions.md`
+- `08_testing_strategy.md` (housed under `4. Verification/`)
 
 **Stable architecture anchor:** `ARCH:UiVoiceDocumentBoundary`
 

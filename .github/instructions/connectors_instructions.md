@@ -1,12 +1,12 @@
 ---
-applyTo: "apps/backend/**/connectors/**/*.py,apps/backend/**/integrations/**/*.py,apps/backend/**/providers/**/*.py,apps/backend/**/ingestion/**/*.py,apps/backend/**/normalization/**/*.py,apps/backend/**/sync/**/*.py"
+applyTo: "apps/backend/**/connectors/**/*.py,apps/backend/**/integrations/**/*.py,apps/backend/**/providers/**/*.py,apps/backend/**/ingestion/**/*.py,apps/backend/**/normalization/**/*.py,apps/backend/**/sync/**/*.py,apps/backend/**/research/**/*.py"
 ---
 
 # Glimmer — Connectors and Ingestion Module Instructions
 
 ## Purpose
 
-This instruction file defines the module-scoped rules for Glimmer connector, ingestion, normalization, and sync-related implementation.
+This instruction file defines the module-scoped rules for Glimmer connector, ingestion, normalization, sync-related, and research-adapter implementation.
 
 It supplements the global `.github/copilot-instructions.md` file and applies specifically to:
 
@@ -16,6 +16,7 @@ It supplements the global `.github/copilot-instructions.md` file and applies spe
 - manual import flows,
 - normalization mappers and provenance handling,
 - sync-state handling,
+- research tool adapter code (browser-mediated Gemini),
 - and connector-to-intake handoff code.
 
 These rules are stricter than generic integration guidance because this part of Glimmer is where the system first touches the outside world. If connectors are weak, the rest of the product inherits flattened provenance, fuzzy state, and unsafe behavior.
@@ -359,6 +360,7 @@ When editing connector or ingestion code, the default proof target should includ
 - Telegram changes must prove messages become bounded internal signal/session artifacts.
 - Manual import changes must prove explicit labeling and safe routing.
 - Sync-state changes must prove visible failure behavior and checkpoint/update correctness.
+- Research adapter changes must prove bounded interaction, whitelisted destinations, structured result capture, failure handling, and no-external-action boundaries. Live browser validation is `ManualOnly`; contract-level adapter tests should use mocks/fakes.
 
 ### 11.2 Do not mark connector work complete without executed proof
 

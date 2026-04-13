@@ -43,7 +43,7 @@ At the end of this workstream, Glimmer should have a coherent implementation ske
 
 ## 3. Why This Workstream Comes First
 
-The Glimmer build strategy explicitly prioritizes foundations before feature layering, domain before orchestration complexity, and web control surface before companion convenience. fileciteturn13file13 fileciteturn13file14
+The Glimmer build strategy explicitly prioritizes foundations before feature layering, domain before orchestration complexity, and web control surface before companion convenience.
 
 That means Workstream A must establish:
 
@@ -68,7 +68,7 @@ This workstream directly supports the following requirements:
 - `REQ:PrivacyAndLeastPrivilege`
 - `REQ:SafeBehaviorDefaults`
 
-These requirements are part of why the foundation must be local-first, review-friendly, and built around durable state rather than a disposable prototype shell. fileciteturn13file3
+These requirements are part of why the foundation must be local-first, review-friendly, and built around durable state rather than a disposable prototype shell.
 
 **Stable plan anchor:** `PLAN:WorkstreamA.RequirementsAlignment`
 
@@ -86,7 +86,7 @@ This workstream is primarily implementing the practical substrate implied by:
 - `ARCH:VerificationLayerModel`
 - `ARCH:SecurityBoundaryMap`
 
-These anchors establish Glimmer as a local-first Python/FastAPI + React/Next.js + PostgreSQL + LangGraph system with explicit verification and security boundaries. fileciteturn13file12turn13file9turn13file10turn13file11
+These anchors establish Glimmer as a local-first Python/FastAPI + React/Next.js + PostgreSQL + LangGraph system with explicit verification and security boundaries.
 
 **Stable plan anchor:** `PLAN:WorkstreamA.ArchitectureAlignment`
 
@@ -121,7 +121,7 @@ This workstream does **not** include:
 - full UI workflows,
 - or complete voice interaction.
 
-Those belong to later workstreams. fileciteturn13file2
+Those belong to later workstreams.
 
 **Stable plan anchor:** `PLAN:WorkstreamA.OutOfScope`
 
@@ -162,7 +162,7 @@ tests/
 working documents at repo root
 ```
 
-The exact folder names may be refined during implementation, but the structural separation between code, control documents, verification, and agent-operational surfaces should remain intact. This follows the framework’s recommended document hierarchy and the Glimmer document set. fileciteturn13file0turn13file2
+The exact folder names may be refined during implementation, but the structural separation between code, control documents, verification, and agent-operational surfaces should remain intact. This follows the framework’s recommended document hierarchy and the Glimmer document set.
 
 **Stable plan anchor:** `PLAN:WorkstreamA.RepositoryShape`
 
@@ -418,7 +418,7 @@ This workstream is mostly agent-executable, but a few areas may require human ac
 - confirmation of the chosen frontend scaffolding path where multiple equivalent options exist
 - later external secrets or provider registration steps, though those should not block most of this workstream
 
-The work should be structured so the coding agent can make substantial progress before any such human intervention becomes blocking. This is consistent with the strategy document’s human-intervention model. fileciteturn13file14
+The work should be structured so the coding agent can make substantial progress before any such human intervention becomes blocking. This is consistent with the strategy document’s human-intervention model.
 
 **Stable plan anchor:** `PLAN:WorkstreamA.HumanDependencies`
 
@@ -440,7 +440,7 @@ Workstream A is complete only when the foundation is not just created, but prove
 - Postgres connectivity is proven in local development or controlled integration environment
 - baseline automated test commands execute successfully
 
-This follows the Glimmer testing strategy’s requirement for automated proof, layered verification, and evidence-backed completion. fileciteturn13file11
+This follows the Glimmer testing strategy’s requirement for automated proof, layered verification, and evidence-backed completion.
 
 **Stable plan anchor:** `PLAN:WorkstreamA.VerificationExpectations`
 
@@ -453,7 +453,7 @@ This workstream should eventually be paired with:
 - `WorkstreamA_Foundation_DESIGN_AND_IMPLEMENTATION_PLAN.md`
 - `WorkstreamA_Foundation_DESIGN_AND_IMPLEMENTATION_PROGRESS.md`
 
-Those files will hold the current implementation state, session handoff, blockers, and verification evidence once coding starts. This follows the framework’s working-document convention. fileciteturn13file0
+Those files will hold the current implementation state, session handoff, blockers, and verification evidence once coding starts. This follows the framework’s working-document convention.
 
 **Stable plan anchor:** `PLAN:WorkstreamA.WorkingDocumentPair`
 

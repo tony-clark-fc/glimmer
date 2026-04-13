@@ -50,7 +50,10 @@ Treat the following as the current implementation baseline unless an explicitly 
 - **Primary database:** PostgreSQL
 - **Retrieval support:** pgvector or equivalent semantic retrieval support
 - **External integrations:** Google APIs and Microsoft Graph
-- **Voice layer:** LiveKit Agents or equivalent
+- **Local inference runtime:** MLX on Apple Silicon (target hardware: M5 Max 128 GB unified memory)
+- **Reference model family:** Gemma 4 (31B for deep reasoning, 26B A4B MoE for low-latency chat, E4B for native audio voice)
+- **Voice layer:** Local multi-model inference — native audio model for voice I/O, larger model for reasoning tasks routed through shared orchestration core
+- **Deep research:** Bounded browser-mediated Gemini research adapter (Playwright + Chrome debug mode), Python-native port of existing C# research agent
 - **Browser workflow verification:** Playwright
 
 Do not silently introduce an alternative architecture or framework stack.
@@ -99,6 +102,7 @@ The most important architectural rules are:
 - **Visual persona as a managed UX asset**.
 - **Multi-account operator model** for Google and Microsoft accounts.
 - **Telegram as the MVP companion channel**.
+- **Bounded deep research** through browser-mediated Gemini adapter, not general web automation.
 
 Treat these as load-bearing design rules, not optional flavor.
 

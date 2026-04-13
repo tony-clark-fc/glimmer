@@ -197,6 +197,31 @@ This section should be updated incrementally during implementation.
 - **Meaningful accomplishment:** Workstream F planning, verification, and operational support surfaces are complete enough to begin execution cleanly once the core non-voice Glimmer substrate is sufficiently real.
 - **Next expected change:** Stand up voice session bootstrap and the first transcript-to-structured-artifact path.
 
+### 7.2 Voice infrastructure direction decision — 2026-04-13
+
+- **State:** Design decision recorded, no code change.
+- **Source:** Operator-relayed stakeholder analysis of local inference capabilities on the target hardware profile (Apple M5 Max, 128 GB unified memory).
+- **Decision:** The voice infrastructure direction has moved from "LiveKit Agents or equivalent" to **local multi-model inference using MLX on Apple Silicon**, with the Gemma 4 model family as the reference baseline.
+- **Key design points:**
+  - **Voice I/O** will target a native-audio model (Gemma 4 E4B, 4.5B parameters at FP16) for low-latency, prosody-aware spoken interaction. This model can process raw audio input, detecting tone, emotion, and urgency — not just transcribed words.
+  - **Deep reasoning** (triage, prioritization, drafting, planning) will route to a larger local model (Gemma 4 31B at Q8/FP16, or Gemma 4 26B A4B MoE for faster interactive use). These models use the pipeline approach (ASR → text reasoning → TTS) when invoked from voice context.
+  - **Both directions** of the voice pipeline are affected: recognition (operator → Glimmer) and generation (Glimmer → operator).
+  - The target hardware can run the 31B model at ~40–60 tokens/sec and the 26B MoE at 100+ tokens/sec, both well above conversational speech speed.
+  - All model inference runs locally — cloud model providers become optional enhancement, not structural dependency.
+- **Documents updated:**
+  - `01_system_overview.md` — §6.2, §6.2A (target hardware profile and local inference baseline), §6.3 (voice removed from external dependencies)
+  - `06_ui_and_voice.md` — §11.5 (voice infrastructure direction, pipeline vs native audio, hybrid architecture)
+  - `07_security_and_permissions.md` — §12.1, §12.2, §12.3 (local multi-model routing, remote models now optional)
+  - `workstream_f_voice.md` — §8.1 Work Package F1 (updated scope and anchors for local inference)
+  - `.github/copilot-instructions.md` — §2 technology baseline (MLX, Gemma 4, local multi-model voice)
+- **Architecture anchors added:**
+  - `ARCH:TargetHardwareProfile`
+  - `ARCH:LocalInferenceBaseline`
+  - `ARCH:VoiceInfrastructureDirection`
+  - `ARCH:VoicePipelineArchitecture`
+  - `ARCH:LocalModelRouting`
+- **Assumption:** Specific model versions and quantization levels may evolve. The architecture treats the model layer as a bounded dependency behind an inference abstraction.
+
 **Stable working anchor:** `WORKF:Progress.ExecutionLog`
 
 ---
@@ -262,14 +287,14 @@ Manual audio/network checks may be necessary, but they must not masquerade as br
 
 ## 10. Human Dependencies
 
-At this point, no hard blocker is known, but this workstream is more likely than most to encounter environment-specific dependencies.
+The voice infrastructure direction has been confirmed (2026-04-13): local multi-model inference using MLX and Gemma 4 on Apple M5 Max. This resolves the first and most significant infrastructure decision for the workstream.
 
-Likely future human dependencies may include:
+Remaining likely human dependencies:
 
-- confirming the first voice infrastructure path if alternatives are available
 - Telegram bot setup and secrets/config for live validation
 - decisions about preferred spoken verbosity in early iterations
 - explicit confirmation of which voice/companion behaviors are truly in scope for a given release claim
+- final TTS approach selection (native audio model output vs. dedicated TTS vs. Apple system speech) — may require hands-on quality evaluation
 
 No live environment dependency should be raised as a blocker until the agent has completed fixture-driven, routing, continuity, and handoff work first.
 

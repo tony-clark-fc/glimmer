@@ -48,6 +48,7 @@ Glimmer is not intended to be a silent background actor. Its security posture mu
 The system should default to local storage and local control for project memory, drafts, normalized message content, and operator context wherever practical.
 
 **Stable architecture anchor:** `ARCH:LocalFirstPrivacyBoundary`
+**Stable architecture anchor:** `ARCH:LocalFirstBoundary`
 
 ### 3.2 Least privilege everywhere
 
@@ -89,17 +90,19 @@ Review gates for drafts, ambiguous interpretation, and meaningful state mutation
 
 ## 4. Security Boundary Map
 
-The security architecture for Glimmer spans five main boundaries:
+The security architecture for Glimmer spans six main boundaries:
 
 1. **Operator boundary**
    - the human operator using the system
 2. **Local application boundary**
    - Glimmer backend, UI, local storage, local memory
 3. **External API boundary**
-   - Google APIs, Microsoft Graph, Telegram API, voice services where applicable
+   - Google APIs, Microsoft Graph, Telegram API
 4. **Model execution boundary**
    - local model runtime and any optional remote model provider boundary
-5. **Audit and review boundary**
+5. **Browser-mediated research boundary**
+   - Chrome debug-mode attachment for Gemini deep-research interactions
+6. **Audit and review boundary**
    - review states, operator overrides, and traceability surfaces
 
 Each of these boundaries should be made explicit in implementation and verification.
@@ -338,9 +341,27 @@ Manual imports such as WhatsApp text should preserve that they were manually sup
 
 The preferred baseline is that project memory, summaries, and other sensitive operational context remain locally stored and, where possible, locally processed.
 
+The target hardware profile (Apple M5 Max with 128 GB unified memory) makes full local model inference practical for all major task classes, reinforcing the local-first posture as a real operational baseline rather than an aspiration.
+
 **Stable architecture anchor:** `ARCH:LocalProcessingBaseline`
 
-### 12.2 Optional remote model boundary
+### 12.2 Local multi-model routing
+
+The architecture supports routing different task classes to different local models based on the nature of the work:
+
+- **Deep reasoning tasks** (triage, prioritization, drafting, planning) should route to the highest-capability local model available (e.g., Gemma 4 31B at Q8/FP16).
+- **Low-latency conversational tasks** (daily chat, quick status, interactive planning) may route to a faster MoE model (e.g., Gemma 4 26B A4B) for snappier response times.
+- **Voice interaction tasks** may route to a native-audio model (e.g., Gemma 4 E4B) for prosody-aware, low-latency spoken interaction.
+
+This routing should be:
+
+- policy-driven and configurable,
+- transparent to the operator where it materially affects behavior,
+- and bounded behind an inference abstraction so that specific model versions can evolve without cascading code changes.
+
+**Stable architecture anchor:** `ARCH:LocalModelRouting`
+
+### 12.3 Optional remote model boundary
 
 If a remote model provider is used for selected high-value tasks, that boundary must be:
 
@@ -348,7 +369,7 @@ If a remote model provider is used for selected high-value tasks, that boundary 
 - policy-driven,
 - and understandable to the operator.
 
-The architecture should support model-routing policy rather than assuming one universal execution boundary.
+With the local multi-model baseline, remote model use becomes an optional enhancement rather than a structural dependency. The architecture should support model-routing policy rather than assuming one universal execution boundary.
 
 **Stable architecture anchor:** `ARCH:RemoteModelBoundary`
 
@@ -364,6 +385,57 @@ The system should prefer:
 - and least-necessary context for the task at hand.
 
 **Stable architecture anchor:** `ARCH:PromptContentDiscipline`
+
+---
+
+## 12A. Browser-Mediated Research Security
+
+### 12A.1 Browser debug-mode boundary
+
+The deep-research capability uses Chrome running in debug mode on the operator's local machine. This is a distinct and sensitive security boundary because:
+
+- the adapter has access to the operator's browser session, cookies, and authentication state,
+- the adapter can navigate to and interact with web pages,
+- and misuse of this capability could lead to unintended external actions.
+
+### 12A.2 Scope constraints
+
+The browser-mediated research adapter:
+
+- must only interact with explicitly whitelisted destinations (Gemini for MVP),
+- must not navigate to or interact with mail, calendar, social media, or other sensitive surfaces through browser automation,
+- must not submit content that sends external messages or modifies external state,
+- must not extract or exfiltrate content beyond the bounded research response,
+- and must not store browser credentials, cookies, or session tokens within Glimmer's persistence layer.
+
+### 12A.3 Operator consent and readiness
+
+The system must verify or assume that:
+
+- Chrome is running with remote debugging enabled by explicit operator action,
+- the operator understands that Glimmer will use the browser for research,
+- and the research run is either explicitly requested or invoked through a visible, auditable escalation policy.
+
+### 12A.4 Research run auditability
+
+Each research run must be auditable, preserving:
+
+- invocation timestamp and origin,
+- research query or task description,
+- pages or destinations navigated,
+- response content captured,
+- completion or failure status,
+- and linkage to the triggering workflow context.
+
+### 12A.5 Failure and safety posture
+
+If the browser is unavailable, the debug port is not reachable, or Gemini interaction fails:
+
+- the system must surface a visible failure state,
+- the system must not retry indefinitely or silently,
+- and the system must gracefully degrade to local-model-only behavior.
+
+**Stable architecture anchor:** `ARCH:BrowserResearchSecurityBoundary`
 
 ---
 
@@ -459,7 +531,7 @@ The verification model for Glimmer must explicitly test:
 - provenance-preserving channel behavior,
 - and safe fallback when authorization or channel state fails.
 
-This aligns with the Agentic Delivery Framework and its testing companion, which treat verification as a first-class design concern and require evidence-backed completion rather than assumption-backed confidence. fileciteturn8file0 fileciteturn8file1
+This aligns with the Agentic Delivery Framework and its testing companion, which treat verification as a first-class design concern and require evidence-backed completion rather than assumption-backed confidence.
 
 **Stable architecture anchor:** `ARCH:SecurityVerificationImplications`
 
@@ -476,9 +548,9 @@ This document defines Glimmer’s security and permission posture, but it does n
 
 Those concerns are handled in:
 
-- `04-connectors-and-ingestion.md`
-- `06-ui-and-voice.md`
-- `08-testing-strategy.md`
+- `04_connectors_and_ingestion.md`
+- `06_ui_and_voice.md`
+- `08_testing_strategy.md` (housed under `4. Verification/`)
 - and later build-plan and verification artifacts.
 
 **Stable architecture anchor:** `ARCH:SecurityDocumentBoundary`

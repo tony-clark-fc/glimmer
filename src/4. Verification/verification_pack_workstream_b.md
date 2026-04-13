@@ -47,15 +47,15 @@ This pack is one of the most load-bearing verification packs in the Glimmer proj
 
 This verification pack is derived from and aligned to:
 
-- the **Agentic Delivery Framework**, especially its authority model, verification model, evidence-of-completion rules, requirements-to-verification traceability, and structured document hierarchy, fileciteturn27file0
-- the **Testing Strategy Companion**, especially automation-first proof, behavior-over-coverage, database/integration testing, and evidence-backed completion, fileciteturn27file1
-- the **Glimmer Agentic Delivery Document Set**, which explicitly defines `verification-pack-workstream-b.md` as part of the canonical verification family, fileciteturn27file2
-- the **Glimmer Requirements**, especially project memory, stakeholder memory, message ingestion, multi-account profile support, traceability and auditability, explainability, and state continuity, fileciteturn27file3
-- the **Glimmer Testing Strategy**, especially domain-memory verification, data-integrity expectations, provenance preservation, and reviewable state separation, fileciteturn27file4
-- the latest **Glimmer Architecture** state, including the canonical architecture index and the manually maintained current architecture document, especially the structured memory, domain model, state ownership, connected-account, audit, and project-memory refresh anchors, fileciteturn27file5turn27file16
-- the **Build Plan**, **Build Strategy**, and **Workstream B — Domain and Memory**, which explicitly place the memory substrate ahead of deep connectors and assistant-core workflow sophistication, fileciteturn27file6turn27file7turn27file9
-- the **Governance and Process** document, which requires evidence-backed completion and surfaced drift for meaningful work, fileciteturn27file15
-- and the current **Test Catalog**, which already defines the canonical domain-and-memory `TEST:` anchors this pack should organize and extend. fileciteturn27file17
+- the **Agentic Delivery Framework**, especially its authority model, verification model, evidence-of-completion rules, requirements-to-verification traceability, and structured document hierarchy,
+- the **Testing Strategy Companion**, especially automation-first proof, behavior-over-coverage, database/integration testing, and evidence-backed completion,
+- the **Glimmer Agentic Delivery Document Set**, which explicitly defines `verification-pack-workstream-b.md` as part of the canonical verification family,
+- the **Glimmer Requirements**, especially project memory, stakeholder memory, message ingestion, multi-account profile support, traceability and auditability, explainability, and state continuity,
+- the **Glimmer Testing Strategy**, especially domain-memory verification, data-integrity expectations, provenance preservation, and reviewable state separation,
+- the latest **Glimmer Architecture** state, including the canonical architecture index and the manually maintained current architecture document, especially the structured memory, domain model, state ownership, connected-account, audit, and project-memory refresh anchors,
+- the **Build Plan**, **Build Strategy**, and **Workstream B — Domain and Memory**, which explicitly place the memory substrate ahead of deep connectors and assistant-core workflow sophistication,
+- the **Governance and Process** document, which requires evidence-backed completion and surfaced drift for meaningful work,
+- and the current **Test Catalog**, which already defines the canonical domain-and-memory `TEST:` anchors this pack should organize and extend.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamB.ControlSurfaceAlignment`
 
@@ -63,7 +63,7 @@ This verification pack is derived from and aligned to:
 
 ## 4. Why This Pack Is Load-Bearing
 
-The Glimmer architecture is explicit that structured memory, provenance preservation, reviewable interpretation, and accepted operational state are foundational principles rather than implementation details. fileciteturn27file5turn27file16
+The Glimmer architecture is explicit that structured memory, provenance preservation, reviewable interpretation, and accepted operational state are foundational principles rather than implementation details.
 
 Workstream B is where those principles become real in persistence and domain structure. It establishes:
 
@@ -75,7 +75,7 @@ Workstream B is where those principles become real in persistence and domain str
 - drafts and briefing artifacts,
 - channel-session state,
 - summaries and memory refresh structures,
-- and audit/trace linkage. fileciteturn27file9
+- and audit/trace linkage.
 
 If this pack is weak, later workstreams may appear to function while actually depending on:
 
@@ -125,39 +125,39 @@ Those belong to later workstream packs and cross-cutting packs.
 
 ## 6. Source `TEST:` Anchors Included in This Pack
 
-The Workstream B pack is built primarily from the domain-and-memory scenario group in the canonical Test Catalog and adds a small number of memory-specific scenarios needed to cover the full Workstream B shape. fileciteturn27file17
+The Workstream B pack is built primarily from the domain-and-memory scenario group in the canonical Test Catalog and adds a small number of memory-specific scenarios needed to cover the full Workstream B shape.
 
 ### 6.1 Canonical domain-and-memory anchors already defined in the Test Catalog
 
 #### `TEST:Domain.ProjectLifecycle.BasicPersistence`
 - **Scenario name:** Project records persist and reload correctly
 - **Layers:** `integration`
-- **Role in this pack:** Baseline proof that project state is durable and queryable. fileciteturn27file17
+- **Role in this pack:** Baseline proof that project state is durable and queryable.
 
 #### `TEST:Domain.StakeholderIdentity.MultiIdentityLinking`
 - **Scenario name:** One stakeholder can hold multiple identities without losing distinction
 - **Layers:** `integration`
-- **Role in this pack:** Proves identity plurality without forced merge. fileciteturn27file17
+- **Role in this pack:** Proves identity plurality without forced merge.
 
 #### `TEST:Domain.MultiAccount.ProvenancePersistence`
 - **Scenario name:** Source provenance survives persistence round trips
 - **Layers:** `integration`
-- **Role in this pack:** Proves account/profile/provider provenance is durable. fileciteturn27file17
+- **Role in this pack:** Proves account/profile/provider provenance is durable.
 
 #### `TEST:Domain.InterpretedVsAccepted.Separation`
 - **Scenario name:** Interpreted artifacts remain distinct from accepted operational state
 - **Layers:** `integration`
-- **Role in this pack:** Proves candidate understanding does not silently become accepted truth. fileciteturn27file17
+- **Role in this pack:** Proves candidate understanding does not silently become accepted truth.
 
 #### `TEST:Domain.SummaryRefresh.Lineage`
 - **Scenario name:** Summary refresh preserves lineage and metadata
 - **Layers:** `integration`
-- **Role in this pack:** Proves summary artifacts remain explicit, traceable, and refresh-aware. fileciteturn27file17
+- **Role in this pack:** Proves summary artifacts remain explicit, traceable, and refresh-aware.
 
 #### `TEST:Domain.Audit.MeaningfulStateMutation`
 - **Scenario name:** Meaningful state mutations generate durable audit records
 - **Layers:** `integration`
-- **Role in this pack:** Proves the memory spine is traceable rather than opaque. fileciteturn27file17
+- **Role in this pack:** Proves the memory spine is traceable rather than opaque.
 
 ### 6.2 Additional Workstream B-specific anchors introduced by this pack
 
@@ -320,7 +320,7 @@ It tests the memory substrate those later layers will populate.
 
 ### 9.3 Foundation proof should already exist
 
-This pack assumes the Workstream A substrate is sufficiently stable that domain-memory failures can be interpreted as actual memory/model issues rather than app-boot chaos. fileciteturn27file8turn27file18
+This pack assumes the Workstream A substrate is sufficiently stable that domain-memory failures can be interpreted as actual memory/model issues rather than app-boot chaos.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamB.EnvironmentAssumptions`
 
@@ -367,7 +367,7 @@ When the Workstream B pack is executed, evidence reporting should capture at min
 - any explicitly `Deferred` entries and why,
 - and a brief statement of whether the domain/memory spine is considered stable enough for connector and assistant-core extension.
 
-This should be summarized in the relevant Workstream B progress file and referenced in broader phase-exit or regression summaries where appropriate. fileciteturn27file15turn27file1
+This should be summarized in the relevant Workstream B progress file and referenced in broader phase-exit or regression summaries where appropriate.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamB.EvidenceExpectations`
 
@@ -404,7 +404,7 @@ Later packs should build on it as follows:
 - **Data Integrity** should convert the most important protections here into broader long-term regression proof,
 - and **Release** should compose representative memory-spine proof into cross-workstream confidence.
 
-This progression is consistent with the Glimmer build plan, workstream map, and Workstream G verification-estate design. fileciteturn27file6turn27file14
+This progression is consistent with the Glimmer build plan, workstream map, and Workstream G verification-estate design.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamB.RelationshipToLaterPacks`
 

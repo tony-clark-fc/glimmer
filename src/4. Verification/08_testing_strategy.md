@@ -24,6 +24,7 @@ Glimmer is not a generic CRUD web app. It is a local-first, multi-account, multi
 - multi-provider ingestion,
 - review-gated interpretation,
 - draft-only communication support,
+- bounded deep-research through browser-mediated Gemini interaction,
 - and companion-channel interaction through Telegram.
 
 The testing strategy must therefore prove not only code correctness, but also:
@@ -32,6 +33,7 @@ The testing strategy must therefore prove not only code correctness, but also:
 - review-gate enforcement,
 - graph routing correctness,
 - cross-surface continuity,
+- research adapter boundary safety,
 - and no-auto-send boundaries.
 
 **Stable architecture anchor:** `ARCH:TestingArchitecture`
@@ -108,7 +110,7 @@ These must be tested explicitly.
 
 ## 4. Project Test Architecture by Default
 
-The default test architecture for Glimmer should align to the actual technology stack described in the project document set and architecture baseline: Python + FastAPI, LangGraph, React / Next.js, PostgreSQL, Playwright, and companion-channel integration. fileciteturn9file2 fileciteturn9file4
+The default test architecture for Glimmer should align to the actual technology stack described in the project document set and architecture baseline: Python + FastAPI, LangGraph, React / Next.js, PostgreSQL, Playwright, and companion-channel integration.
 
 A recommended structure is:
 
@@ -200,7 +202,7 @@ Use graph-focused tests for:
 - Telegram workflow routing,
 - and voice-session continuity behavior.
 
-This is a first-class Glimmer-specific layer because orchestration is central to product behavior. The Testing Strategy Companion emphasizes stateful workflows, decision logic, and failure-path proof, and Glimmer’s LangGraph design makes that non-optional. fileciteturn9file1 fileciteturn9file7
+This is a first-class Glimmer-specific layer because orchestration is central to product behavior. The Testing Strategy Companion emphasizes stateful workflows, decision logic, and failure-path proof, and Glimmer’s LangGraph design makes that non-optional.
 
 **Stable architecture anchor:** `ARCH:GraphVerificationStrategy`
 
@@ -215,7 +217,7 @@ Use Playwright for:
 - review queue behavior,
 - and user-visible handling of review gates or handoffs.
 
-The framework’s testing companion establishes Playwright as the standard for browser-visible user workflows, and the Glimmer document set already assumes Playwright for UI workflow automation. fileciteturn9file1 fileciteturn9file2
+The framework’s testing companion establishes Playwright as the standard for browser-visible user workflows, and the Glimmer document set already assumes Playwright for UI workflow automation.
 
 **Stable architecture anchor:** `ARCH:PlaywrightTestBoundary`
 
@@ -246,7 +248,7 @@ Tests in this area should prove:
 - retrieval boundaries,
 - and audit trail creation for meaningful state changes.
 
-This directly follows from the domain model and memory architecture, which explicitly separate source records, interpreted artifacts, accepted memory, and synthesized artifacts. fileciteturn9file6 fileciteturn9file10
+This directly follows from the domain model and memory architecture, which explicitly separate source records, interpreted artifacts, accepted memory, and synthesized artifacts.
 
 **Stable architecture anchor:** `ARCH:DomainMemoryVerification`
 
@@ -267,7 +269,7 @@ Tests in this area should prove:
 - Telegram connector mapping into `ChannelSession` / `TelegramConversationState`,
 - and observable failure behavior when authorization or normalization fails.
 
-The connectors document explicitly requires official APIs, source isolation, multi-account handling, normalization with provenance, and connector-to-intake handoff discipline. That makes provenance-preserving connector tests load-bearing, not optional. fileciteturn9file8
+The connectors document explicitly requires official APIs, source isolation, multi-account handling, normalization with provenance, and connector-to-intake handoff discipline. That makes provenance-preserving connector tests load-bearing, not optional.
 
 **Stable architecture anchor:** `ARCH:ConnectorVerificationStrategy`
 
@@ -288,7 +290,7 @@ Tests should prove at least:
 - Telegram Companion Graph supports lightweight interaction while handing back richer review to the web workspace,
 - and interrupt/resume behavior persists and continues correctly.
 
-This follows directly from the LangGraph orchestration architecture, which defines six primary graphs, explicit review gates, interrupt/resume behavior, and channel-aware workflows. fileciteturn9file7
+This follows directly from the LangGraph orchestration architecture, which defines seven primary graphs, explicit review gates, interrupt/resume behavior, and channel-aware workflows.
 
 **Stable architecture anchor:** `ARCH:GraphWorkflowVerification`
 
@@ -308,7 +310,7 @@ Playwright coverage should target:
 - confirming that provenance is visible in triage and related views,
 - and confirming that the UI clearly distinguishes between suggestions and accepted state.
 
-This aligns with the UI architecture, which treats the web workspace as the primary operating surface and requires visible reviewable artifacts, context-before-action, and account-aware provenance display. fileciteturn9file9turn9file5
+This aligns with the UI architecture, which treats the web workspace as the primary operating surface and requires visible reviewable artifacts, context-before-action, and account-aware provenance display.
 
 **Stable architecture anchor:** `ARCH:BrowserWorkflowVerification`
 
@@ -327,7 +329,7 @@ Telegram tests should prove:
 - safe handoff to the web workspace when richer review is needed,
 - and avoidance of overexposing sensitive context in companion replies.
 
-The system overview, UI/voice document, connectors document, and security document all treat Telegram as a real companion surface but explicitly not the full control center. The tests should enforce that boundary. fileciteturn9file5turn9file8turn9file9
+The system overview, UI/voice document, connectors document, and security document all treat Telegram as a real companion surface but explicitly not the full control center. The tests should enforce that boundary.
 
 **Stable architecture anchor:** `ARCH:TelegramVerificationStrategy`
 
@@ -341,7 +343,7 @@ Voice tests should prove:
 - correct routing into planner or drafting flows,
 - and review-boundary preservation.
 
-Because voice is layered onto the same underlying memory/orchestration core, the proof target is not “nice speech quality” alone. It is that voice interaction remains behaviorally consistent with the rest of the system. fileciteturn9file5turn9file7
+Because voice is layered onto the same underlying memory/orchestration core, the proof target is not “nice speech quality” alone. It is that voice interaction remains behaviorally consistent with the rest of the system.
 
 **Stable architecture anchor:** `ARCH:VoiceVerificationStrategy`
 
@@ -361,7 +363,7 @@ Tests should prove:
 - Telegram channel parity with core review rules,
 - and safe visible behavior when authorization fails or session identity is uncertain.
 
-The security architecture explicitly treats review gates as security controls, tokens as connector-bound secrets, and no-auto-send as a core policy. Those things need direct proof. fileciteturn9file0turn9file1
+The security architecture explicitly treats review gates as security controls, tokens as connector-bound secrets, and no-auto-send as a core policy. Those things need direct proof.
 
 **Stable architecture anchor:** `ARCH:SecurityAccessVerification`
 
@@ -378,7 +380,7 @@ Glimmer should include a dedicated data-integrity verification pack covering at 
 - accepted-vs-interpreted state separation,
 - and audit record creation.
 
-This is explicitly called for in the Glimmer document set through a dedicated `verification-pack-data-integrity.md`, and it fits the memory/provenance-heavy nature of the product. fileciteturn9file2
+This is explicitly called for in the Glimmer document set through a dedicated `verification-pack-data-integrity.md`, and it fits the memory/provenance-heavy nature of the product.
 
 **Stable architecture anchor:** `ARCH:DataIntegrityVerificationPack`
 
@@ -396,7 +398,7 @@ Each meaningful verification pack should state:
 - reset strategy for persistence,
 - and any prerequisites for Playwright, Telegram, or voice-related execution.
 
-The framework’s testing companion is explicit that automated verification becomes fragile when environment and data assumptions are implicit. Glimmer should follow that rule closely. fileciteturn9file1
+The framework’s testing companion is explicit that automated verification becomes fragile when environment and data assumptions are implicit. Glimmer should follow that rule closely.
 
 **Stable architecture anchor:** `ARCH:TestDataAndEnvironmentModel`
 
@@ -427,7 +429,7 @@ Recommended default packs:
 4. **Release Pack**
    - cross-workstream critical-path regression
 
-This aligns directly to both the framework’s verification model and the Glimmer document set’s expected verification structure. fileciteturn9file0turn9file2
+This aligns directly to both the framework’s verification model and the Glimmer document set’s expected verification structure.
 
 **Stable architecture anchor:** `ARCH:RegressionPackModel`
 
@@ -445,7 +447,7 @@ Evidence should normally include:
 - explicit note of `ManualOnly` or `Deferred` scenarios where relevant,
 - and updated progress-file verification status.
 
-The framework is explicit that completion must be evidence-backed, and the testing companion reinforces that writing tests without running them is incomplete work. Glimmer should inherit that operating standard directly. fileciteturn9file0turn9file1
+The framework is explicit that completion must be evidence-backed, and the testing companion reinforces that writing tests without running them is incomplete work. Glimmer should inherit that operating standard directly.
 
 **Stable architecture anchor:** `ARCH:VerificationEvidenceModel`
 
@@ -464,7 +466,7 @@ Those artifacts should map back to this architecture and to the framework tracea
 
 `REQ:` → `ARCH:` → `PLAN:` → `TEST:` → evidence
 
-That chain is a core principle of the framework and should be preserved for Glimmer. fileciteturn9file0
+That chain is a core principle of the framework and should be preserved for Glimmer.
 
 **Stable architecture anchor:** `ARCH:TestingTraceabilityModel`
 

@@ -1,5 +1,5 @@
 ---
-applyTo: "tests/**/*,4. Verification/**/*.md,**/*_DESIGN_AND_IMPLEMENTATION_PROGRESS.md,**/*_DESIGN_AND_IMPLEMENTATION_PLAN.md"
+applyTo: "tests/**/*,4. Verification/**/*.md,**/*_design_and_implementation_progress.md,**/*_design_and_implementation_plan.md"
 ---
 
 # Glimmer — Testing and Verification Module Instructions

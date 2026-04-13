@@ -172,6 +172,24 @@ If the interaction requires:
 
 voice should hand off cleanly into the web workspace rather than faking a fully safe spoken-only resolution.
 
+### 5.5 Voice infrastructure baseline
+
+The voice layer targets **local multi-model inference using MLX on Apple Silicon** (reference hardware: M5 Max 128 GB unified memory).
+
+The expected model topology is:
+
+- **Voice I/O:** Gemma 4 E4B (native audio, 4.5B parameters) for low-latency, prosody-aware spoken interaction.
+- **Reasoning tasks triggered from voice:** Gemma 4 31B or 26B A4B, routed through the shared orchestration core.
+
+When implementing voice infrastructure code:
+
+- treat the inference layer as a bounded dependency behind an abstraction,
+- do not hardwire specific model checkpoint paths into session or routing logic,
+- keep the pipeline shape (ASR → reasoning → TTS) and native audio shape (speech-to-speech) structurally separable so the system can use either or both,
+- and do not introduce cloud voice service dependencies without explicit approval.
+
+See `ARCH:VoiceInfrastructureDirection`, `ARCH:VoicePipelineArchitecture`, and `ARCH:LocalInferenceBaseline` for the full architecture context.
+
 ---
 
 ## 6. Channel Session and Continuity Rules

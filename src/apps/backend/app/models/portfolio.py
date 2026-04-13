@@ -36,6 +36,11 @@ class Project(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=_genuuid
     )
+    operator_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("primary_operators.id", ondelete="SET NULL"),
+        nullable=True,
+    )  # nullable for backward compat; single-operator MVP
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     short_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     objective: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

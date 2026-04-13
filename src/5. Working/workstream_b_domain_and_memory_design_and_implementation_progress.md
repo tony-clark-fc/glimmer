@@ -49,8 +49,8 @@ A work item should not be treated as complete merely because code exists. Verifi
 ## 3. Current Overall Status
 
 - **Overall Workstream Status:** `Verified`
-- **Current Confidence Level:** All 10 work packages implemented and verified; 64 domain integration tests pass; total backend suite 97/97
-- **Last Meaningful Update:** 2026-04-13 — All WB1-WB10 domain entities implemented, migrated, and verified
+- **Current Confidence Level:** All 10 work packages + PrimaryOperator entity implemented and verified; 76 domain integration tests pass; 10 API tests pass; total backend suite 241/241
+- **Last Meaningful Update:** 2026-04-13 — PrimaryOperator gap closed; operator_id FK added to projects, connected_accounts, channel_sessions; API surface added
 - **Ready for Coding:** Workstream B is complete. Workstream C — Connectors is next.
 
 ### Current summary
@@ -243,6 +243,35 @@ This section should be updated incrementally during implementation.
   - All 14 Workstream B verification anchors now have executed proof
 - **Workstream B is complete. Proceeding to Workstream C — Connectors.**
 
+### 7.4 Session — 2026-04-13 — PrimaryOperator gap closure
+
+- **State:** Known gap 9.6 (PrimaryOperator) resolved.
+- **Meaningful accomplishments:**
+  - `app/models/operator.py` — `PrimaryOperator` SQLAlchemy model with:
+    - UUID primary key, display_name, preferred_timezone, preferred_working_hours
+    - preferred_language, tone_preferences (Text)
+    - channel_preferences, summary_preferences, escalation_preferences (JSONB)
+    - Timezone-aware created_at/updated_at timestamps
+  - `operator_id` nullable FK added to `projects`, `connected_accounts`, `channel_sessions`
+  - `app/models/__init__.py` updated to register PrimaryOperator with Base.metadata
+  - Alembic migration `add_primary_operator_entity` auto-generated and applied to both dev and test DBs
+  - `app/api/operator.py` — thin API surface:
+    - `GET /operator` — returns 404 if none, 200 with operator data
+    - `POST /operator` — creates operator, 409 if duplicate (single-operator constraint)
+    - `PATCH /operator` — partial update, preserves unset fields
+    - Pydantic request/response contracts (OperatorCreate, OperatorUpdate, OperatorResponse)
+    - DB session dependency injection
+  - `app/main.py` updated to register operator router
+  - `tests/integration/test_domain_operator.py` — 12 integration tests:
+    - 4 persistence tests (minimal, full preferences, update, coexistence)
+    - 8 ownership tests (project/account/session with/without operator, one-to-many)
+  - `tests/api/test_operator.py` — 10 API tests:
+    - GET 404/200, POST minimal/preferences/duplicate/empty-name validation
+    - PATCH 404/single-field/display-name/preserves-unset
+  - All 241 tests pass (12 new integration + 10 new API + 219 existing)
+- **Anchors closed:** ARCH:PrimaryOperatorModel
+- **Known gap 9.6 is now resolved.**
+
 **Stable working anchor:** `WORKB:Progress.ExecutionLog`
 
 ---
@@ -270,7 +299,14 @@ This section records **executed** verification, not merely intended verification
 
 ### 8.2 Verification interpretation
 
-All fourteen verification targets have executed proof. Workstream B is fully verified.
+All fourteen original verification targets have executed proof, plus two additional targets for the PrimaryOperator entity:
+
+- `TEST:Domain.Operator.PersistsWithPreferences` — **PASS** — 4 tests (minimal, full preferences, update, coexistence)
+- `TEST:Domain.Operator.OwnsProjectsAccountsSessions` — **PASS** — 8 tests (ownership chain with/without operator, one-to-many)
+- `TEST:API.Operator.CreateReadUpdate` — **PASS** — 7 tests (GET 404/200, POST minimal/preferences/duplicate/validation, PATCH field/name)
+- `TEST:API.Operator.SingleOperatorConstraint` — **PASS** — 3 tests (409 on duplicate, PATCH preserves unset fields)
+
+Workstream B is fully verified.
 
 **Stable working anchor:** `WORKB:Progress.VerificationLog`
 
@@ -297,6 +333,14 @@ There is a risk of trying to model every future artifact in one pass instead of 
 ### 9.5 Risk — Auditability gets postponed
 
 If audit/trace is left too late, retrofitting explainability and lineage becomes harder.
+
+### 9.6 ~~Known gap — PrimaryOperator entity not yet modeled~~ — RESOLVED
+
+The `PrimaryOperator` entity has been implemented (`app/models/operator.py`) with all properties described in `ARCH:PrimaryOperatorModel`: display name, preferred timezone, working hours, language, tone, channel preferences, summary preferences, and escalation preferences. The `operator_id` FK was added to `projects`, `connected_accounts`, and `channel_sessions` (nullable for backward compatibility). An Alembic migration was generated and applied. 12 integration tests and 10 API tests prove persistence, ownership chain, single-operator constraint, and CRUD behavior. The API surface (GET/POST/PATCH `/operator`) is registered and tested.
+
+### 9.7 Known gap — ResearchRun entity group pending Workstream H
+
+Architecture entity group 9 (Research runs and findings) was added after Workstream B was complete. The `ResearchRun`, `ResearchFinding`, `ResearchSourceReference`, and `ResearchSummaryArtifact` models will be implemented in Workstream H (WH3).
 
 **Stable working anchor:** `WORKB:Progress.Risks`
 
@@ -361,8 +405,9 @@ This avoids turning the file into vague narration.
 
 ## 14. Final Note
 
-Workstream B is complete. The Glimmer memory spine is now a real, queryable, persistence-backed model covering all 10 planned memory categories:
+Workstream B is complete. The Glimmer memory spine is now a real, queryable, persistence-backed model covering all 11 planned memory categories:
 
+- operator context (PrimaryOperator)
 - portfolio entities (Project, ProjectWorkstream, Milestone)
 - stakeholder and identity entities (Stakeholder, StakeholderIdentity, StakeholderProjectLink)
 - connected accounts and source-layer records (ConnectedAccount, AccountProfile, Message, MessageThread, CalendarEvent, ImportedSignal)
@@ -374,6 +419,6 @@ Workstream B is complete. The Glimmer memory spine is now a real, queryable, per
 - summaries and lineage (ProjectSummary, RefreshEvent)
 - audit and trace (AuditRecord)
 
-All 14 verification targets have executed proof. 97 backend tests pass. The domain model is strong enough for connectors, orchestration, UI, and companion modes to build on.
+All verification targets have executed proof. 241 backend tests pass. The domain model is strong enough for connectors, orchestration, UI, and companion modes to build on.
 
 **Stable working anchor:** `WORKB:Progress.Conclusion`

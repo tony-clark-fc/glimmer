@@ -45,15 +45,15 @@ This pack is the first verification surface where Glimmer’s external boundary 
 
 This verification pack is derived from and aligned to:
 
-- the **Agentic Delivery Framework**, especially its authority model, verification model, evidence-of-completion rules, and structured control-surface posture, fileciteturn27file0
-- the **Testing Strategy Companion**, especially automation-first proof, integration and contract testing, failure-path testing, and evidence-backed completion, fileciteturn27file1
-- the **Glimmer Agentic Delivery Document Set**, which explicitly defines `verification-pack-workstream-c.md` as part of the canonical verification family, fileciteturn27file2
-- the **Glimmer Requirements**, especially message ingestion, multi-account profile support, Telegram mobile presence, privacy and least privilege, traceability, and safe behavior defaults, fileciteturn27file3
-- the latest **Architecture** state, especially connector isolation, normalization, provenance, least privilege, review boundaries, Telegram companion channel, and system-boundary anchors, including the current manually maintained architecture document, fileciteturn27file16turn27file5
-- the **Build Plan**, **Build Strategy and Scope**, and **Workstream C — Connectors**, which explicitly position external-boundary and intake work after memory foundations and before assistant-core workflow sophistication, fileciteturn27file6turn27file7turn27file10
-- the **Glimmer Testing Strategy** and **Workstream G — Testing and Regression**, which define connector/provenance verification, contract/integration testing, and regression-pack expectations, fileciteturn27file4turn27file14
-- the **Governance and Process** document, which requires evidence-backed completion and surfaced drift for meaningful work, fileciteturn27file15
-- and the current **Test Catalog**, which already defines the core connector/provenance `TEST:` anchors this pack should organize and extend. fileciteturn27file17
+- the **Agentic Delivery Framework**, especially its authority model, verification model, evidence-of-completion rules, and structured control-surface posture,
+- the **Testing Strategy Companion**, especially automation-first proof, integration and contract testing, failure-path testing, and evidence-backed completion,
+- the **Glimmer Agentic Delivery Document Set**, which explicitly defines `verification-pack-workstream-c.md` as part of the canonical verification family,
+- the **Glimmer Requirements**, especially message ingestion, multi-account profile support, Telegram mobile presence, privacy and least privilege, traceability, and safe behavior defaults,
+- the latest **Architecture** state, especially connector isolation, normalization, provenance, least privilege, review boundaries, Telegram companion channel, and system-boundary anchors, including the current manually maintained architecture document,
+- the **Build Plan**, **Build Strategy and Scope**, and **Workstream C — Connectors**, which explicitly position external-boundary and intake work after memory foundations and before assistant-core workflow sophistication,
+- the **Glimmer Testing Strategy** and **Workstream G — Testing and Regression**, which define connector/provenance verification, contract/integration testing, and regression-pack expectations,
+- the **Governance and Process** document, which requires evidence-backed completion and surfaced drift for meaningful work,
+- and the current **Test Catalog**, which already defines the core connector/provenance `TEST:` anchors this pack should organize and extend.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamC.ControlSurfaceAlignment`
 
@@ -61,7 +61,7 @@ This verification pack is derived from and aligned to:
 
 ## 4. Why This Pack Is Load-Bearing
 
-The architecture and build plan are explicit that Glimmer must ingest real signals from multiple Google and Microsoft accounts, plus Telegram and manual imports, while preserving account identity, provider semantics, thread/event context, and safe no-auto-send posture. fileciteturn27file7turn27file10turn27file16
+The architecture and build plan are explicit that Glimmer must ingest real signals from multiple Google and Microsoft accounts, plus Telegram and manual imports, while preserving account identity, provider semantics, thread/event context, and safe no-auto-send posture.
 
 Workstream C is where those rules become real through:
 
@@ -72,7 +72,7 @@ Workstream C is where those rules become real through:
 - Telegram companion intake,
 - manual import handling,
 - connector-to-intake handoff,
-- and sync/failure observability. fileciteturn27file10
+- and sync/failure observability.
 
 If this pack is weak, later workstreams may still appear to function while actually depending on:
 
@@ -121,44 +121,44 @@ Those belong to later workstream packs.
 
 ## 6. Source `TEST:` Anchors Included in This Pack
 
-The Workstream C pack is built primarily from the connector-and-provenance scenario group in the canonical Test Catalog and adds a small number of connector-boundary scenarios needed to cover the full Workstream C shape. fileciteturn27file17
+The Workstream C pack is built primarily from the connector-and-provenance scenario group in the canonical Test Catalog and adds a small number of connector-boundary scenarios needed to cover the full Workstream C shape.
 
 ### 6.1 Canonical connector/provenance anchors already defined in the Test Catalog
 
 #### `TEST:Connector.GoogleMail.NormalizationPreservesThreadAndAccount`
 - **Scenario name:** Google mail normalization preserves thread and account meaning
 - **Layers:** `integration`, `contract`
-- **Role in this pack:** Proves Gmail normalization retains operationally meaningful metadata. fileciteturn27file17
+- **Role in this pack:** Proves Gmail normalization retains operationally meaningful metadata.
 
 #### `TEST:Connector.GoogleCalendar.NormalizationPreservesCalendarContext`
 - **Scenario name:** Google Calendar normalization preserves profile and calendar context
 - **Layers:** `integration`, `contract`
-- **Role in this pack:** Proves event meaning is preserved rather than flattened into generic text. fileciteturn27file17
+- **Role in this pack:** Proves event meaning is preserved rather than flattened into generic text.
 
 #### `TEST:Connector.MicrosoftMail.NormalizationPreservesMailboxAndThread`
 - **Scenario name:** Microsoft mail normalization preserves mailbox and conversation context
 - **Layers:** `integration`, `contract`
-- **Role in this pack:** Proves Graph mail semantics remain intact. fileciteturn27file17
+- **Role in this pack:** Proves Graph mail semantics remain intact.
 
 #### `TEST:Connector.MicrosoftCalendar.NormalizationPreservesEventContext`
 - **Scenario name:** Microsoft calendar normalization preserves account and event context
 - **Layers:** `integration`, `contract`
-- **Role in this pack:** Proves Microsoft calendar semantics survive normalization. fileciteturn27file17
+- **Role in this pack:** Proves Microsoft calendar semantics survive normalization.
 
 #### `TEST:Connector.ManualImport.LabelingAndRouting`
 - **Scenario name:** Manual imports are explicitly labeled and routed safely
 - **Layers:** `integration`, `api`
-- **Role in this pack:** Proves unsupported-channel input remains explicit and auditable. fileciteturn27file17
+- **Role in this pack:** Proves unsupported-channel input remains explicit and auditable.
 
 #### `TEST:Connector.Telegram.InboundBecomesBoundedSignal`
 - **Scenario name:** Telegram inbound interaction becomes bounded internal signal/session state
 - **Layers:** `integration`, `contract`, `graph`
-- **Role in this pack:** Proves Telegram does not bypass the core intake model. fileciteturn27file17
+- **Role in this pack:** Proves Telegram does not bypass the core intake model.
 
 #### `TEST:Connector.SyncFailure.VisibleState`
 - **Scenario name:** Connector sync failure is visible and does not silently disappear
 - **Layers:** `integration`
-- **Role in this pack:** Proves sync and authorization failures are observable. fileciteturn27file17
+- **Role in this pack:** Proves sync and authorization failures are observable.
 
 ### 6.2 Additional Workstream C-specific anchors introduced by this pack
 
@@ -295,7 +295,7 @@ Live-environment validation may exist as supplementary `ManualOnly` proof where 
 
 ### 9.3 Domain/memory proof should already exist
 
-This pack assumes the Workstream B memory substrate is sufficiently stable that connector issues can be interpreted as connector-boundary problems rather than failures of the underlying data model. fileciteturn27file9turn27file18
+This pack assumes the Workstream B memory substrate is sufficiently stable that connector issues can be interpreted as connector-boundary problems rather than failures of the underlying data model.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamC.EnvironmentAssumptions`
 
@@ -344,7 +344,7 @@ When the Workstream C pack is executed, evidence reporting should capture at min
 - any `Deferred` entries and why,
 - and a brief statement of whether the external-boundary layer is considered stable enough for assistant-core extension.
 
-This should be summarized in the relevant Workstream C progress file and referenced in broader phase-exit or regression summaries where appropriate. fileciteturn27file15turn27file1
+This should be summarized in the relevant Workstream C progress file and referenced in broader phase-exit or regression summaries where appropriate.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamC.EvidenceExpectations`
 
@@ -382,7 +382,7 @@ Later packs should build on it as follows:
 - **Connector/Provenance regression** should later harden the most important protections here into long-lived release confidence,
 - and **Release** should compose representative external-boundary proof into cross-workstream confidence.
 
-This progression is consistent with the Glimmer build plan, workstream map, and Workstream G verification-estate design. fileciteturn27file11turn27file12turn27file13turn27file14
+This progression is consistent with the Glimmer build plan, workstream map, and Workstream G verification-estate design.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamC.RelationshipToLaterPacks`
 

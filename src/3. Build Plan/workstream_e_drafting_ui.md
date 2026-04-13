@@ -44,7 +44,7 @@ At the end of this workstream, Glimmer should have a coherent primary operating 
 
 ## 3. Why This Workstream Comes After Triage and Prioritization
 
-The build strategy explicitly puts the core web workspace after the triage/prioritization layer and before companion/voice expansion. That order is deliberate: the main UI should expose real assistant behavior, not placeholder theatrics. fileciteturn16file13turn16file14
+The build strategy explicitly puts the core web workspace after the triage/prioritization layer and before companion/voice expansion. That order is deliberate: the main UI should expose real assistant behavior, not placeholder theatrics.
 
 This workstream depends on:
 
@@ -54,7 +54,7 @@ This workstream depends on:
 - planner outputs such as focus packs,
 - and application/API surfaces for triage and prioritization.
 
-Without those, the UI would either be static scaffolding or a thin shell around mocked assistant behavior. This workstream is therefore about operationalizing real outputs, not inventing a frontend in isolation. fileciteturn16file4turn16file5turn16file6turn16file8
+Without those, the UI would either be static scaffolding or a thin shell around mocked assistant behavior. This workstream is therefore about operationalizing real outputs, not inventing a frontend in isolation.
 
 **Stable plan anchor:** `PLAN:WorkstreamE.Rationale`
 
@@ -75,7 +75,7 @@ This workstream directly supports the following requirements:
 - `REQ:ContextAwareVisualPresentation`
 - `REQ:HumanApprovalBoundaries`
 
-These requirements define the user-facing side of Glimmer’s value: the operator must be able to see what matters, review what the system inferred, inspect context, and use generated drafts without losing control. fileciteturn16file3
+These requirements define the user-facing side of Glimmer’s value: the operator must be able to see what matters, review what the system inferred, inspect context, and use generated drafts without losing control.
 
 **Stable plan anchor:** `PLAN:WorkstreamE.RequirementsAlignment`
 
@@ -96,7 +96,7 @@ This workstream is primarily implementing the architecture described by:
 - `ARCH:ReviewGateArchitecture`
 - `ARCH:PlaywrightTestBoundary`
 
-These anchors define the web workspace as the canonical control surface, require visible reviewable artifacts, and establish the drafting workspace, Today view, Triage view, and persona-aware interaction model that this workstream must make real. fileciteturn16file8turn16file12turn16file11
+These anchors define the web workspace as the canonical control surface, require visible reviewable artifacts, and establish the drafting workspace, Today view, Triage view, and persona-aware interaction model that this workstream must make real.
 
 **Stable plan anchor:** `PLAN:WorkstreamE.ArchitectureAlignment`
 
@@ -128,7 +128,7 @@ This workstream does **not** include:
 - deep graph/orchestration implementation,
 - or autonomous send/commit flows.
 
-This workstream focuses on the main web control surface. Telegram and voice remain later companion layers, not replacements for the workspace. fileciteturn16file14turn16file8
+This workstream focuses on the main web control surface. Telegram and voice remain later companion layers, not replacements for the workspace.
 
 **Stable plan anchor:** `PLAN:WorkstreamE.OutOfScope`
 
@@ -487,7 +487,7 @@ Workstream E is complete only when the web control surfaces are not just impleme
 - persona rendering obeys fallback rules and does not break core workflows
 - main user journeys are automatable through Playwright without fragile, timing-heavy hacks
 
-This aligns directly to Glimmer’s testing strategy, which treats browser workflows, review-gate visibility, provenance presentation, and draft workspace behavior as load-bearing proof targets. fileciteturn16file11
+This aligns directly to Glimmer’s testing strategy, which treats browser workflows, review-gate visibility, provenance presentation, and draft workspace behavior as load-bearing proof targets.
 
 **Stable plan anchor:** `PLAN:WorkstreamE.VerificationExpectations`
 

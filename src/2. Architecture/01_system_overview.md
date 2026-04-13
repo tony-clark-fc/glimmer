@@ -27,6 +27,7 @@ It explains how the product is intended to operate from the perspective of:
 This file does not attempt to define all detailed data structures or orchestration flows. Those concerns are delegated to the domain model and orchestration documents. Instead, this document provides the top-level architecture narrative that connects the requirements posture to the split architecture set.
 
 **Stable architecture anchor:** `ARCH:SystemOverview`
+**Stable architecture anchor:** `ARCH:SystemIntent`
 
 ---
 
@@ -277,11 +278,41 @@ A typical Glimmer deployment is expected to include:
 - a local or locally managed primary database,
 - local or locally controlled artifact storage,
 - a browser-based UI served by the local application stack,
+- local model inference for reasoning, voice, and assistant tasks,
 - and configured access to remote APIs such as Google and Microsoft for source ingestion.
 
 This allows Glimmer to preserve a strong local operational center while still interacting with external services through explicit connectors.
 
 **Stable architecture anchor:** `ARCH:DeploymentModel.LocalRuntime`
+**Stable architecture anchor:** `ARCH:TechnologyBaseline`
+
+### 6.2A Target hardware profile and local inference baseline
+
+The target deployment environment for Glimmer MVP is an **Apple Silicon workstation** with high unified memory — specifically, an **Apple M5 Max with 128 GB unified memory** or equivalent.
+
+This hardware profile is significant because it enables:
+
+- local inference of large language models (up to 31B parameters at FP16/Q8 precision) with sufficient throughput for interactive use,
+- concurrent execution of multiple model sizes for different task classes,
+- native audio model inference for voice interaction without mandatory cloud dependencies,
+- and sufficient memory bandwidth for conversational-speed token generation.
+
+The target local inference runtime is **MLX** (Apple's framework for machine learning on Apple Silicon), which supports efficient model execution using the unified memory architecture.
+
+The current reference model family is **Gemma 4**, with three tiers mapped to different task profiles:
+
+| Model | Parameters | Role | Precision target |
+|---|---|---|---|
+| Gemma 4 31B IT (Thinking) | 31B | Deep reasoning — triage, prioritization, drafting, planning | FP16 / Q8 |
+| Gemma 4 26B A4B IT (Thinking) | 26B (MoE, 3.8B active) | Low-latency conversational assistant — daily chat, fast responses | Q6_K / Q8 |
+| Gemma 4 E4B IT (Thinking) | 4.5B | Native audio voice interaction — direct speech-to-speech with prosody awareness | FP16 |
+
+This multi-model local strategy aligns with the model-routing policy defined in the security and permissions architecture (`ARCH:RemoteModelBoundary`). The key difference from the original posture is that **all three tiers can run locally** on the target hardware, making cloud model providers optional rather than structurally required.
+
+The specific model family and versions may evolve. The architecture should treat the model layer as a bounded dependency behind an inference abstraction, not as a hardwired coupling to a single model checkpoint.
+
+**Stable architecture anchor:** `ARCH:TargetHardwareProfile`
+**Stable architecture anchor:** `ARCH:LocalInferenceBaseline`
 
 ### 6.3 External dependency posture
 
@@ -291,8 +322,9 @@ External services are used where they are the official and stable source of trut
 - Google Calendar,
 - Microsoft Graph mail,
 - Microsoft Graph calendar,
-- Telegram messaging infrastructure,
-- and potentially voice infrastructure.
+- and Telegram messaging infrastructure.
+
+Voice infrastructure is expected to run locally using on-device model inference rather than requiring an external voice service dependency.
 
 These dependencies must remain bounded through connectors and explicit integration contracts.
 
@@ -301,6 +333,8 @@ These dependencies must remain bounded through connectors and explicit integrati
 ---
 
 ## 7. System Boundary and Responsibilities
+
+**Stable architecture anchor:** `ARCH:SystemBoundaries`
 
 ### 7.1 What Glimmer is responsible for
 
@@ -311,6 +345,7 @@ Glimmer is responsible for:
 - identifying likely next steps and priorities,
 - preparing contextual briefings,
 - drafting responses for operator review,
+- escalating tasks that exceed local model capability to a bounded deep-research path,
 - and supporting multi-surface interaction across web, voice, and Telegram.
 
 **Stable architecture anchor:** `ARCH:SystemResponsibility.InScope`
@@ -320,14 +355,30 @@ Glimmer is responsible for:
 Glimmer is not responsible for, in MVP:
 
 - autonomous outward communication,
-- unbounded desktop control,
+- unbounded desktop control or general web automation,
 - covert background decision-making,
 - unsupported personal-message platform integration,
-- or replacing the operator’s judgment on sensitive stakeholder matters.
+- or replacing the operator's judgment on sensitive stakeholder matters.
 
 **Stable architecture anchor:** `ARCH:SystemResponsibility.OutOfScope`
 
-### 7.3 Review-first operating posture
+### 7.3 Deep research and escalated reasoning boundary
+
+Glimmer shall support a bounded deep-research capability for tasks that exceed the local model's practical reasoning or research capability.
+
+This capability:
+
+- uses a Python-native browser-mediated adapter to interact with Gemini through the operator's own browser session,
+- is invoked explicitly by the operator, by orchestration policy, or by escalation logic within workflows,
+- produces structured research artifacts that re-enter Glimmer's memory, triage, and planning flows,
+- and remains bounded, auditable, and operator-controlled.
+
+This is not a general autonomous web-browsing feature. It is a **bounded research and reasoning escalation tool** that sits between the orchestration layer, the external tool boundary, and the structured memory model.
+
+**Stable architecture anchor:** `ARCH:DeepResearchCapability`
+**Stable architecture anchor:** `ARCH:ResearchToolBoundary`
+
+### 7.4 Review-first operating posture
 
 The system is deliberately designed so that important outputs are surfaced for human review rather than silently committed into the outside world.
 
@@ -467,17 +518,18 @@ This document intentionally stops short of detailed specification for:
 
 Those concerns are handled in the following companion documents:
 
-- `02-domain-model.md`
-- `03-langgraph-orchestration.md`
-- `04-connectors-and-ingestion.md`
-- `05-memory-and-retrieval.md`
-- `06-ui-and-voice.md`
-- `07-security-and-permissions.md`
-- `08-testing-strategy.md`
+- `02_domain_model.md`
+- `03_langgraph_orchestration.md`
+- `04_connectors_and_ingestion.md`
+- `05_memory_and_retrieval.md`
+- `06_ui_and_voice.md`
+- `07_security_and_permissions.md`
+- `08_testing_strategy.md` (housed under `4. Verification/`)
 
 This file should remain readable as the top-level system narrative even as those deeper documents evolve.
 
 **Stable architecture anchor:** `ARCH:SystemOverviewDocumentBoundary`
+**Stable architecture anchor:** `ARCH:ArchitectureControlSurface`
 
 ---
 

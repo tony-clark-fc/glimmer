@@ -47,15 +47,15 @@ This pack is broader than smoke, but still intentionally foundation-scoped. It s
 
 This verification pack is derived from and aligned to:
 
-- the **Agentic Delivery Framework**, especially its authority model, verification model, evidence-of-completion rules, and repository document hierarchy, fileciteturn27file0
-- the **Testing Strategy Companion**, especially automation-first proof, layered testing, Playwright for browser-visible workflows, and evidence-backed completion, fileciteturn27file1
-- the **Glimmer Agentic Delivery Document Set**, which explicitly calls for `verification-pack-workstream-a.md` as part of the canonical verification family, fileciteturn27file2
-- the **Glimmer Requirements**, especially the product-purpose, local-first, state-continuity, privacy, and safe-behavior posture that Foundation must support, fileciteturn27file3
-- the **Glimmer Testing Strategy**, especially the verification-layer model and startup/foundation verification expectations, fileciteturn27file4
-- the **Glimmer Architecture**, especially the system boundary, technology baseline, local-first boundary, and verification architecture, fileciteturn27file5turn27file16
-- the **Build Plan** and **Build Strategy**, which place Foundation first and explicitly tie it to runtime, persistence, control-surface, and testing substrate setup, fileciteturn27file6turn27file7
-- the detailed **Workstream A: Foundation** plan, which defines the concrete substrate outcomes this pack must verify, fileciteturn27file8
-- and the already-defined **Test Catalog** and **Smoke Pack**, which this pack extends without duplicating blindly. fileciteturn27file17turn27file18
+- the **Agentic Delivery Framework**, especially its authority model, verification model, evidence-of-completion rules, and repository document hierarchy,
+- the **Testing Strategy Companion**, especially automation-first proof, layered testing, Playwright for browser-visible workflows, and evidence-backed completion,
+- the **Glimmer Agentic Delivery Document Set**, which explicitly calls for `verification-pack-workstream-a.md` as part of the canonical verification family,
+- the **Glimmer Requirements**, especially the product-purpose, local-first, state-continuity, privacy, and safe-behavior posture that Foundation must support,
+- the **Glimmer Testing Strategy**, especially the verification-layer model and startup/foundation verification expectations,
+- the **Glimmer Architecture**, especially the system boundary, technology baseline, local-first boundary, and verification architecture,
+- the **Build Plan** and **Build Strategy**, which place Foundation first and explicitly tie it to runtime, persistence, control-surface, and testing substrate setup,
+- the detailed **Workstream A: Foundation** plan, which defines the concrete substrate outcomes this pack must verify,
+- and the already-defined **Test Catalog** and **Smoke Pack**, which this pack extends without duplicating blindly.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamA.ControlSurfaceAlignment`
 
@@ -63,7 +63,7 @@ This verification pack is derived from and aligned to:
 
 ## 4. Why This Pack Exists Separately from Smoke
 
-The smoke pack is intentionally shallow. It proves that Glimmer can start, that the shell renders, that the database is reachable, and that the base workspace routes are not dead on arrival. fileciteturn27file18
+The smoke pack is intentionally shallow. It proves that Glimmer can start, that the shell renders, that the database is reachable, and that the base workspace routes are not dead on arrival.
 
 That is necessary, but it is not sufficient for Workstream A completion.
 
@@ -74,7 +74,7 @@ Workstream A is meant to establish:
 - local runtime conventions,
 - persistence baseline,
 - initial testing scaffolding,
-- and the agent-operational support surfaces under `.github/`, `8. Agent Skills/`, and `9. Agent Tools/`. fileciteturn27file8turn27file6turn27file0
+- and the agent-operational support surfaces under `.github/`, `8. Agent Skills/`, and `9. Agent Tools/`.
 
 This pack therefore goes beyond smoke by proving that the foundational substrate is not just alive, but structurally usable.
 
@@ -128,22 +128,22 @@ The Workstream A pack includes the smoke scenarios and adds additional foundatio
 #### `TEST:Smoke.BackendStarts`
 - **Scenario name:** Backend starts and exposes basic health/status behavior
 - **Layers:** `integration`, `api`
-- **Role in this pack:** Baseline proof that the backend runtime exists and can boot reliably. fileciteturn27file17
+- **Role in this pack:** Baseline proof that the backend runtime exists and can boot reliably.
 
 #### `TEST:Smoke.FrontendStarts`
 - **Scenario name:** Frontend workspace shell starts and renders
 - **Layers:** `integration`, `browser`
-- **Role in this pack:** Baseline proof that the frontend shell exists and is reachable. fileciteturn27file17
+- **Role in this pack:** Baseline proof that the frontend shell exists and is reachable.
 
 #### `TEST:Smoke.DatabaseConnectivity`
 - **Scenario name:** Primary relational store is reachable through the application
 - **Layers:** `integration`
-- **Role in this pack:** Baseline proof that the persistence substrate is wired. fileciteturn27file17
+- **Role in this pack:** Baseline proof that the persistence substrate is wired.
 
 #### `TEST:Smoke.WorkspaceNavigationBasic`
 - **Scenario name:** Core workspace routes are reachable
 - **Layers:** `browser`
-- **Role in this pack:** Baseline proof that the workspace shell and route skeleton are not broken. fileciteturn27file17
+- **Role in this pack:** Baseline proof that the workspace shell and route skeleton are not broken.
 
 ### 6.2 Additional Workstream A-specific anchors introduced by this pack
 
@@ -287,7 +287,7 @@ Those are explicitly later-phase concerns.
 
 ### 9.3 Documentation/control-surface assumption
 
-This pack also assumes the Phase 0 control surface exists and is coherent enough to guide Workstream A delivery, consistent with the governance phase-exit model. fileciteturn27file15
+This pack also assumes the Phase 0 control surface exists and is coherent enough to guide Workstream A delivery, consistent with the governance phase-exit model.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamA.EnvironmentAssumptions`
 
@@ -335,7 +335,7 @@ When the Workstream A pack is executed, evidence reporting should capture at min
 - any `Deferred` entries and why,
 - and a brief statement of whether the foundation is considered stable enough for Workstream B extension.
 
-This should be summarized in the relevant Workstream A progress file and, where meaningful, referenced in broader phase-exit or release-confidence reporting. fileciteturn27file15turn27file1
+This should be summarized in the relevant Workstream A progress file and, where meaningful, referenced in broader phase-exit or release-confidence reporting.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamA.EvidenceExpectations`
 
@@ -374,7 +374,7 @@ Later packs should build on it as follows:
 - **Data Integrity** should protect the memory spine across releases,
 - and **Release** should compose representative proof from all major risk areas.
 
-This progression is consistent with the Glimmer build plan and the cross-cutting verification estate defined by Workstream G. fileciteturn27file14turn27file6
+This progression is consistent with the Glimmer build plan and the cross-cutting verification estate defined by Workstream G.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamA.RelationshipToLaterPacks`
 

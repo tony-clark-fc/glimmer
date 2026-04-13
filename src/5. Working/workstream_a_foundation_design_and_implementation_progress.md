@@ -186,7 +186,7 @@ This section should be updated incrementally during implementation.
 - **Meaningful accomplishment:** Workstream A planning, verification, and operational support surfaces are complete enough to begin execution cleanly.
 - **Next expected change:** Stand up the first real backend foundation slice.
 
-### 7.2 Session — 2025-04-13 — Backend foundation slice
+### 7.2 Session — 2026-04-13 — Backend foundation slice
 
 - **State:** WA1, WA2, WA3, WA5, WA6 implemented and verified.
 - **Meaningful accomplishments:**
@@ -243,6 +243,22 @@ This section should be updated incrementally during implementation.
   - Combined with 9/9 Playwright browser tests = 30/30 total
   - All 10 Workstream A verification anchors now have executed proof
 - **Workstream A is complete. Proceeding to Workstream B.**
+
+### 7.5 Session — 2026-04-13 — Multi-device network access support
+
+- **State:** Foundation extended with network access configuration. No new work packages; this is a configuration enhancement to the existing foundation.
+- **Meaningful accomplishments:**
+  - `app/config.py` — added `host` (default `0.0.0.0`), `port` (default `8000`), `cors_origins` settings with `cors_origin_list` property
+  - `app/main.py` — added `CORSMiddleware` using configured origins, credentials, and permissive methods/headers
+  - `app/__main__.py` — created direct-run entrypoint (`python -m app`) that reads host/port from Settings and passes them to uvicorn
+  - `.env.example` — updated with network configuration examples
+  - `apps/web/.env.local.example` — created with `NEXT_PUBLIC_API_BASE_URL` for configurable backend address
+  - `apps/web/src/lib/api-config.ts` — created API config module that reads `NEXT_PUBLIC_API_BASE_URL` with localhost fallback, for use by all future frontend API calls
+  - `apps/web/package.json` — `dev` and `start` scripts updated to bind `--hostname 0.0.0.0` by default; `dev:local` and `start:local` variants added for localhost-only use
+  - Architecture 01 — added §6.4 `ARCH:MultiDeviceAccessPosture` documenting LAN/VPN access via Synology RT6600ax VPN Plus Server
+  - Architecture 07 — added §5.3 `ARCH:NetworkAccessSecurityPosture` covering LAN, VPN, CORS, and future session authentication
+  - All 219 backend tests pass; Next.js build clean (no regression)
+- **Architecture anchors added:** `ARCH:MultiDeviceAccessPosture`, `ARCH:NetworkAccessSecurityPosture`
 
 **Stable working anchor:** `WORKA:Progress.ExecutionLog`
 
@@ -360,11 +376,9 @@ This avoids turning the file into vague narration.
 
 ## 14. Final Note
 
-Right now, Workstream A is well-prepared but not yet earned.
+Workstream A is complete and fully verified. All 7 work packages passed verification with 30 total tests (21 backend + 9 browser).
 
-That is the honest status.
-
-The planning, verification, and support surfaces are strong. The next step is to convert that advantage into a real bootable substrate and begin recording actual evidence here.
+The Foundation substrate — backend shell, persistence baseline, frontend workspace shell, local-first configuration, test scaffolding, and operational support surfaces — is confirmed real and ready for downstream workstreams to build on.
 
 **Stable working anchor:** `WORKA:Progress.Conclusion`
 

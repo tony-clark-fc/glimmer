@@ -55,7 +55,7 @@ This smoke pack is built from the canonical `TEST:` anchors defined in `TEST_CAT
 
 It does not create new proof vocabulary unnecessarily.
 
-The initial smoke pack should draw primarily from the foundation/startup scenario group and use those scenarios as the stable source of truth for what the smoke pack is proving. fileciteturn26file24
+The initial smoke pack should draw primarily from the foundation/startup scenario group and use those scenarios as the stable source of truth for what the smoke pack is proving.
 
 **Stable verification anchor:** `TESTPACK:Smoke.RelationshipToCatalog`
 
@@ -63,9 +63,9 @@ The initial smoke pack should draw primarily from the foundation/startup scenari
 
 ## 4. Why This Pack Exists Early
 
-The Agentic Delivery Framework and the Testing Strategy Companion both treat testing as part of implementation rather than cleanup, and the Glimmer build plan explicitly places verification inside each workstream and calls for a smoke pack as part of the canonical verification set. fileciteturn26file0turn26file1turn26file2turn26file14
+The Agentic Delivery Framework and the Testing Strategy Companion both treat testing as part of implementation rather than cleanup, and the Glimmer build plan explicitly places verification inside each workstream and calls for a smoke pack as part of the canonical verification set.
 
-Workstream A also makes it clear that the earliest meaningful proof targets are backend startup, frontend startup, database connectivity, and base workspace reachability. fileciteturn26file8
+Workstream A also makes it clear that the earliest meaningful proof targets are backend startup, frontend startup, database connectivity, and base workspace reachability.
 
 That makes the smoke pack the correct first verification pack to define after the test catalog.
 
@@ -107,7 +107,7 @@ Those belong in later workstream packs, data-integrity packs, browser packs, gra
 
 ## 6. Source `TEST:` Anchors Included in This Pack
 
-The initial smoke pack includes the following canonical `TEST:` anchors from the Test Catalog. fileciteturn26file24
+The initial smoke pack includes the following canonical `TEST:` anchors from the Test Catalog.
 
 ### 6.1 `TEST:Smoke.BackendStarts`
 - **Scenario name:** Backend starts and exposes basic health/status behavior
@@ -260,7 +260,7 @@ When the smoke pack is executed, evidence reporting should capture at minimum:
 - which failed,
 - and whether any entries were explicitly `ManualOnly` or `Deferred`.
 
-This should be summarized in the relevant workstream progress file or release/status summary when meaningful, following the framework and verification instruction rules. fileciteturn26file0turn26file22
+This should be summarized in the relevant workstream progress file or release/status summary when meaningful, following the framework and verification instruction rules.
 
 **Stable verification anchor:** `TESTPACK:Smoke.EvidenceExpectations`
 
@@ -301,7 +301,7 @@ In particular:
 - the data-integrity pack should protect the memory spine,
 - and the release pack should compose representative high-value proof from across the system.
 
-This matches the document set and Workstream G’s verification-estate design. fileciteturn26file2turn26file14
+This matches the document set and Workstream G’s verification-estate design.
 
 **Stable verification anchor:** `TESTPACK:Smoke.RelationshipToLaterPacks`
 

@@ -81,6 +81,9 @@ Glimmer shall support the following high-level capabilities:
 9. **Stakeholder-aware communication support**
    - Retain stakeholder context and use it to improve summaries, prioritization, and draft tone.
 
+10. **Deep research and escalated reasoning**
+    - Route tasks that exceed local model capability to a bounded browser-mediated research path using Gemini, returning structured research artifacts into the core workflow.
+
 **Stable requirements anchor:** `REQ:InScopeCapabilities`
 
 ### 3.2 Out-of-scope capabilities for MVP
@@ -212,7 +215,7 @@ However, the system shall not obscure responsibility boundaries. The operator re
 
 ---
 
-## 5.5 Visual persona asset management
+### 5.5 Visual persona asset management
 
 Glimmer shall support operator-managed visual persona assets.
 
@@ -229,7 +232,7 @@ The MVP does not need to include sophisticated autonomous image selection logic,
 
 ## 6. Functional Requirements
 
-## 6.1 Project portfolio management
+### 6.1 Project portfolio management
 
 Glimmer shall allow the operator to maintain multiple simultaneous projects, each with structured metadata and evolving execution context.
 
@@ -253,7 +256,7 @@ Glimmer shall support a portfolio-level view that compares and ranks projects by
 
 **Stable requirements anchor:** `REQ:ProjectPortfolioManagement`
 
-## 6.2 Project memory
+### 6.2 Project memory
 
 Glimmer shall maintain persistent project memory that can be updated over time and used during planning, triage, drafting, and briefing.
 
@@ -271,7 +274,7 @@ Project memory shall be structured and queryable, not merely stored as undiffere
 
 **Stable requirements anchor:** `REQ:ProjectMemory`
 
-## 6.3 Stakeholder memory
+### 6.3 Stakeholder memory
 
 Glimmer shall maintain stakeholder-aware context across projects.
 
@@ -289,7 +292,7 @@ Glimmer shall use stakeholder context when generating summaries, assigning proje
 
 **Stable requirements anchor:** `REQ:StakeholderMemory`
 
-## 6.4 Message ingestion and normalization
+### 6.4 Message ingestion and normalization
 
 Glimmer shall ingest communications from approved sources and normalize them into an internal message model for downstream processing.
 
@@ -307,7 +310,7 @@ The ingestion model shall preserve source metadata where required for traceabili
 
 **Stable requirements anchor:** `REQ:MessageIngestion`
 
-## 6.4A Multi-account profile support
+### 6.4A Multi-account profile support
 
 Glimmer shall support multiple connected communication accounts for the same operator.
 
@@ -330,7 +333,7 @@ The system shall preserve account identity and provenance for ingested items so 
 
 **Stable requirements anchor:** `REQ:MultiAccountProfileSupport`
 
-## 6.5 Contextual message classification
+### 6.5 Contextual message classification
 
 Glimmer shall classify communications by project and context using more than sender identity alone.
 
@@ -352,7 +355,7 @@ The system shall support:
 
 **Stable requirements anchor:** `REQ:ContextualMessageClassification`
 
-## 6.6 Action, decision, and deadline extraction
+### 6.6 Action, decision, and deadline extraction
 
 Glimmer shall identify likely:
 
@@ -369,7 +372,7 @@ Extracted items shall be reviewable and shall be capable of being attached to pr
 
 **Stable requirements anchor:** `REQ:ActionDeadlineDecisionExtraction`
 
-## 6.7 Prioritization engine
+### 6.7 Prioritization engine
 
 Glimmer shall provide prioritization guidance across the project portfolio.
 
@@ -393,7 +396,7 @@ Prioritization shall be explainable and should consider factors such as:
 
 **Stable requirements anchor:** `REQ:PrioritizationEngine`
 
-## 6.8 Work breakdown support
+### 6.8 Work breakdown support
 
 Glimmer shall support creation and maintenance of work breakdown structures for projects.
 
@@ -409,7 +412,7 @@ Work breakdown support shall be advisory and editable by the operator.
 
 **Stable requirements anchor:** `REQ:WorkBreakdownSupport`
 
-## 6.9 Draft response workspace
+### 6.9 Draft response workspace
 
 Glimmer shall generate draft responses in a dedicated UI rather than directly inside Gmail or Outlook.
 
@@ -427,7 +430,7 @@ The system shall not auto-send responses.
 
 **Stable requirements anchor:** `REQ:DraftResponseWorkspace`
 
-## 6.10 Communication tone support
+### 6.10 Communication tone support
 
 Glimmer shall adapt draft responses based on stakeholder context, communication context, and the configured product personality.
 
@@ -441,7 +444,7 @@ The system shall be capable of supporting distinctions such as:
 
 **Stable requirements anchor:** `REQ:CommunicationToneSupport`
 
-## 6.11 Voice interaction
+### 6.11 Voice interaction
 
 Glimmer shall support voice-based interaction for planning, briefing, and capture workflows.
 
@@ -456,7 +459,7 @@ Voice interaction should be designed to feel conversational rather than command-
 
 **Stable requirements anchor:** `REQ:VoiceInteraction`
 
-## 6.12 Briefings and execution support
+### 6.12 Briefings and execution support
 
 Glimmer shall provide prepared briefings rather than bare reminders.
 
@@ -470,7 +473,7 @@ For relevant events, tasks, or project sessions, Glimmer should be able to provi
 
 **Stable requirements anchor:** `REQ:PreparedBriefings`
 
-## 6.13 Context-aware visual presentation
+### 6.13 Context-aware visual presentation
 
 Glimmer shall support context-aware visual presentation in the UI.
 
@@ -487,7 +490,7 @@ The visual-selection behavior shall remain transparent and controllable through 
 
 **Stable requirements anchor:** `REQ:ContextAwareVisualPresentation`
 
-## 6.14 Telegram mobile chat presence
+### 6.14 Telegram mobile chat presence
 
 Glimmer shall support a lightweight conversational presence on Telegram for mobile or out-of-office use.
 
@@ -505,7 +508,7 @@ Telegram is the selected MVP mobile chat channel. Other chat channels such as Sl
 
 **Stable requirements anchor:** `REQ:TelegramMobilePresence`
 
-## 6.15 Daily and weekly operating views
+### 6.15 Daily and weekly operating views
 
 Glimmer shall support recurring operating views including:
 
@@ -519,7 +522,7 @@ These views shall help the operator stay oriented across all active projects.
 
 **Stable requirements anchor:** `REQ:OperatingViews`
 
-## 6.16 Human approval boundaries
+### 6.16 Human approval boundaries
 
 Glimmer shall maintain explicit human approval boundaries for externally impactful actions.
 
@@ -532,11 +535,75 @@ At minimum, the system shall require operator review for:
 
 **Stable requirements anchor:** `REQ:HumanApprovalBoundaries`
 
+### 6.17 Deep research and escalated reasoning
+
+Glimmer shall support a bounded deep-research capability that can be invoked when a task exceeds the practical reasoning or research comfort zone of the local model.
+
+The deep-research capability shall support:
+
+- multi-step external research through a controlled browser-mediated path,
+- structured interaction with Gemini through the operator's own browser session,
+- explicit or policy-driven invocation from orchestration workflows,
+- and return of structured research outputs into Glimmer's memory, triage, planning, and drafting workflows.
+
+The deep-research capability is a **bounded reasoning escalation path**, not a general autonomous web-browsing feature.
+
+#### 6.17.1 Invocation model
+
+The research capability shall support invocation through:
+
+- explicit operator request,
+- workflow-level escalation from orchestration when a task type clearly warrants deeper research,
+- or rule-based routing where the system determines the local model is insufficient.
+
+Invocation must remain bounded, explainable, and auditable.
+
+**Stable requirements anchor:** `REQ:DeepResearchCapability`
+**Stable requirements anchor:** `REQ:ResearchEscalationPath`
+
+#### 6.17.2 Research output expectations
+
+The research capability shall produce structured outputs such as:
+
+- research summary,
+- evidence points with source references,
+- extracted findings,
+- reasoning notes or decision support artifacts,
+- and a completion, confidence, or exception signal.
+
+Research outputs shall enter Glimmer as reviewable, attributable artifacts that can be linked to projects, messages, or workflow contexts.
+
+**Stable requirements anchor:** `REQ:ResearchOutputArtifacts`
+
+#### 6.17.3 Research provenance
+
+Research runs shall preserve provenance including, where practical:
+
+- invocation origin and triggering task or workflow,
+- run timestamp and duration,
+- tool or mode used,
+- relevant browser session context,
+- and sources or pages consulted.
+
+**Stable requirements anchor:** `REQ:ResearchRunProvenance`
+
+#### 6.17.4 Research safety boundaries
+
+The deep-research capability:
+
+- shall not silently send external messages or take external action beyond bounded research queries,
+- shall not mutate project memory without passing through Glimmer's existing review and memory rules,
+- shall not become a general unrestricted browsing or web-automation shell,
+- shall not bypass operator control,
+- and shall surface visible failure or degraded state when the browser or research target is unavailable.
+
+**Stable requirements anchor:** `REQ:BoundedBrowserMediatedResearch`
+
 ---
 
 ## 7. Non-Functional Requirements
 
-## 7.1 Local-first operating model
+### 7.1 Local-first operating model
 
 Glimmer shall be designed as a local-first system.
 
@@ -551,7 +618,7 @@ Any use of remote model providers or cloud-assisted services shall be explicit a
 
 **Stable requirements anchor:** `REQ:LocalFirstOperatingModel`
 
-## 7.2 Traceability and auditability
+### 7.2 Traceability and auditability
 
 The system shall preserve traceability for key internal operations including:
 
@@ -566,7 +633,7 @@ The purpose of this traceability is operational confidence and reviewability, no
 
 **Stable requirements anchor:** `REQ:TraceabilityAndAuditability`
 
-## 7.3 Explainability
+### 7.3 Explainability
 
 Glimmer shall provide explainable reasoning signals for high-value outputs such as:
 
@@ -578,7 +645,7 @@ The system need not expose raw chain-of-thought, but it shall provide sufficient
 
 **Stable requirements anchor:** `REQ:Explainability`
 
-## 7.4 Reliability and state continuity
+### 7.4 Reliability and state continuity
 
 Glimmer shall maintain continuity across sessions.
 
@@ -588,7 +655,7 @@ Long-running or multi-step flows should be recoverable without requiring the ope
 
 **Stable requirements anchor:** `REQ:StateContinuity`
 
-## 7.5 Performance expectations
+### 7.5 Performance expectations
 
 The system should feel responsive for common workflows including:
 
@@ -601,7 +668,7 @@ Voice interaction should aim for low-friction conversational responsiveness, sub
 
 **Stable requirements anchor:** `REQ:PerformanceExpectations`
 
-## 7.6 Privacy and least privilege
+### 7.6 Privacy and least privilege
 
 Glimmer shall use least-privilege principles for external integrations.
 
@@ -611,7 +678,7 @@ The MVP shall default to read-oriented integration behavior for external mail an
 
 **Stable requirements anchor:** `REQ:PrivacyAndLeastPrivilege`
 
-## 7.7 Safe behavior defaults
+### 7.7 Safe behavior defaults
 
 Glimmer shall favor safe, reviewable, reversible behavior over aggressive automation.
 
@@ -718,6 +785,11 @@ For MVP acceptance, the product does not need to be fully autonomous. It does ne
 | `REQ:TelegramMobilePresence` | Glimmer must support a Telegram-based mobile chat presence for the operator |
 | `REQ:OperatingViews` | Daily and weekly operating views must be supported |
 | `REQ:HumanApprovalBoundaries` | Human review must remain in the loop for key decisions and outputs |
+| `REQ:DeepResearchCapability` | Glimmer must support bounded deep-research for tasks exceeding local model capability |
+| `REQ:ResearchEscalationPath` | Research escalation must be invocable explicitly, by policy, or by orchestration |
+| `REQ:ResearchOutputArtifacts` | Research runs must produce structured, reviewable output artifacts |
+| `REQ:ResearchRunProvenance` | Research runs must preserve invocation, source, and execution provenance |
+| `REQ:BoundedBrowserMediatedResearch` | Browser-mediated research must remain bounded, safe, and operator-controlled |
 | `REQ:LocalFirstOperatingModel` | The product must default to local-first control of sensitive context |
 | `REQ:TraceabilityAndAuditability` | Important internal operations must be traceable |
 | `REQ:Explainability` | Recommendations should be explainable without hidden black-box behavior |

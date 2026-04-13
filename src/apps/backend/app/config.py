@@ -25,11 +25,28 @@ class Settings(BaseSettings):
     app_name: str = "Glimmer"
     debug: bool = False
 
+    # ── Network ──────────────────────────────────────────────────
+    # Bind to 0.0.0.0 to allow access from other devices on the
+    # local network or over VPN.  Use 127.0.0.1 to restrict to
+    # localhost only.
+    host: str = "0.0.0.0"
+    port: int = 8000
+
+    # Comma-separated list of allowed CORS origins.  Defaults cover
+    # common local-dev and LAN access patterns.  Add your VPN or
+    # Tailscale hostname as needed.
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+
     # ── Database ─────────────────────────────────────────────────
     database_url: str = "postgresql+psycopg://localhost:5432/glimmer_dev"
 
     # ── Test database (used only by test harness) ────────────────
     test_database_url: str = "postgresql+psycopg://localhost:5432/glimmer_test"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        """Parse the comma-separated CORS origins string into a list."""
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
 
 def get_settings() -> Settings:

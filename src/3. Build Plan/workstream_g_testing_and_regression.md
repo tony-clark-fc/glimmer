@@ -42,7 +42,7 @@ At the end of this workstream, Glimmer should have a coherent and enforceable pr
 
 ## 3. Why This Workstream Exists as Its Own Stream
 
-The framework and its testing companion both treat testing as a first principle of design and build, not as after-the-fact reassurance. The Glimmer architecture and build plan also make verification explicit at every layer. fileciteturn17file0turn17file1turn17file11turn17file13
+The framework and its testing companion both treat testing as a first principle of design and build, not as after-the-fact reassurance. The Glimmer architecture and build plan also make verification explicit at every layer.
 
 That means some testing work belongs inside each workstream, but there is also a distinct body of cross-cutting work that must exist above them:
 
@@ -76,7 +76,7 @@ This workstream directly supports the following requirements:
 - `REQ:TelegramMobilePresence`
 - `REQ:TraceabilityAndAuditability`
 
-These requirements are not satisfied merely because features exist. They must be proven under regression conditions, especially where behavior crosses memory, review, security, and multi-channel boundaries. fileciteturn17file3
+These requirements are not satisfied merely because features exist. They must be proven under regression conditions, especially where behavior crosses memory, review, security, and multi-channel boundaries.
 
 **Stable plan anchor:** `PLAN:WorkstreamG.RequirementsAlignment`
 
@@ -96,7 +96,7 @@ This workstream is primarily implementing the architecture described by:
 - `ARCH:SecurityVerificationImplications`
 - `ARCH:MemoryVerificationImplications`
 
-These anchors define the project-specific proof model, the required verification layers, the cross-workstream regression strategy, and the specific high-risk behaviors that must be verified repeatedly over time. fileciteturn17file11turn17file10turn17file9turn17file7turn17file8
+These anchors define the project-specific proof model, the required verification layers, the cross-workstream regression strategy, and the specific high-risk behaviors that must be verified repeatedly over time.
 
 **Stable plan anchor:** `PLAN:WorkstreamG.ArchitectureAlignment`
 
@@ -500,7 +500,7 @@ Workstream G is complete only when the test and regression substrate itself is p
 - evidence can be captured and reported coherently
 - remaining manual/deferred items are visible rather than implied
 
-This aligns directly to the framework and companion testing standard, both of which insist that completion is evidence-backed and that automated proof should do the majority of the heavy lifting. fileciteturn17file0turn17file1turn17file11
+This aligns directly to the framework and companion testing standard, both of which insist that completion is evidence-backed and that automated proof should do the majority of the heavy lifting.
 
 **Stable plan anchor:** `PLAN:WorkstreamG.VerificationExpectations`
 

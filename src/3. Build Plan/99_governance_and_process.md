@@ -7,7 +7,7 @@
 - **Status:** Draft
 - **Project:** Glimmer
 - **Parent Document:** `BUILD_PLAN.md`
-- **Primary Companion Documents:** Requirements, Architecture, Testing Strategy, Workstreams A–G
+- **Primary Companion Documents:** Requirements, Architecture, Testing Strategy, Workstreams A–H
 
 ---
 
@@ -463,7 +463,7 @@ After this document, the next governance/control artifacts that should be create
 - `4. Verification/TEST_CATALOG.md`
 - the verification packs defined in the document set
 
-This order preserves the intended transition from planning into instruction and proof surfaces. fileciteturn18file2turn18file13
+This order preserves the intended transition from planning into instruction and proof surfaces.
 
 **Stable plan anchor:** `PLAN:GovernanceNextArtifacts`
 

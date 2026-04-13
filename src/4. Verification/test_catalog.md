@@ -473,6 +473,68 @@ The Glimmer test catalog is organized into the following scenario groups:
 
 ---
 
+## 7.8A Deep research and escalated reasoning scenarios
+
+### `TEST:Research.Escalation.RoutesWhenTaskRequiresDeepResearch`
+- **Scenario name:** Research escalation routes tasks to deep research when criteria are met
+- **Primary layers:** `graph`, `unit`
+- **Primary requirement/architecture drivers:** `REQ:ResearchEscalationPath`, `ARCH:ResearchEscalationPolicy`, `ARCH:ResearchEscalationGraph`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.DeepResearch`
+- **Intent:** Prove escalation logic correctly identifies tasks that warrant deep research.
+
+### `TEST:Research.Invocation.StartsBoundedResearchRun`
+- **Scenario name:** Research invocation starts a bounded research run with proper context
+- **Primary layers:** `integration`, `graph`
+- **Primary requirement/architecture drivers:** `REQ:DeepResearchCapability`, `ARCH:ResearchRunLifecycle`, `ARCH:ResearchRunModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.DeepResearch`
+- **Intent:** Prove research runs start with proper context, provenance, and bounded scope.
+
+### `TEST:Research.Adapter.GeminiBrowserPathReturnsStructuredResult`
+- **Scenario name:** Research adapter returns structured results from Gemini browser path
+- **Primary layers:** `contract`, `manual_only`
+- **Primary requirement/architecture drivers:** `REQ:ResearchOutputArtifacts`, `ARCH:GeminiBrowserMediatedAdapter`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.DeepResearch`
+- **Intent:** Prove the adapter produces structured research artifacts from browser interaction.
+
+### `TEST:Research.Provenance.RunAndSourceTrailPersisted`
+- **Scenario name:** Research run and source trail are persisted with full provenance
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:ResearchRunProvenance`, `ARCH:ResearchRunModel`, `ARCH:ResearchSourceReferenceModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.DeepResearch`
+- **Intent:** Prove research provenance survives persistence and is queryable.
+
+### `TEST:Research.Failure.BrowserUnavailableHandledSafely`
+- **Scenario name:** Browser unavailability is handled with visible failure state
+- **Primary layers:** `contract`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:BoundedBrowserMediatedResearch`, `ARCH:BrowserResearchSecurityBoundary`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.DeepResearch`
+- **Intent:** Prove the system degrades gracefully when the browser is not available.
+
+### `TEST:Research.Failure.GeminiInteractionFailureVisible`
+- **Scenario name:** Gemini interaction failure produces visible error state
+- **Primary layers:** `contract`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:BoundedBrowserMediatedResearch`, `ARCH:ResearchAdapterSafetyBoundary`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.DeepResearch`
+- **Intent:** Prove Gemini-specific failures are surfaced visibly rather than silently swallowed.
+
+### `TEST:Research.Security.NoUnboundedActionTaking`
+- **Scenario name:** Research capability does not take unbounded external actions
+- **Primary layers:** `unit`, `contract`
+- **Primary requirement/architecture drivers:** `REQ:BoundedBrowserMediatedResearch`, `REQ:SafeBehaviorDefaults`, `ARCH:ResearchAdapterSafetyBoundary`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.DeepResearch`
+- **Intent:** Prove the research adapter enforces destination whitelisting and action boundaries.
+
+### `TEST:Research.Output.ResultsReenterWorkflowSafely`
+- **Scenario name:** Research results re-enter orchestration workflow as reviewable candidates
+- **Primary layers:** `graph`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:ResearchOutputArtifacts`, `ARCH:ResearchVerificationStrategy`, `ARCH:ResearchEscalationGraph`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.DeepResearch`
+- **Intent:** Prove research outputs pass through review gates before entering accepted memory.
+
+**Stable verification anchor:** `TESTCATALOG:DeepResearch`
+
+---
+
 ## 7.9 Security and approval-boundary scenarios
 
 ### `TEST:Security.NoAutoSend.GlobalBoundaryPreserved`

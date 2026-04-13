@@ -46,7 +46,7 @@ At the end of this workstream, Glimmer should have a durable core state model th
 
 ## 3. Why This Workstream Comes Early
 
-The build plan explicitly places **Domain and Memory** immediately after Foundation in the maturity order and phase model. The project is meant to mature from runtime skeleton to structured domain truth before deep connector and workflow sophistication. fileciteturn13file13 fileciteturn13file14
+The build plan explicitly places **Domain and Memory** immediately after Foundation in the maturity order and phase model. The project is meant to mature from runtime skeleton to structured domain truth before deep connector and workflow sophistication.
 
 That sequencing matters because Glimmer’s value depends on:
 
@@ -76,7 +76,7 @@ This workstream directly supports the following requirements:
 - `REQ:Explainability`
 - `REQ:StateContinuity`
 
-These requirements make it clear that Glimmer cannot rely on ephemeral conversational context. It needs structured, queryable, reviewable memory and accepted operational state. fileciteturn13file3
+These requirements make it clear that Glimmer cannot rely on ephemeral conversational context. It needs structured, queryable, reviewable memory and accepted operational state.
 
 **Stable plan anchor:** `PLAN:WorkstreamB.RequirementsAlignment`
 
@@ -97,7 +97,7 @@ This workstream is primarily implementing the substrate described by:
 - `ARCH:ProjectMemoryRefresh`
 - `ARCH:AuditAndTraceLayer`
 
-These anchors define the conceptual model, memory layers, reviewable interpretation posture, and relational-first storage strategy that the implementation must follow. fileciteturn13file12turn13file5turn13file9
+These anchors define the conceptual model, memory layers, reviewable interpretation posture, and relational-first storage strategy that the implementation must follow.
 
 **Stable plan anchor:** `PLAN:WorkstreamB.ArchitectureAlignment`
 
@@ -130,7 +130,7 @@ This workstream does **not** include:
 - rich Telegram message handling,
 - or production voice interaction logic.
 
-This workstream establishes the state model those later behaviors will depend on. fileciteturn13file2
+This workstream establishes the state model those later behaviors will depend on.
 
 **Stable plan anchor:** `PLAN:WorkstreamB.OutOfScope`
 
@@ -457,7 +457,7 @@ The recommended internal order for Workstream B is:
 8. B8 — Summary and memory refresh scaffolding
 9. B9 — Audit and trace substrate
 
-This order follows the architecture’s memory layering logic: source and accepted-state foundations first, then derived/user-facing artifacts, then refresh and traceability. fileciteturn13file9turn13file5
+This order follows the architecture’s memory layering logic: source and accepted-state foundations first, then derived/user-facing artifacts, then refresh and traceability.
 
 **Stable plan anchor:** `PLAN:WorkstreamB.InternalSequence`
 
@@ -473,7 +473,7 @@ Expected human involvement is mostly around:
 - approving meaningful deviations from the conceptual domain model,
 - and reviewing any proposed simplifications where implementation convenience conflicts with the architecture.
 
-This is consistent with the framework’s human–agent responsibility model: the agent can implement, but the human remains accountable for design truth. fileciteturn13file0
+This is consistent with the framework’s human–agent responsibility model: the agent can implement, but the human remains accountable for design truth.
 
 **Stable plan anchor:** `PLAN:WorkstreamB.HumanDependencies`
 
@@ -496,7 +496,7 @@ Workstream B is complete only when the structured memory spine is not just model
 - audit records are created for meaningful state evolution
 - multi-account provenance fields survive persistence round-trips
 
-This aligns directly to the Glimmer testing strategy’s domain/memory, connector/provenance, and data integrity proof expectations. fileciteturn13file11
+This aligns directly to the Glimmer testing strategy’s domain/memory, connector/provenance, and data integrity proof expectations.
 
 **Stable plan anchor:** `PLAN:WorkstreamB.VerificationExpectations`
 
@@ -509,7 +509,7 @@ This workstream should eventually be paired with:
 - `WorkstreamB_DomainAndMemory_DESIGN_AND_IMPLEMENTATION_PLAN.md`
 - `WorkstreamB_DomainAndMemory_DESIGN_AND_IMPLEMENTATION_PROGRESS.md`
 
-Those files will become the active implementation memory for the workstream once coding starts, following the framework’s working-document convention. fileciteturn13file0
+Those files will become the active implementation memory for the workstream once coding starts, following the framework’s working-document convention.
 
 **Stable plan anchor:** `PLAN:WorkstreamB.WorkingDocumentPair`
 

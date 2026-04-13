@@ -46,15 +46,15 @@ This pack is the first verification surface that proves Glimmer’s outputs are 
 
 This verification pack is derived from and aligned to:
 
-- the **Agentic Delivery Framework**, especially its authority model, work-package operating model, verification model, evidence-of-completion posture, and traceability expectations, fileciteturn27file0
-- the **Testing Strategy Companion**, especially automation-first proof, Playwright-first browser verification, layered browser/API testing, and evidence-backed completion, fileciteturn27file1
-- the **Glimmer Agentic Delivery Document Set**, which explicitly defines `verification-pack-workstream-e.md` as part of the canonical verification family, fileciteturn27file2
-- the **Glimmer Requirements**, especially draft response workspace, communication tone support, project portfolio management, prepared briefings, visual persona support, context-aware visual presentation, and human approval boundaries, fileciteturn27file3
-- the latest **Architecture** state, especially the manually maintained canonical architecture index and its UI, draft-workspace, Today-view, project-workspace, persona, review-gate, and testing anchors, fileciteturn27file5
-- the **Build Plan**, **Build Strategy and Scope**, and **Workstream E — Drafting UI**, which define the workspace-first operating model and why the web workspace comes after the assistant core and before companion/voice expansion, fileciteturn27file6turn27file7turn27file12
-- the **Glimmer Testing Strategy** and **Workstream G — Testing and Regression**, which define browser workflow verification, Playwright scope, and regression-pack design, fileciteturn27file4turn27file14
-- the **Governance and Process** document, which requires evidence-backed completion and surfaced drift for meaningful work, fileciteturn27file15
-- and the current **Test Catalog**, which already defines the core browser/workspace, review, drafting-boundary, and persona `TEST:` anchors this pack should organize and extend. fileciteturn27file17
+- the **Agentic Delivery Framework**, especially its authority model, work-package operating model, verification model, evidence-of-completion posture, and traceability expectations,
+- the **Testing Strategy Companion**, especially automation-first proof, Playwright-first browser verification, layered browser/API testing, and evidence-backed completion,
+- the **Glimmer Agentic Delivery Document Set**, which explicitly defines `verification-pack-workstream-e.md` as part of the canonical verification family,
+- the **Glimmer Requirements**, especially draft response workspace, communication tone support, project portfolio management, prepared briefings, visual persona support, context-aware visual presentation, and human approval boundaries,
+- the latest **Architecture** state, especially the manually maintained canonical architecture index and its UI, draft-workspace, Today-view, project-workspace, persona, review-gate, and testing anchors,
+- the **Build Plan**, **Build Strategy and Scope**, and **Workstream E — Drafting UI**, which define the workspace-first operating model and why the web workspace comes after the assistant core and before companion/voice expansion,
+- the **Glimmer Testing Strategy** and **Workstream G — Testing and Regression**, which define browser workflow verification, Playwright scope, and regression-pack design,
+- the **Governance and Process** document, which requires evidence-backed completion and surfaced drift for meaningful work,
+- and the current **Test Catalog**, which already defines the core browser/workspace, review, drafting-boundary, and persona `TEST:` anchors this pack should organize and extend.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamE.ControlSurfaceAlignment`
 
@@ -62,7 +62,7 @@ This verification pack is derived from and aligned to:
 
 ## 4. Why This Pack Is Load-Bearing
 
-The architecture and workstream plan are explicit that the web workspace is the **canonical control surface** for Glimmer. Telegram and voice are companion modes, not replacements. The workspace must therefore make Glimmer’s outputs visible in a way that supports judgment, review, and execution rather than vague AI theater. fileciteturn27file5turn27file12
+The architecture and workstream plan are explicit that the web workspace is the **canonical control surface** for Glimmer. Telegram and voice are companion modes, not replacements. The workspace must therefore make Glimmer’s outputs visible in a way that supports judgment, review, and execution rather than vague AI theater.
 
 Workstream E is where that becomes real through:
 
@@ -74,7 +74,7 @@ Workstream E is where that becomes real through:
 - Draft workspace,
 - Review queue,
 - persona-aware presentation,
-- and browser-testable UI behavior. fileciteturn27file12
+- and browser-testable UI behavior.
 
 If this pack is weak, Glimmer may still look polished while actually depending on:
 
@@ -123,71 +123,71 @@ Those belong to other workstream packs and cross-cutting packs.
 
 ## 6. Source `TEST:` Anchors Included in This Pack
 
-The Workstream E pack is built primarily from the web-workspace, drafting-and-review, and security scenario groups in the canonical Test Catalog, with a small number of workspace-specific extensions where needed. fileciteturn27file17
+The Workstream E pack is built primarily from the web-workspace, drafting-and-review, and security scenario groups in the canonical Test Catalog, with a small number of workspace-specific extensions where needed.
 
 ### 6.1 Canonical web workspace anchors already defined in the Test Catalog
 
 #### `TEST:UI.TodayView.ShowsPrioritiesAndPressureClearly`
 - **Scenario name:** Today view presents priorities, pressure, and rationale clearly
 - **Layers:** `browser`
-- **Role in this pack:** Proves the daily operating view is materially useful. fileciteturn27file17
+- **Role in this pack:** Proves the daily operating view is materially useful.
 
 #### `TEST:UI.PortfolioView.ComparesProjectAttentionDemand`
 - **Scenario name:** Portfolio view supports comparison across project attention demand
 - **Layers:** `browser`
-- **Role in this pack:** Proves portfolio-level prioritization support is visible. fileciteturn27file17
+- **Role in this pack:** Proves portfolio-level prioritization support is visible.
 
 #### `TEST:UI.ProjectWorkspace.ShowsSynthesisNotJustChronology`
 - **Scenario name:** Project workspace presents synthesized project context
 - **Layers:** `browser`
-- **Role in this pack:** Proves project pages are relevance-first rather than raw dumps. fileciteturn27file17
+- **Role in this pack:** Proves project pages are relevance-first rather than raw dumps.
 
 #### `TEST:UI.TriageView.ShowsProvenanceAndReviewControls`
 - **Scenario name:** Triage view shows provenance, ambiguity, and review controls
 - **Layers:** `browser`
-- **Role in this pack:** Proves source meaning and review behavior remain visible in the UI. fileciteturn27file17
+- **Role in this pack:** Proves source meaning and review behavior remain visible in the UI.
 
 #### `TEST:UI.DraftWorkspace.ShowsContextAndVariants`
 - **Scenario name:** Draft workspace shows linked context and draft variants clearly
 - **Layers:** `browser`
-- **Role in this pack:** Proves the draft workspace is a real operator tool. fileciteturn27file17
+- **Role in this pack:** Proves the draft workspace is a real operator tool.
 
 #### `TEST:UI.ReviewQueue.PendingVsAcceptedIsObvious`
 - **Scenario name:** Review queue makes pending vs accepted state obvious
 - **Layers:** `browser`
-- **Role in this pack:** Proves the UI preserves candidate-vs-accepted distinction. fileciteturn27file17
+- **Role in this pack:** Proves the UI preserves candidate-vs-accepted distinction.
 
 #### `TEST:UI.Persona.FallbackAndContextSelectionWorks`
 - **Scenario name:** Persona rendering supports context-aware selection and fallback
 - **Layers:** `browser`, `unit`
-- **Role in this pack:** Proves persona support is bounded and asset-driven. fileciteturn27file17
+- **Role in this pack:** Proves persona support is bounded and asset-driven.
 
 ### 6.2 Canonical drafting/review and security anchors already defined in the Test Catalog
 
 #### `TEST:Review.AcceptAmendRejectDefer.ChangesPersistCorrectly`
 - **Scenario name:** Review actions persist correctly across accept/amend/reject/defer flows
 - **Layers:** `api`, `integration`, `browser`
-- **Role in this pack:** Proves review is a real control path in the workspace. fileciteturn27file17
+- **Role in this pack:** Proves review is a real control path in the workspace.
 
 #### `TEST:Drafting.DraftGeneration.CreatesReviewableDraft`
 - **Scenario name:** Draft generation creates a reviewable draft artifact
 - **Layers:** `graph`, `integration`, `api`
-- **Role in this pack:** Proves the workspace is displaying real durable drafting artifacts rather than invented UI-only content. fileciteturn27file17
+- **Role in this pack:** Proves the workspace is displaying real durable drafting artifacts rather than invented UI-only content.
 
 #### `TEST:Drafting.Variants.MultipleVariantsRemainLinked`
 - **Scenario name:** Multiple draft variants remain linked to one drafting episode
 - **Layers:** `integration`, `api`
-- **Role in this pack:** Proves variant comparison is grounded in real model state. fileciteturn27file17
+- **Role in this pack:** Proves variant comparison is grounded in real model state.
 
 #### `TEST:Drafting.NoAutoSend.BoundaryPreserved`
 - **Scenario name:** Draft workflow does not create outbound send behavior
 - **Layers:** `graph`, `api`, `integration`
-- **Role in this pack:** Proves the workspace does not imply or trigger unsafe send behavior. fileciteturn27file17
+- **Role in this pack:** Proves the workspace does not imply or trigger unsafe send behavior.
 
 #### `TEST:Security.ReviewGate.ExternalImpactRequiresApproval`
 - **Scenario name:** Externally meaningful actions require structured approval
 - **Layers:** `graph`, `api`, `browser`
-- **Role in this pack:** Proves the browser-visible control surfaces actually preserve approval discipline. fileciteturn27file17
+- **Role in this pack:** Proves the browser-visible control surfaces actually preserve approval discipline.
 
 ### 6.3 Additional Workstream E-specific anchors introduced by this pack
 
@@ -324,7 +324,7 @@ The workspace behavior should be provable against controlled backend/application
 
 ### 9.3 Earlier proof should already exist
 
-This pack assumes Workstream D verification has already established that the assistant-core outputs are trustworthy enough that UI failures can be interpreted as surface/interaction problems rather than deeper workflow uncertainty. fileciteturn27file11
+This pack assumes Workstream D verification has already established that the assistant-core outputs are trustworthy enough that UI failures can be interpreted as surface/interaction problems rather than deeper workflow uncertainty.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamE.EnvironmentAssumptions`
 
@@ -373,7 +373,7 @@ When the Workstream E pack is executed, evidence reporting should capture at min
 - any `Deferred` entries and why,
 - and a brief statement of whether the web workspace is considered trustworthy enough for daily operator use.
 
-This should be summarized in the relevant Workstream E progress file and referenced in broader phase-exit or regression summaries where appropriate. fileciteturn27file15turn27file1
+This should be summarized in the relevant Workstream E progress file and referenced in broader phase-exit or regression summaries where appropriate.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamE.EvidenceExpectations`
 
@@ -408,7 +408,7 @@ Later packs should build on it as follows:
 - **Release** should compose representative browser-visible control-room proof into cross-workstream confidence,
 - and later long-lived browser regression should treat the most critical operator journeys here as mandatory confidence checks.
 
-This progression is consistent with the Glimmer build plan, workstream map, and Workstream G verification-estate design. fileciteturn27file13turn27file14
+This progression is consistent with the Glimmer build plan, workstream map, and Workstream G verification-estate design.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamE.RelationshipToLaterPacks`
 

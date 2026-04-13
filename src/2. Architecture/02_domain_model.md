@@ -68,7 +68,7 @@ This reduces drift and improves auditability.
 
 ## 3. Core Domain Entity Groups
 
-At the highest level, the Glimmer domain is composed of eight major entity groups:
+At the highest level, the Glimmer domain is composed of nine major entity groups:
 
 1. **Operator context**
 2. **Project portfolio**
@@ -78,6 +78,7 @@ At the highest level, the Glimmer domain is composed of eight major entity group
 6. **Tasks, decisions, risks, and execution artifacts**
 7. **Drafts, briefings, and assistant-facing outputs**
 8. **Persona and channel interaction state**
+9. **Research runs and findings**
 
 **Stable architecture anchor:** `ARCH:DomainEntityGroups`
 
@@ -738,6 +739,81 @@ This supports:
 
 ---
 
+## 13A. Research Run and Findings Model
+
+### 13A.1 ResearchRun
+
+A `ResearchRun` represents a single bounded execution of the deep-research capability.
+
+Typical conceptual properties include:
+
+- research run identifier
+- invocation origin (explicit operator request, orchestration escalation, policy-based routing)
+- triggering context (linked workflow, project, message, or task identifier)
+- research query or task description
+- run status (pending, in_progress, completed, failed, degraded)
+- start timestamp and end timestamp
+- tool or mode used (browser-mediated Gemini, etc.)
+- completion signal (success, partial, timeout, browser_unavailable, error)
+- linked project identifiers where relevant
+
+A `ResearchRun` must preserve enough provenance that the operator can understand what was asked, how it was executed, and what was returned.
+
+**Stable architecture anchor:** `ARCH:ResearchRunModel`
+
+### 13A.2 ResearchFinding
+
+A `ResearchFinding` represents an individual structured finding or evidence point produced by a research run.
+
+Typical conceptual properties include:
+
+- finding identifier
+- parent research run identifier
+- finding type (evidence_point, summary_claim, extracted_fact, decision_support, reasoning_note)
+- content text
+- confidence or quality signal
+- source reference or URL where available
+- order or relevance ranking within the run
+
+Findings are reviewable artifacts. They should not silently enter accepted project memory without passing through the standard review model.
+
+**Stable architecture anchor:** `ARCH:ResearchFindingModel`
+
+### 13A.3 ResearchSourceReference
+
+A `ResearchSourceReference` captures provenance about external sources consulted during a research run.
+
+Typical conceptual properties include:
+
+- source reference identifier
+- parent research run identifier
+- source URL or page reference
+- source title or description
+- access timestamp
+- relevance notes
+
+**Stable architecture anchor:** `ARCH:ResearchSourceReferenceModel`
+
+### 13A.4 ResearchSummaryArtifact
+
+A `ResearchSummaryArtifact` represents the structured summary output of a research run.
+
+Typical conceptual properties include:
+
+- summary artifact identifier
+- parent research run identifier
+- summary text
+- key findings references
+- linked project or task identifiers
+- review state (pending_review, accepted, rejected)
+
+Research summaries should be visible in Glimmer's review and project surfaces so the operator can inspect, accept, or discard research results.
+
+**Stable architecture anchor:** `ARCH:ResearchSummaryArtifactModel`
+**Stable architecture anchor:** `ARCH:ResearchArtifactModel`
+
+---
+
 ## 14. Relationship Summary
 
 The most important domain relationships are:
@@ -753,6 +829,8 @@ The most important domain relationships are:
 - one `Draft` to many `DraftVariants`
 - many `PersonaAsset` records to many interaction contexts through persona selection logic
 - one `PrimaryOperator` to many `ChannelSession` records
+- one `ResearchRun` to many `ResearchFinding`, `ResearchSourceReference`, and optionally one `ResearchSummaryArtifact`
+- one `ResearchRun` to one or more triggering context records (project, message, workflow)
 
 **Stable architecture anchor:** `ARCH:DomainRelationshipSummary`
 
@@ -792,11 +870,11 @@ This domain model intentionally stops short of:
 
 Those concerns are delegated to:
 
-- `03-langgraph-orchestration.md`
-- `04-connectors-and-ingestion.md`
-- `05-memory-and-retrieval.md`
-- `06-ui-and-voice.md`
-- `07-security-and-permissions.md`
+- `03_langgraph_orchestration.md`
+- `04_connectors_and_ingestion.md`
+- `05_memory_and_retrieval.md`
+- `06_ui_and_voice.md`
+- `07_security_and_permissions.md`
 
 **Stable architecture anchor:** `ARCH:DomainModelDocumentBoundary`
 

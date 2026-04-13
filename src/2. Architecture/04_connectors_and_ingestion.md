@@ -47,6 +47,7 @@ The connector layer must remain bounded. It should not become the place where pr
 The connector layer shall prefer official and supported APIs over browser scraping or fragile UI automation.
 
 **Stable architecture anchor:** `ARCH:ConnectorPrinciple.OfficialApiFirst`
+**Stable architecture anchor:** `ARCH:ApiFirstIntegration`
 
 ### 3.2 Connectors are isolated by source
 
@@ -113,8 +114,11 @@ The MVP connector family set consists of:
 4. **Microsoft Graph calendar connector**
 5. **Telegram companion connector**
 6. **Manual import connector**
+7. **Research tool adapter** (browser-mediated Gemini deep-research boundary)
 
 These families reflect the current requirements posture and should be treated as the active source boundary for early delivery.
+
+The research tool adapter is distinguished from the other connectors because it is an **invoked capability** rather than a passive source connector. It does not poll for incoming signals. It is invoked by the orchestration layer when a task requires escalated research, and it returns structured research artifacts.
 
 **Stable architecture anchor:** `ARCH:SupportedConnectorFamilies`
 
@@ -332,6 +336,80 @@ Manual import is an explicit product boundary, not a placeholder for unsupported
 
 ---
 
+## 12A. Research Tool Adapter (Browser-Mediated Gemini)
+
+### 12A.1 Purpose
+
+The research tool adapter provides Glimmer with a bounded deep-research capability by controlling the operator's browser to interact with Gemini for tasks that exceed the local model's practical capability.
+
+This adapter is structurally different from passive source connectors. It is an **invoked capability** rather than a polling/subscription boundary.
+
+**Stable architecture anchor:** `ARCH:GeminiBrowserMediatedAdapter`
+
+### 12A.2 Adapter scope
+
+The research tool adapter is responsible for:
+
+- attaching to a Chrome browser running in debug mode on the operator's local machine,
+- navigating to Gemini and managing the interaction session,
+- submitting research queries or task descriptions,
+- capturing structured response content,
+- normalizing research results into Glimmer's research artifact model (`ResearchRun`, `ResearchFinding`, `ResearchSourceReference`, `ResearchSummaryArtifact`),
+- and returning results to the orchestration layer.
+
+The research tool adapter is not responsible for:
+
+- deciding when research should be escalated (that belongs to orchestration),
+- project classification or prioritization of results,
+- direct mutation of accepted project memory,
+- or any action beyond bounded research queries through the browser.
+
+### 12A.3 Implementation approach
+
+The research tool adapter shall be implemented as a Python-native module using Playwright for browser automation, ported from an existing C# / .NET research agent.
+
+The port must:
+
+- be idiomatic to the Glimmer Python backend,
+- expose a stable internal service interface or adapter contract,
+- not leak raw Playwright automation details into the rest of the codebase,
+- be testable without always requiring a live browser (through contract-level mocks/fakes),
+- and follow Glimmer's existing coding conventions and dependency-injection patterns.
+
+### 12A.4 Browser attachment model
+
+The adapter attaches to a Chrome instance running in debug mode on the operator's machine. This means:
+
+- the operator must have Chrome running with remote debugging enabled,
+- the adapter connects to the existing browser session (it does not launch a sandboxed browser),
+- and the adapter uses the operator's own browser context, cookies, and authentication state to access Gemini.
+
+This approach is local-first and avoids requiring separate Gemini API credentials for the deep-research path.
+
+### 12A.5 Failure and degraded-mode behavior
+
+The adapter must surface visible failure states including:
+
+- browser not available or debug port not reachable,
+- Gemini interaction failure (page load failure, unexpected UI state, session timeout),
+- response capture failure,
+- and timeout.
+
+When the adapter cannot complete a research run, the orchestration layer must receive a clear failure signal so it can handle graceful degradation (e.g., falling back to local model, reporting the failure to the operator).
+
+### 12A.6 Safety boundaries
+
+The research tool adapter:
+
+- must only interact with whitelisted destinations (Gemini) unless explicitly expanded,
+- must not submit content that sends external messages from the operator's account,
+- must not modify the operator's browser state beyond the bounded research interaction,
+- and must preserve an auditable record of each research interaction.
+
+**Stable architecture anchor:** `ARCH:ResearchAdapterSafetyBoundary`
+
+---
+
 ## 13. Normalization Pipeline
 
 ### 13.1 Purpose
@@ -521,11 +599,11 @@ This document defines the source-boundary model for Glimmer, but it does not def
 
 Those concerns are handled in:
 
-- `03-langgraph-orchestration.md`
-- `05-memory-and-retrieval.md`
-- `06-ui-and-voice.md`
-- `07-security-and-permissions.md`
-- `08-testing-strategy.md`
+- `03_langgraph_orchestration.md`
+- `05_memory_and_retrieval.md`
+- `06_ui_and_voice.md`
+- `07_security_and_permissions.md`
+- `08_testing_strategy.md` (housed under `4. Verification/`)
 
 **Stable architecture anchor:** `ARCH:ConnectorDocumentBoundary`
 
