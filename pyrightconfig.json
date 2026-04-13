@@ -1,0 +1,15 @@
+{
+  "executionEnvironments": [
+    {
+      "root": "src/apps/backend",
+      "extraPaths": ["src/apps/backend"]
+    }
+  ],
+  "extraPaths": ["src/apps/backend"],
+  "venvPath": "src/apps/backend",
+  "venv": ".venv",
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic"
+}
+
+

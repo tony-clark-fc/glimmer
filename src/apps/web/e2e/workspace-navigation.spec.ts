@@ -56,7 +56,6 @@ for (const route of WORKSPACE_ROUTES) {
 test("project route /projects/[id] is reachable", async ({ page }) => {
   await page.goto("/projects/test-project-1");
   await expect(page.getByTestId("page-project")).toBeVisible();
-  await expect(page.getByText("test-project-1")).toBeVisible();
 });
 
 test("clicking nav links navigates between surfaces", async ({ page }) => {

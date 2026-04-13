@@ -168,3 +168,50 @@ class DraftingState(TypedDict, total=False):
     workflow_id: str
     current_step: str
 
+
+# ── Voice Session Graph State ─────────────────────────────────────────
+
+
+class VoiceSessionGraphState(TypedDict, total=False):
+    """State for the Voice Session Graph.
+
+    ARCH:VoiceSessionGraph
+    ARCH:VoiceInteractionArchitecture
+
+    Carries transient voice-session context through graph execution.
+    Durable state lives in ChannelSession/VoiceSessionState rows.
+    """
+
+    # Session identity
+    session_id: uuid.UUID
+    channel_session_id: uuid.UUID
+    operator_id: Optional[uuid.UUID]
+
+    # Transcript segments [{text, timestamp, index}]
+    transcript_segments: list[dict]
+    imported_signal_ids: list[uuid.UUID]
+
+    # Continuity context — bounded, not unbounded memory
+    current_topic: Optional[str]
+    referenced_project_ids: list[uuid.UUID]
+    unresolved_prompts: list[str]
+    recent_assistant_context: Optional[str]
+
+    # Pending actions extracted from voice
+    pending_actions: list[dict]
+
+    # Routing to shared core
+    route_target: str  # triage, planner, drafting
+    route_reason: str
+
+    # Review state
+    needs_review: bool
+    review_reasons: list[str]
+
+    # Safety — same rules as all other channels
+    auto_send_blocked: bool  # Always True — hard rule
+
+    # Workflow tracking
+    workflow_id: str
+    current_step: str
+
