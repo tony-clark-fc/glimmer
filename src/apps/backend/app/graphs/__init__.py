@@ -8,6 +8,7 @@ This package contains the LangGraph-based orchestration workflows:
 - Triage graph: classifies, interprets, and extracts from source records
 - Planner graph: generates focus packs and priorities
 - Drafting graph: creates reviewable draft artifacts
+- Research escalation graph: routes to deep research or expert advice
 
 Graphs coordinate; they do not become memory stores.
 Durable truth belongs in the domain/persistence layer (Workstream B).

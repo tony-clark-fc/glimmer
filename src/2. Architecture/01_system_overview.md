@@ -378,6 +378,23 @@ This is not a general autonomous web-browsing feature. It is a **bounded researc
 **Stable architecture anchor:** `ARCH:DeepResearchCapability`
 **Stable architecture anchor:** `ARCH:ResearchToolBoundary`
 
+### 7.5 Expert advice (synchronous external consultation)
+
+Glimmer shall support a synchronous expert-advice capability that uses the same browser-mediated Gemini adapter to consult a more powerful external LLM for specific questions, decisions, or reasoning tasks.
+
+Expert advice is distinct from deep research in that:
+
+- it is **synchronous** — a single prompt is sent and a text response is returned (seconds to minutes),
+- it does not produce multi-step research documents or Google Docs artifacts,
+- it supports mode selection (Fast for quick lookups, Thinking for reasoning-heavy tasks, Pro for general expert consultation),
+- and it records each exchange as a lightweight provenance-preserving consultation record.
+
+Expert-advice responses enter Glimmer's workflow as **interpreted candidates**, not accepted truth. They are subject to the same review-gate discipline as any other interpreted artifact.
+
+The expert-advice path shares the same browser-mediated adapter boundary and Chrome debug-mode attachment as deep research. Only one Gemini operation may execute at a time (deep research or expert advice), enforced by the adapter's internal operation lock.
+
+**Stable architecture anchor:** `ARCH:ExpertAdviceCapability`
+
 ### 7.4 Review-first operating posture
 
 The system is deliberately designed so that important outputs are surfaced for human review rather than silently committed into the outside world.

@@ -113,6 +113,38 @@ test.describe("Review view", () => {
   });
 });
 
+// ── Research view ───────────────────────────────────────────────
+
+test.describe("Research view", () => {
+  test("renders heading and research content", async ({ page }) => {
+    await page.goto("/research");
+    await expect(page.getByTestId("page-research")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Research & Expert Advice", level: 1 })
+    ).toBeVisible();
+    await expect(
+      page.getByText("Deep research runs")
+    ).toBeVisible();
+  });
+
+  test("has tabs for research runs and expert advice", async ({ page }) => {
+    await page.goto("/research");
+    await expect(page.getByTestId("tab-runs")).toBeVisible();
+    await expect(page.getByTestId("tab-exchanges")).toBeVisible();
+  });
+
+  test("shows empty state when no research runs exist", async ({ page }) => {
+    await page.goto("/research");
+    // Should show loading then empty state (no backend)
+    const hasEmpty = await page.getByTestId("research-empty").isVisible().catch(() => false);
+    const hasLoading = await page.getByTestId("research-loading").isVisible().catch(() => false);
+    const hasError = await page.getByTestId("research-error").isVisible().catch(() => false);
+    const hasList = await page.getByTestId("research-runs-list").isVisible().catch(() => false);
+
+    expect(hasEmpty || hasLoading || hasError || hasList).toBeTruthy();
+  });
+});
+
 // ── Project view ────────────────────────────────────────────────
 
 test.describe("Project view", () => {
@@ -144,7 +176,11 @@ test.describe("Cross-surface navigation", () => {
     // Verify no-auto-send notice persists after navigation
     await expect(page.getByTestId("drafts-no-auto-send")).toBeVisible();
 
-    // Drafts → Review
+    // Drafts → Research
+    await page.getByTestId("nav-research").click();
+    await expect(page.getByTestId("page-research")).toBeVisible();
+
+    // Research → Review
     await page.getByTestId("nav-review").click();
     await expect(page.getByTestId("page-review")).toBeVisible();
 

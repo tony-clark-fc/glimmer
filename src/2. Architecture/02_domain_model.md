@@ -812,6 +812,30 @@ Research summaries should be visible in Glimmer's review and project surfaces so
 **Stable architecture anchor:** `ARCH:ResearchSummaryArtifactModel`
 **Stable architecture anchor:** `ARCH:ResearchArtifactModel`
 
+### 13A.5 ExpertAdviceExchange
+
+An `ExpertAdviceExchange` represents a single synchronous consultation with Gemini through the expert-advice capability.
+
+This is architecturally distinct from a `ResearchRun`. A research run is a long-running, multi-step investigation that produces structured findings and exported documents. An expert-advice exchange is a single prompt-response pair completed in seconds to minutes.
+
+Typical conceptual properties include:
+
+- exchange identifier
+- invocation origin (explicit operator request, orchestration escalation, workflow trigger)
+- triggering context (linked workflow, project, message, or task identifier)
+- prompt text sent to Gemini
+- Gemini mode used (Fast, Thinking, Pro)
+- response text received
+- wall-clock duration in milliseconds
+- completion status (success, timeout, error, browser_unavailable)
+- review state (pending_review, accepted, rejected)
+- linked project identifiers where relevant
+- created timestamp
+
+Expert-advice responses shall enter Glimmer as **interpreted candidates**, not accepted truth. They are subject to the same review-gate discipline as research findings.
+
+**Stable architecture anchor:** `ARCH:ExpertAdviceExchangeModel`
+
 ---
 
 ## 14. Relationship Summary
@@ -831,6 +855,7 @@ The most important domain relationships are:
 - one `PrimaryOperator` to many `ChannelSession` records
 - one `ResearchRun` to many `ResearchFinding`, `ResearchSourceReference`, and optionally one `ResearchSummaryArtifact`
 - one `ResearchRun` to one or more triggering context records (project, message, workflow)
+- one `ExpertAdviceExchange` to one triggering context record (project, message, workflow, or ad-hoc operator request)
 
 **Stable architecture anchor:** `ARCH:DomainRelationshipSummary`
 

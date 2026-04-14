@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchLatestFocusPack, ApiError } from "@/lib/api-client";
+import { fetchLatestFocusPack, fetchResearchHealth, ApiError } from "@/lib/api-client";
 import { PersonaAvatar } from "@/components/persona-avatar";
-import type { FocusPack } from "@/lib/types";
+import type { FocusPack, ResearchHealth } from "@/lib/types";
 
 type LoadState = "loading" | "loaded" | "empty" | "error";
 
@@ -11,6 +11,7 @@ export default function TodayPage() {
   const [focusPack, setFocusPack] = useState<FocusPack | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [error, setError] = useState<string | null>(null);
+  const [researchHealth, setResearchHealth] = useState<ResearchHealth | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -35,6 +36,29 @@ export default function TodayPage() {
     };
   }, []);
 
+  // Poll research/Chrome health every 30 seconds
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkHealth = () => {
+      fetchResearchHealth()
+        .then((h) => {
+          if (!cancelled) setResearchHealth(h);
+        })
+        .catch(() => {
+          // Silently ignore — health check may fail if backend is starting
+        });
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 30_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
     <div data-testid="page-today">
       <div className="flex items-center gap-3">
@@ -49,6 +73,11 @@ export default function TodayPage() {
           </p>
         </div>
       </div>
+
+      {/* Research / Chrome status indicator */}
+      {researchHealth && (
+        <ResearchStatusChip health={researchHealth} />
+      )}
 
       {state === "loading" && (
         <div
@@ -180,6 +209,41 @@ function FocusSection({
           )}
         </ul>
       )}
+    </div>
+  );
+}
+
+// ── Research status chip ────────────────────────────────────────
+
+function ResearchStatusChip({ health }: { health: ResearchHealth }) {
+  const isOnline = health.chrome_status === "available";
+  const isUnknown = health.chrome_status === "unknown";
+
+  const label = isOnline
+    ? "Research: Online"
+    : isUnknown
+      ? "Research: Checking…"
+      : "Research: Offline";
+
+  const dotColor = isOnline
+    ? "bg-emerald-500"
+    : isUnknown
+      ? "bg-zinc-400"
+      : "bg-amber-500";
+
+  const chipColor = isOnline
+    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+    : isUnknown
+      ? "border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
+      : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300";
+
+  return (
+    <div
+      data-testid="research-status"
+      className={`mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${chipColor}`}
+    >
+      <span className={`inline-block h-2 w-2 rounded-full ${dotColor}`} />
+      {label}
     </div>
   );
 }

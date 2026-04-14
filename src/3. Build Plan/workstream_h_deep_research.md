@@ -1,8 +1,8 @@
-# Glimmer — Workstream H: Deep Research and External Reasoning
+# Glimmer — Workstream H: Deep Research, Expert Advice, and External Reasoning
 
 ## Document Metadata
 
-- **Document Title:** Glimmer — Workstream H: Deep Research and External Reasoning
+- **Document Title:** Glimmer — Workstream H: Deep Research, Expert Advice, and External Reasoning
 - **Document Type:** Detailed Build Plan Document
 - **Status:** Draft
 - **Project:** Glimmer
@@ -13,9 +13,9 @@
 
 ## 1. Purpose
 
-This document defines the implementation strategy for **Workstream H — Deep Research and External Reasoning**.
+This document defines the implementation strategy for **Workstream H — Deep Research, Expert Advice, and External Reasoning**.
 
-Its purpose is to implement Glimmer's bounded deep-research capability: a Python-native, browser-mediated research tool that allows Glimmer to escalate tasks to Gemini when the local model is insufficient, and to return structured research artifacts into the core workflow.
+Its purpose is to implement Glimmer's bounded external reasoning capabilities: a Python-native, browser-mediated tool that allows Glimmer to escalate tasks to Gemini when the local model is insufficient, either through deep research (async, multi-step) or expert advice (synchronous chat consultation), and to return structured artifacts into the core workflow.
 
 This workstream is where Glimmer gains the ability to reach beyond its local inference capability for harder research and reasoning tasks, while preserving the local-first, review-first, provenance-preserving operating model.
 
@@ -27,14 +27,22 @@ This workstream is where Glimmer gains the ability to reach beyond its local inf
 
 Workstream H exists to implement:
 
-- a Python-native port of the operator's existing C# / .NET browser-mediated research agent,
-- a clean adapter boundary between the research tool and the rest of Glimmer,
-- orchestration integration so research can be invoked explicitly or through escalation policy,
-- structured research artifact persistence (runs, findings, source references, summaries),
+- a Python-native port of the operator's existing C# / .NET browser-mediated Gemini agent,
+- a clean adapter boundary between the Gemini tool and the rest of Glimmer,
+- **deep research mode**: async, fire-and-forget interaction with Gemini Deep Research, producing Google Docs artifacts,
+- **expert advice mode**: synchronous chat consultation with Gemini (Fast / Thinking / Pro), returning text responses,
+- orchestration integration so research and expert advice can be invoked explicitly or through escalation policy,
+- structured artifact persistence (ResearchRun, ExpertAdviceExchange, findings, source references, summaries),
+- escalation routing that distinguishes between deep research and expert advice based on task characteristics,
 - failure and degraded-mode handling when the browser or Gemini is unavailable,
-- and reviewable, provenance-preserving ingestion of research results into Glimmer's workflow.
+- and reviewable, provenance-preserving ingestion of results into Glimmer's workflow.
 
-At the end of this workstream, Glimmer should be able to perform bounded deep research through the operator's browser when a task warrants it, and return meaningful structured results into project memory, triage, planning, or drafting.
+At the end of this workstream, Glimmer should be able to:
+
+- consult Gemini synchronously for expert advice on specific questions or decisions,
+- perform bounded deep research for complex multi-step investigations,
+- route escalations to the appropriate mode based on task characteristics,
+- and return meaningful structured results into project memory, triage, planning, or drafting.
 
 **Stable plan anchor:** `PLAN:WorkstreamH.Objective`
 
@@ -63,6 +71,9 @@ This workstream directly supports:
 - `REQ:ResearchOutputArtifacts`
 - `REQ:ResearchRunProvenance`
 - `REQ:BoundedBrowserMediatedResearch`
+- `REQ:ExpertAdviceCapability`
+- `REQ:ExpertAdviceProvenance`
+- `REQ:EscalationRouting`
 - `REQ:Explainability`
 - `REQ:HumanApprovalBoundaries`
 - `REQ:TraceabilityAndAuditability`
@@ -91,6 +102,12 @@ This workstream implements the architecture described by:
 - `ARCH:ResearchAdapterSafetyBoundary`
 - `ARCH:BrowserResearchSecurityBoundary`
 - `ARCH:ResearchVerificationStrategy`
+- `ARCH:ExpertAdviceCapability`
+- `ARCH:ExpertAdviceExchangeModel`
+- `ARCH:ExpertAdviceSubflow`
+- `ARCH:ExpertAdviceEscalationPolicy`
+- `ARCH:GeminiChatAdapter`
+- `ARCH:ExpertAdviceReviewBoundary`
 - `ARCH:ReviewGateArchitecture`
 
 **Stable plan anchor:** `PLAN:WorkstreamH.ArchitectureAlignment`
@@ -103,17 +120,19 @@ This workstream implements the architecture described by:
 
 This workstream includes:
 
-- Python port of the existing C# / .NET research agent core,
+- Python port of the existing C# / .NET Gemini automation agent core,
 - Playwright-based Chrome debug-mode browser attachment,
-- Gemini interaction flow (navigation, query submission, response capture),
+- Gemini interaction flow for both deep research and synchronous chat,
 - research adapter service boundary and internal contract,
 - research domain models (ResearchRun, ResearchFinding, ResearchSourceReference, ResearchSummaryArtifact),
+- expert-advice domain model (ExpertAdviceExchange),
 - research run persistence and provenance,
-- orchestration integration (Research Escalation Graph),
-- escalation policy implementation,
+- expert-advice exchange persistence and provenance,
+- orchestration integration (Research Escalation Graph and Expert Advice Subflow),
+- escalation policy implementation with routing between deep research and expert advice,
 - failure and degraded-mode handling,
 - result normalization and re-entry into triage/planner/drafting workflows,
-- and research-run visibility in the web workspace.
+- and research/expert-advice visibility in the web workspace.
 
 **Stable plan anchor:** `PLAN:WorkstreamH.InScope`
 
@@ -324,15 +343,82 @@ By the end of Workstream H, Glimmer should be able to:
 
 ---
 
+### 8.7 Work Package H7 — Expert advice adapter and domain model
+
+**Objective:** Implement the synchronous Gemini chat flow in the adapter and the ExpertAdviceExchange domain model.
+
+#### In scope
+- synchronous chat interaction flow within the Gemini adapter (mode selection, prompt entry, response capture)
+- `ExpertAdviceExchange` Pydantic and SQLAlchemy models
+- migration support for expert_advice_exchanges table
+- repository layer for ExpertAdviceExchange
+- adapter contract extension: `execute_chat(request) -> ChatResult`
+- operation-lock serialization with deep research (one Gemini op at a time)
+
+#### Expected outputs
+- chat interaction module within the adapter
+- ExpertAdviceExchange domain model and persistence
+- tests for chat flow (contract-level with mocks), exchange persistence, and provenance
+
+#### Related anchors
+- `ARCH:GeminiChatAdapter`
+- `ARCH:ExpertAdviceExchangeModel`
+- `ARCH:ExpertAdviceCapability`
+- `REQ:ExpertAdviceCapability`
+- `REQ:ExpertAdviceProvenance`
+
+#### Definition of done
+- the adapter can send a prompt to Gemini in a selected mode and return the response text
+- ExpertAdviceExchange records are persisted with full provenance
+
+**Stable plan anchor:** `PLAN:WorkstreamH.PackageH7.ExpertAdviceAdapter`
+
+---
+
+### 8.8 Work Package H8 — Expert advice orchestration and routing
+
+**Objective:** Implement the Expert Advice Subflow and escalation routing that distinguishes between deep research and expert advice.
+
+#### In scope
+- Expert Advice Subflow in the orchestration layer
+- escalation routing policy (expert advice vs. deep research based on task characteristics)
+- review-gate integration for expert-advice responses
+- API endpoint for ad-hoc expert-advice requests
+- UI surface for viewing expert-advice history and invoking consultations
+
+#### Expected outputs
+- expert advice subflow/graph node
+- escalation routing policy module
+- API endpoint for expert advice
+- UI components for expert-advice visibility
+- tests for routing, subflow lifecycle, and review-gate behavior
+
+#### Related anchors
+- `ARCH:ExpertAdviceSubflow`
+- `ARCH:ExpertAdviceEscalationPolicy`
+- `ARCH:ExpertAdviceReviewBoundary`
+- `REQ:EscalationRouting`
+
+#### Definition of done
+- the orchestration layer can invoke expert advice and route the response back into downstream workflows
+- the escalation policy correctly distinguishes between deep research and expert advice
+- expert-advice exchanges are visible and reviewable in the workspace
+
+**Stable plan anchor:** `PLAN:WorkstreamH.PackageH8.ExpertAdviceOrchestration`
+
+---
+
 ## 9. Internal Sequencing
 
 The recommended implementation sequence is:
 
-1. **H1 → H2** — Adapter boundary and Gemini interaction (can proceed once the C# codebase is provided for analysis)
-2. **H3** — Domain models and persistence (can proceed in parallel with H1/H2)
-3. **H4** — Orchestration integration (depends on H1–H3)
-4. **H5** — Workspace visibility (depends on H3–H4)
-5. **H6** — Safety hardening (depends on H1–H4, can proceed partially in parallel)
+1. **H1 → H2** — Adapter boundary and deep-research Gemini interaction flow
+2. **H3** — Domain models and persistence for research artifacts (can proceed in parallel with H1/H2)
+3. **H7** — Expert advice adapter and ExpertAdviceExchange model (shares browser bootstrap with H1, can proceed in parallel)
+4. **H4** — Deep-research orchestration integration (depends on H1–H3)
+5. **H8** — Expert advice orchestration and escalation routing (depends on H7 + H4)
+6. **H5** — Workspace visibility for research and expert advice (depends on H3–H4, H7)
+7. **H6** — Safety hardening (depends on H1–H4, H7, can proceed partially in parallel)
 
 **Stable plan anchor:** `PLAN:WorkstreamH.InternalSequence`
 
@@ -349,13 +435,13 @@ The recommended implementation sequence is:
 
 ### 10.2 External dependencies
 
-- **Existing C# / .NET research agent codebase** — must be provided by the operator for analysis and porting
+- **Existing C# / .NET research agent codebase** — ✅ provided by the operator (`src/5. Working/ResearchAgentLegacyCode/`)
 - **Chrome running in debug mode** — required for live validation (not for unit/contract-level testing)
 - **Active Gemini access** in the operator's browser — required for end-to-end validation
 
 ### 10.3 Human dependencies
 
-- Operator must provide the C# research agent source code
+- ~~Operator must provide the C# research agent source code~~ ✅ Resolved
 - Operator must confirm Chrome debug-mode setup for live validation
 - Operator may need to confirm whitelisted destination policy
 
@@ -386,6 +472,12 @@ The recommended implementation sequence is:
 - `TEST:Research.Failure.GeminiInteractionFailureVisible`
 - `TEST:Research.Security.NoUnboundedActionTaking`
 - `TEST:Research.Output.ResultsReenterWorkflowSafely`
+- `TEST:ExpertAdvice.Invocation.SendsPromptAndReturnsResponse`
+- `TEST:ExpertAdvice.Provenance.ExchangeRecordPersisted`
+- `TEST:ExpertAdvice.ModeSelection.FastThinkingProRespected`
+- `TEST:ExpertAdvice.Failure.GeminiUnavailableHandledSafely`
+- `TEST:ExpertAdvice.Routing.EscalationDistinguishesResearchFromAdvice`
+- `TEST:ExpertAdvice.Output.ResponseEntersAsInterpretedCandidate`
 
 **Stable plan anchor:** `PLAN:WorkstreamH.VerificationExpectations`
 
@@ -395,14 +487,16 @@ The recommended implementation sequence is:
 
 This workstream is done when:
 
-1. the Python research adapter can attach to Chrome and interact with Gemini,
+1. the Python Gemini adapter can attach to Chrome and interact with Gemini for both deep research and synchronous chat,
 2. research runs produce structured, persisted, provenance-preserving artifacts,
-3. the orchestration layer can invoke research through explicit or policy-based escalation,
-4. research results re-enter triage, planner, or drafting workflows as reviewable candidates,
-5. the web workspace surfaces research runs and findings for operator review,
-6. failure and degraded-mode handling is visibly tested,
-7. safety boundaries are enforced and verified,
-8. and verification evidence is recorded in the workstream progress file.
+3. expert-advice exchanges produce persisted, provenance-preserving consultation records,
+4. the orchestration layer can invoke research or expert advice through explicit or policy-based escalation,
+5. escalation routing correctly distinguishes between deep research and expert advice,
+6. results re-enter triage, planner, or drafting workflows as reviewable candidates,
+7. the web workspace surfaces research runs, expert-advice exchanges, and findings for operator review,
+8. failure and degraded-mode handling is visibly tested,
+9. safety boundaries are enforced and verified,
+10. and verification evidence is recorded in the workstream progress file.
 
 **Stable plan anchor:** `PLAN:WorkstreamH.DefinitionOfDone`
 

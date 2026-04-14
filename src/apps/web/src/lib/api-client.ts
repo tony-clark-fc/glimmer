@@ -14,6 +14,10 @@ import type {
   DraftSummary,
   DraftDetail,
   PersonaSelection,
+  ResearchHealth,
+  ResearchRunSummary,
+  ResearchRunDetail,
+  ExpertAdviceExchange,
 } from "./types";
 
 // ── Generic fetch helper ────────────────────────────────────────
@@ -106,5 +110,51 @@ export async function fetchPersona(
 ): Promise<PersonaSelection> {
   const params = context ? `?context=${encodeURIComponent(context)}` : "";
   return apiFetch<PersonaSelection>(`/persona/select${params}`);
+}
+
+// ── Research / Chrome Health ────────────────────────────────────
+
+export async function fetchResearchHealth(): Promise<ResearchHealth> {
+  return apiFetch<ResearchHealth>("/health/research");
+}
+
+// ── Research Runs ───────────────────────────────────────────────
+
+export async function fetchResearchRuns(): Promise<ResearchRunSummary[]> {
+  return apiFetch<ResearchRunSummary[]>("/research/runs");
+}
+
+export async function fetchResearchRun(id: string): Promise<ResearchRunDetail> {
+  return apiFetch<ResearchRunDetail>(`/research/runs/${id}`);
+}
+
+export async function reviewResearchSummary(
+  runId: string,
+  action: "accepted" | "rejected",
+): Promise<void> {
+  await apiFetch(`/research/runs/${runId}/summary/review`, {
+    method: "PATCH",
+    body: JSON.stringify({ action }),
+  });
+}
+
+// ── Expert Advice Exchanges ─────────────────────────────────────
+
+export async function fetchExchanges(): Promise<ExpertAdviceExchange[]> {
+  return apiFetch<ExpertAdviceExchange[]>("/research/exchanges");
+}
+
+export async function fetchExchange(id: string): Promise<ExpertAdviceExchange> {
+  return apiFetch<ExpertAdviceExchange>(`/research/exchanges/${id}`);
+}
+
+export async function reviewExchange(
+  exchangeId: string,
+  action: "accepted" | "rejected",
+): Promise<void> {
+  await apiFetch(`/research/exchanges/${exchangeId}/review`, {
+    method: "PATCH",
+    body: JSON.stringify({ action }),
+  });
 }
 

@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     # ── Test database (used only by test harness) ────────────────
     test_database_url: str = "postgresql+psycopg://localhost:5432/glimmer_test"
 
+    # ── Telegram Operator Alerts ──────────────────────────────────
+    # Bot token for internal system health alerts (not user-facing).
+    # If empty, Telegram alerts are silently skipped.
+    telegram_bot_token: str = ""
+    telegram_operator_chat_id: str = ""
+
     @property
     def cors_origin_list(self) -> list[str]:
         """Parse the comma-separated CORS origins string into a list."""

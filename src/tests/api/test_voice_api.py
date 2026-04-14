@@ -254,4 +254,44 @@ class TestSpokenBriefingAPI:
         assert resp.status_code == 404
 
 
+class TestVoiceHandoffAPI:
+    """WF7/WF8 — Voice handoff API tests.
+
+    TEST:Voice.Session.HandoffCreatesWorkspaceVisibleContinuation (API)
+    TEST:Security.NoAutoSend.GlobalBoundaryPreserved (API — voice handoff)
+    """
+
+    def test_handoff_creates_record(self, client) -> None:
+        create_resp = client.post("/voice/sessions", json={})
+        session_id = create_resp.json()["session_id"]
+
+        resp = client.post(f"/voice/sessions/{session_id}/handoff")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["source_channel"] == "voice"
+        assert data["auto_send_blocked"] is True
+        assert "handoff_id" in data
+        assert data["workspace_target"] == "/review"
+
+    def test_handoff_for_nonexistent_session_returns_404(self, client) -> None:
+        import uuid
+        resp = client.post(f"/voice/sessions/{uuid.uuid4()}/handoff")
+        assert resp.status_code == 404
+
+    def test_handoff_always_blocks_auto_send(self, client) -> None:
+        create_resp = client.post("/voice/sessions", json={})
+        session_id = create_resp.json()["session_id"]
+
+        resp = client.post(f"/voice/sessions/{session_id}/handoff")
+        data = resp.json()
+        assert data["auto_send_blocked"] is True
+
+    def test_handoff_preserves_channel_session_id(self, client) -> None:
+        create_resp = client.post("/voice/sessions", json={})
+        channel_session_id = create_resp.json()["channel_session_id"]
+        session_id = create_resp.json()["session_id"]
+
+        resp = client.post(f"/voice/sessions/{session_id}/handoff")
+        data = resp.json()
+        assert data["channel_session_id"] == channel_session_id
 

@@ -21,11 +21,12 @@ test("workspace nav is visible with all primary routes", async ({ page }) => {
   const nav = page.locator('nav[aria-label="Workspace navigation"]');
   await expect(nav).toBeVisible();
 
-  // All five primary nav items
+  // All six primary nav items
   await expect(page.getByTestId("nav-today")).toBeVisible();
   await expect(page.getByTestId("nav-portfolio")).toBeVisible();
   await expect(page.getByTestId("nav-triage")).toBeVisible();
   await expect(page.getByTestId("nav-drafts")).toBeVisible();
+  await expect(page.getByTestId("nav-research")).toBeVisible();
   await expect(page.getByTestId("nav-review")).toBeVisible();
 
   // Glimmer brand link
@@ -38,6 +39,7 @@ const WORKSPACE_ROUTES = [
   { path: "/portfolio", testId: "page-portfolio", heading: "Portfolio" },
   { path: "/triage", testId: "page-triage", heading: "Triage" },
   { path: "/drafts", testId: "page-drafts", heading: "Drafts" },
+  { path: "/research", testId: "page-research", heading: "Research & Expert Advice" },
   { path: "/review", testId: "page-review", heading: "Review" },
 ];
 
@@ -70,6 +72,9 @@ test("clicking nav links navigates between surfaces", async ({ page }) => {
 
   await page.getByTestId("nav-drafts").click();
   await expect(page.getByTestId("page-drafts")).toBeVisible();
+
+  await page.getByTestId("nav-research").click();
+  await expect(page.getByTestId("page-research")).toBeVisible();
 
   await page.getByTestId("nav-review").click();
   await expect(page.getByTestId("page-review")).toBeVisible();

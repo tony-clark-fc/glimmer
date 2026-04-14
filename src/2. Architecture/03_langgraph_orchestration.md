@@ -580,9 +580,14 @@ Typical outputs include:
 
 ### 11A.4 Research escalation policy
 
-The graph should implement a bounded escalation policy that determines when a task should be routed to deep research. Escalation triggers may include:
+The graph should implement a bounded escalation policy that determines when a task should be routed to external reasoning and which mode to use. The policy distinguishes two escalation paths:
 
-- explicit operator request,
+1. **Expert advice (synchronous chat)** — for bounded questions, decisions, or reasoning tasks that can be answered in a single prompt-response exchange. This is the lightweight, fast path.
+2. **Deep research (async Deep Research)** — for complex, multi-step research tasks requiring extended investigation and structured output. This is the heavyweight, long-running path.
+
+Escalation triggers may include:
+
+- explicit operator request (with mode selection),
 - task complexity exceeding a configurable threshold,
 - task type that inherently benefits from multi-source research,
 - or orchestration-level determination that local model output is insufficient.
@@ -590,6 +595,7 @@ The graph should implement a bounded escalation policy that determines when a ta
 The escalation policy must be configurable and explainable. The system should not silently escalate every task to browser-mediated research.
 
 **Stable architecture anchor:** `ARCH:ResearchEscalationPolicy`
+**Stable architecture anchor:** `ARCH:ExpertAdviceEscalationPolicy`
 
 ### 11A.5 Research run lifecycle
 
@@ -618,7 +624,42 @@ The research graph must not:
 
 ---
 
-## 12. Shared Orchestration Subflows
+## 11B. Expert Advice Subflow
+
+### 11B.1 Purpose
+
+The Expert Advice Subflow manages synchronous consultations with Gemini for tasks that benefit from a more powerful model but do not require full deep research.
+
+This subflow coordinates:
+
+- expert-advice invocation through the browser-mediated adapter,
+- mode selection (Fast, Thinking, or Pro),
+- response capture and provenance recording,
+- persistence of the `ExpertAdviceExchange` record,
+- and return of the response to the originating workflow as an interpreted candidate.
+
+**Stable architecture anchor:** `ARCH:ExpertAdviceSubflow`
+
+### 11B.2 Lifecycle
+
+1. **Invocation** — validate escalation context, prepare the prompt, check browser availability.
+2. **Mode selection** — select Gemini mode (default: Pro, with operator override or policy-driven selection).
+3. **Execution** — invoke the browser-mediated adapter's synchronous chat method.
+4. **Recording** — persist the `ExpertAdviceExchange` record with full provenance.
+5. **Re-entry** — return the response text to the originating workflow as interpreted advisory content.
+6. **Failure handling** — if browser or Gemini is unavailable, record a visible failure and fall back to local model output.
+
+### 11B.3 Review and safety boundaries
+
+Expert-advice responses enter Glimmer as **interpreted candidates**. They follow the same review-gate discipline as research findings.
+
+The expert-advice subflow must not:
+
+- silently commit advisory content into accepted project state,
+- send external messages based on the response,
+- or bypass the adapter's single-operation lock.
+
+**Stable architecture anchor:** `ARCH:ExpertAdviceReviewBoundary`
 
 In addition to the primary graphs, Glimmer should implement a set of reusable orchestration subflows.
 

@@ -340,11 +340,19 @@ Manual import is an explicit product boundary, not a placeholder for unsupported
 
 ### 12A.1 Purpose
 
-The research tool adapter provides Glimmer with a bounded deep-research capability by controlling the operator's browser to interact with Gemini for tasks that exceed the local model's practical capability.
+The research tool adapter provides Glimmer with bounded external reasoning capabilities by controlling the operator's browser to interact with Gemini for tasks that exceed the local model's practical capability.
+
+This adapter supports two distinct interaction modes:
+
+1. **Deep research** — long-running, asynchronous interaction with Gemini's Deep Research mode, producing comprehensive research documents exported to Google Docs.
+2. **Expert advice (synchronous chat)** — short-lived, synchronous interaction with Gemini in Fast, Thinking, or Pro mode, returning a text response for a specific question or reasoning task.
+
+Both modes share the same Chrome debug-mode attachment and browser provider. Only one Gemini operation may execute at a time, enforced by an internal operation lock.
 
 This adapter is structurally different from passive source connectors. It is an **invoked capability** rather than a polling/subscription boundary.
 
 **Stable architecture anchor:** `ARCH:GeminiBrowserMediatedAdapter`
+**Stable architecture anchor:** `ARCH:GeminiChatAdapter`
 
 ### 12A.2 Adapter scope
 
@@ -352,9 +360,10 @@ The research tool adapter is responsible for:
 
 - attaching to a Chrome browser running in debug mode on the operator's local machine,
 - navigating to Gemini and managing the interaction session,
-- submitting research queries or task descriptions,
-- capturing structured response content,
+- **deep research mode:** submitting research prompts, activating Deep Research mode, waiting for completion, exporting to Google Docs, and renaming the document,
+- **expert advice mode:** selecting the Gemini mode (Fast / Thinking / Pro), submitting a prompt, waiting for the response, and capturing the response text via clipboard or DOM extraction,
 - normalizing research results into Glimmer's research artifact model (`ResearchRun`, `ResearchFinding`, `ResearchSourceReference`, `ResearchSummaryArtifact`),
+- recording expert-advice exchanges as `ExpertAdviceExchange` records with full provenance,
 - and returning results to the orchestration layer.
 
 The research tool adapter is not responsible for:

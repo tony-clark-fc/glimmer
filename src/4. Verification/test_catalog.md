@@ -533,6 +533,52 @@ The Glimmer test catalog is organized into the following scenario groups:
 
 **Stable verification anchor:** `TESTCATALOG:DeepResearch`
 
+## 7.8B Expert advice scenarios
+
+### `TEST:ExpertAdvice.Invocation.SendsPromptAndReturnsResponse`
+- **Scenario name:** Expert advice sends a prompt to Gemini and returns the response text
+- **Primary layers:** `contract`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:ExpertAdviceCapability`, `ARCH:GeminiChatAdapter`, `ARCH:ExpertAdviceCapability`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.PackageH7.ExpertAdviceAdapter`
+- **Intent:** Prove the adapter can execute a synchronous Gemini chat and return the response.
+
+### `TEST:ExpertAdvice.Provenance.ExchangeRecordPersisted`
+- **Scenario name:** Expert advice exchange is persisted with full provenance
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:ExpertAdviceProvenance`, `ARCH:ExpertAdviceExchangeModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.PackageH7.ExpertAdviceAdapter`
+- **Intent:** Prove expert-advice exchanges preserve prompt, response, mode, duration, and invocation origin.
+
+### `TEST:ExpertAdvice.ModeSelection.FastThinkingProRespected`
+- **Scenario name:** Expert advice respects Gemini mode selection (Fast, Thinking, Pro)
+- **Primary layers:** `contract`, `unit`
+- **Primary requirement/architecture drivers:** `REQ:ExpertAdviceCapability`, `ARCH:GeminiChatAdapter`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.PackageH7.ExpertAdviceAdapter`
+- **Intent:** Prove mode selection is passed through and recorded correctly.
+
+### `TEST:ExpertAdvice.Failure.GeminiUnavailableHandledSafely`
+- **Scenario name:** Expert advice handles Gemini unavailability gracefully
+- **Primary layers:** `contract`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:BoundedBrowserMediatedResearch`, `ARCH:ExpertAdviceCapability`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.PackageH7.ExpertAdviceAdapter`
+- **Intent:** Prove the system degrades gracefully when Gemini is unavailable for expert advice.
+
+### `TEST:ExpertAdvice.Routing.EscalationDistinguishesResearchFromAdvice`
+- **Scenario name:** Escalation policy correctly routes to expert advice vs. deep research
+- **Primary layers:** `unit`, `graph`
+- **Primary requirement/architecture drivers:** `REQ:EscalationRouting`, `ARCH:ExpertAdviceEscalationPolicy`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.PackageH8.ExpertAdviceOrchestration`
+- **Intent:** Prove the escalation router selects the correct mode based on task characteristics.
+
+### `TEST:ExpertAdvice.Output.ResponseEntersAsInterpretedCandidate`
+- **Scenario name:** Expert advice response enters workflow as interpreted candidate, not accepted truth
+- **Primary layers:** `graph`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:ExpertAdviceCapability`, `ARCH:ExpertAdviceReviewBoundary`
+- **Primary workstream linkage:** `PLAN:WorkstreamH.PackageH8.ExpertAdviceOrchestration`
+- **Intent:** Prove expert-advice outputs pass through review gates before entering accepted memory.
+
+**Stable verification anchor:** `TESTCATALOG:ExpertAdvice`
+
 ---
 
 ## 7.9 Security and approval-boundary scenarios

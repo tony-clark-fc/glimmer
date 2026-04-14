@@ -84,6 +84,9 @@ Glimmer shall support the following high-level capabilities:
 10. **Deep research and escalated reasoning**
     - Route tasks that exceed local model capability to a bounded browser-mediated research path using Gemini, returning structured research artifacts into the core workflow.
 
+11. **Expert advice (synchronous external consultation)**
+    - Consult a more powerful external LLM synchronously when the local model is insufficient for a specific question, decision, or reasoning task.
+
 **Stable requirements anchor:** `REQ:InScopeCapabilities`
 
 ### 3.2 Out-of-scope capabilities for MVP
@@ -535,9 +538,16 @@ At minimum, the system shall require operator review for:
 
 **Stable requirements anchor:** `REQ:HumanApprovalBoundaries`
 
-### 6.17 Deep research and escalated reasoning
+### 6.17 Deep research, expert advice, and escalated reasoning
 
-Glimmer shall support a bounded deep-research capability that can be invoked when a task exceeds the practical reasoning or research comfort zone of the local model.
+Glimmer shall support bounded external reasoning capabilities that can be invoked when a task exceeds the practical reasoning or research comfort zone of the local model.
+
+These capabilities take two distinct forms:
+
+1. **Deep research** — long-running, asynchronous research through Gemini's Deep Research mode, producing comprehensive research documents.
+2. **Expert advice** — synchronous consultation with Gemini (Fast / Thinking / Pro modes) for specific questions, decisions, or reasoning tasks that benefit from a more powerful model.
+
+Both capabilities share the same browser-mediated adapter boundary and are **bounded reasoning escalation paths**, not general autonomous web-browsing features.
 
 The deep-research capability shall support:
 
@@ -546,7 +556,6 @@ The deep-research capability shall support:
 - explicit or policy-driven invocation from orchestration workflows,
 - and return of structured research outputs into Glimmer's memory, triage, planning, and drafting workflows.
 
-The deep-research capability is a **bounded reasoning escalation path**, not a general autonomous web-browsing feature.
 
 #### 6.17.1 Invocation model
 
@@ -599,9 +608,46 @@ The deep-research capability:
 
 **Stable requirements anchor:** `REQ:BoundedBrowserMediatedResearch`
 
----
+#### 6.17.5 Expert advice (synchronous consultation)
 
-## 7. Non-Functional Requirements
+Glimmer shall support a synchronous expert-advice capability that allows the system to consult Gemini for a specific question, decision, or reasoning task when the local model is insufficient.
+
+The expert-advice capability shall support:
+
+- sending a single prompt to Gemini in a selected mode (Fast, Thinking, or Pro),
+- receiving a text response synchronously (seconds to minutes),
+- recording the exchange with full provenance (query, response, mode, duration, invocation origin),
+- and returning the response into Glimmer's orchestration, planning, triage, or drafting workflows as an interpreted candidate.
+
+Expert-advice responses shall not be treated as accepted truth. They shall enter Glimmer's workflow as reviewable, attributable advisory content subject to the same review-gate discipline as any other interpreted artifact.
+
+The default Gemini mode for expert advice shall be Pro, with operator override available.
+
+**Stable requirements anchor:** `REQ:ExpertAdviceCapability`
+
+#### 6.17.6 Expert advice provenance
+
+Expert-advice exchanges shall preserve provenance including:
+
+- invocation origin (operator request, orchestration escalation, or workflow trigger),
+- the prompt sent,
+- the Gemini mode used,
+- the response text received,
+- wall-clock duration,
+- and linkage to the originating project, task, or workflow context.
+
+**Stable requirements anchor:** `REQ:ExpertAdviceProvenance`
+
+#### 6.17.7 Escalation routing
+
+When the system determines that a task exceeds local model capability, the escalation policy shall route the task to the appropriate external capability:
+
+- **Expert advice** for bounded questions, decisions, or reasoning tasks that can be answered in a single exchange.
+- **Deep research** for complex, multi-step research tasks requiring extended investigation and structured output.
+
+The routing decision shall be explainable and may be overridden by the operator.
+
+**Stable requirements anchor:** `REQ:EscalationRouting`
 
 ### 7.1 Local-first operating model
 
@@ -790,6 +836,9 @@ For MVP acceptance, the product does not need to be fully autonomous. It does ne
 | `REQ:ResearchOutputArtifacts` | Research runs must produce structured, reviewable output artifacts |
 | `REQ:ResearchRunProvenance` | Research runs must preserve invocation, source, and execution provenance |
 | `REQ:BoundedBrowserMediatedResearch` | Browser-mediated research must remain bounded, safe, and operator-controlled |
+| `REQ:ExpertAdviceCapability` | Glimmer must support synchronous expert-advice consultation with Gemini when local model is insufficient |
+| `REQ:ExpertAdviceProvenance` | Expert-advice exchanges must preserve invocation origin, prompt, response, mode, duration, and workflow linkage |
+| `REQ:EscalationRouting` | Escalation policy must route tasks to expert advice or deep research based on task characteristics |
 | `REQ:LocalFirstOperatingModel` | The product must default to local-first control of sensitive context |
 | `REQ:TraceabilityAndAuditability` | Important internal operations must be traceable |
 | `REQ:Explainability` | Recommendations should be explainable without hidden black-box behavior |

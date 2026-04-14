@@ -1,0 +1,40 @@
+# Glimmer — ManualOnly and Deferred Scenario Registry
+#
+# This registry tracks verification scenarios that cannot yet be
+# automated and require either manual human verification or are
+# explicitly deferred with a stated reason.
+#
+# WORKG:WG8 — ManualOnly and Deferred discipline
+#
+# Format:
+#   - anchor: TEST:Anchor.Name
+#     status: ManualOnly | Deferred
+#     reason: Why this cannot be automated yet
+#
+# This file is read by evidence_report.py to include manual/deferred
+# scenarios in evidence output so they remain visible and honest.
+
+- anchor: TEST:Smoke.FrontendStarts
+  status: ManualOnly
+  reason: Requires running Next.js dev server + Playwright; not included in pytest suite
+
+- anchor: TEST:Smoke.WorkspaceNavigationBasic
+  status: ManualOnly
+  reason: Requires running Next.js dev server + Playwright; separate npx playwright test execution
+
+- anchor: TEST:Connector.GoogleMail.LiveOAuth
+  status: Deferred
+  reason: Requires real Google OAuth credentials and app registration
+
+- anchor: TEST:Connector.MicrosoftMail.LiveOAuth
+  status: Deferred
+  reason: Requires real Microsoft app registration and Graph API credentials
+
+- anchor: TEST:Telegram.LiveBotInteraction
+  status: Deferred
+  reason: Requires provisioned Telegram bot token and webhook setup
+
+- anchor: TEST:Voice.RealAudioPipeline
+  status: Deferred
+  reason: Requires MLX runtime, Gemma 4 models, and real audio hardware on M5 Max
+

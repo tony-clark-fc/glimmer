@@ -205,3 +205,100 @@ class TestTelegramWhatMattersNowAPI:
         )
         assert resp.status_code == 404
 
+
+class TestTelegramHandoffAPI:
+    """WF7/WF8 — Telegram handoff API tests.
+
+    TEST:Telegram.Companion.HandoffToWorkspaceOccursWhenNeeded (API)
+    TEST:Security.NoAutoSend.GlobalBoundaryPreserved (API — Telegram handoff)
+    """
+
+    def test_handoff_creates_record(self, client) -> None:
+        create_resp = client.post(
+            "/telegram/sessions",
+            json={"telegram_chat_id": "api-handoff-1"},
+        )
+        session_id = create_resp.json()["session_id"]
+
+        resp = client.post(f"/telegram/sessions/{session_id}/handoff")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["source_channel"] == "telegram"
+        assert data["auto_send_blocked"] is True
+        assert "handoff_id" in data
+        assert data["workspace_target"] == "/review"
+
+    def test_handoff_for_nonexistent_session_returns_404(self, client) -> None:
+        resp = client.post(
+            f"/telegram/sessions/{uuid.uuid4()}/handoff"
+        )
+        assert resp.status_code == 404
+
+    def test_handoff_always_blocks_auto_send(self, client) -> None:
+        create_resp = client.post(
+            "/telegram/sessions",
+            json={"telegram_chat_id": "api-handoff-2"},
+        )
+        session_id = create_resp.json()["session_id"]
+
+        resp = client.post(f"/telegram/sessions/{session_id}/handoff")
+        data = resp.json()
+        assert data["auto_send_blocked"] is True
+
+
+class TestPendingHandoffsAPI:
+    """WF7 — Pending handoffs retrieval through the REST API.
+
+    TEST:Telegram.Companion.ReviewNeededStateSurfacesInWorkspace (API)
+    """
+
+    def test_pending_handoffs_empty(self, client) -> None:
+        resp = client.get("/telegram/handoffs/pending")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data == []
+
+    def test_pending_handoffs_after_voice_handoff(self, client) -> None:
+        create_resp = client.post("/voice/sessions", json={})
+        session_id = create_resp.json()["session_id"]
+        client.post(f"/voice/sessions/{session_id}/handoff")
+
+        resp = client.get("/telegram/handoffs/pending")
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["source_channel"] == "voice"
+        assert data[0]["auto_send_blocked"] is True
+
+    def test_pending_handoffs_after_telegram_handoff(self, client) -> None:
+        create_resp = client.post(
+            "/telegram/sessions",
+            json={"telegram_chat_id": "api-pending-1"},
+        )
+        session_id = create_resp.json()["session_id"]
+        client.post(f"/telegram/sessions/{session_id}/handoff")
+
+        resp = client.get("/telegram/handoffs/pending")
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["source_channel"] == "telegram"
+
+    def test_pending_handoffs_mixed_channels(self, client) -> None:
+        v_resp = client.post("/voice/sessions", json={})
+        v_id = v_resp.json()["session_id"]
+        client.post(f"/voice/sessions/{v_id}/handoff")
+
+        t_resp = client.post(
+            "/telegram/sessions",
+            json={"telegram_chat_id": "api-pending-2"},
+        )
+        t_id = t_resp.json()["session_id"]
+        client.post(f"/telegram/sessions/{t_id}/handoff")
+
+        resp = client.get("/telegram/handoffs/pending")
+        data = resp.json()
+        assert len(data) == 2
+        channels = {r["source_channel"] for r in data}
+        assert channels == {"voice", "telegram"}
+        for r in data:
+            assert r["auto_send_blocked"] is True
+

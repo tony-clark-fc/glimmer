@@ -143,3 +143,83 @@ export interface PersonaSelection {
   fallback_used: boolean;
 }
 
+// ── Research / Chrome Health ────────────────────────────────────
+
+export interface ResearchHealth {
+  chrome_status: "available" | "unavailable" | "unknown";
+  chrome_port: number;
+  chrome_port_open: boolean;
+  last_check_at: string | null;
+  last_transition_at: string | null;
+  consecutive_failures: number;
+  monitor_running: boolean;
+}
+
+// ── Research Runs ───────────────────────────────────────────────
+
+export interface ResearchRunSummary {
+  id: string;
+  invocation_origin: string;
+  project_id: string | null;
+  research_query: string;
+  document_name: string | null;
+  status: string;
+  document_url: string | null;
+  error_message: string | null;
+  summary_review_state: string | null;
+  findings_count: number;
+  sources_count: number;
+  created_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+export interface ResearchFinding {
+  id: string;
+  finding_type: string;
+  content: string;
+  confidence_signal: string | null;
+  source_url: string | null;
+  ordering: number | null;
+  created_at: string;
+}
+
+export interface ResearchSourceReference {
+  id: string;
+  source_url: string | null;
+  source_title: string | null;
+  source_description: string | null;
+  relevance_notes: string | null;
+  created_at: string;
+}
+
+export interface ResearchSummaryArtifact {
+  id: string;
+  summary_text: string;
+  review_state: string;
+  created_at: string;
+}
+
+export interface ResearchRunDetail extends ResearchRunSummary {
+  findings: ResearchFinding[];
+  sources: ResearchSourceReference[];
+  summary: ResearchSummaryArtifact | null;
+}
+
+// ── Expert Advice Exchanges ─────────────────────────────────────
+
+export interface ExpertAdviceExchange {
+  id: string;
+  invocation_origin: string;
+  project_id: string | null;
+  prompt: string;
+  gemini_mode: string;
+  response_text: string | null;
+  duration_ms: number | null;
+  status: string;
+  review_state: string;
+  error_message: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
+

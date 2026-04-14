@@ -6,6 +6,9 @@ registered here; business logic stays in services/orchestration layers.
 
 from __future__ import annotations
 
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -17,7 +20,41 @@ from app.api.drafts import router as drafts_router
 from app.api.persona import router as persona_router
 from app.api.voice import router as voice_router
 from app.api.telegram import router as telegram_router
+from app.api.research import router as research_router
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan — start/stop background services."""
+    settings = get_settings()
+
+    # ── Chrome Health Monitor ─────────────────────────────────────
+    from app.research.config import ChromeConfig
+    from app.research.chrome_monitor import ChromeHealthMonitor
+    from app.services.telegram_notifier import TelegramNotifier
+
+    chrome_config = ChromeConfig()
+    notifier = TelegramNotifier(
+        bot_token=settings.telegram_bot_token,
+        chat_id=settings.telegram_operator_chat_id,
+    )
+    monitor = ChromeHealthMonitor(
+        chrome_config=chrome_config,
+        notifier=notifier,
+    )
+    monitor.start()
+    app.state.chrome_monitor = monitor
+
+    logger.info("Chrome health monitor started")
+
+    yield
+
+    # ── Shutdown ──────────────────────────────────────────────────
+    await monitor.stop()
+    logger.info("Chrome health monitor stopped")
 
 
 def create_app() -> FastAPI:
@@ -27,6 +64,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.app_name,
         debug=settings.debug,
+        lifespan=lifespan,
     )
 
     # ── CORS — allow access from other devices on the network ─────
@@ -47,9 +85,9 @@ def create_app() -> FastAPI:
     app.include_router(persona_router)
     app.include_router(voice_router)
     app.include_router(telegram_router)
+    app.include_router(research_router)
 
     return app
 
 
 app = create_app()
-

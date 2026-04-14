@@ -49,8 +49,8 @@ A work item should not be treated as complete merely because code exists. Verifi
 ## 3. Current Overall Status
 
 - **Overall Workstream Status:** `Verified`
-- **Current Confidence Level:** WF1-WF8 implemented and verified; 125 new tests (7 bootstrap + 6 transcript + 11 continuity + 10 graph/routing + 16 API + 21 briefing + 23 Telegram + 11 Telegram API + 20 handoff/safety) all pass; total backend 430/430
-- **Last Meaningful Update:** 2026-04-13 — WF6-WF8 implemented: Telegram companion service, cross-surface handoff, safety parity
+- **Current Confidence Level:** WF1-WF8 implemented and verified; 136 new tests (7 bootstrap + 6 transcript + 11 continuity + 10 graph/routing + 20 API voice + 21 briefing + 23 Telegram + 18 Telegram API + 20 handoff/safety) all pass; total backend 441/441
+- **Last Meaningful Update:** 2026-04-13 — WF7/WF8 API tests added: voice handoff, Telegram handoff, pending handoffs, safety parity at API level
 - **Ready for Coding:** Complete — all work packages verified
 
 ### Current summary
@@ -140,8 +140,8 @@ Backend additions: `VoiceSessionGraphState` TypedDict, `VoiceSessionGraph` LangG
 | WF4 | Voice-to-core routing | `Verified` | 10 graph/integration tests + 2 API tests | Signals route through IntakeGraph, auto_send_blocked enforced |
 | WF5 | Spoken briefing and bounded response behavior | `Verified` | 21 integration tests + 6 API tests | Bounded briefings from focus-pack data, session context responses, BriefingArtifact persistence |
 | WF6 | Telegram bounded companion interaction | `Verified` | 23 integration tests + 11 API tests | Session bootstrap/reuse, message normalization, bounded context, "what matters now", handoff detection, shared-core routing |
-| WF7 | Cross-surface handoff into the workspace | `Verified` | 11 integration tests + handoff API tests | Voice/Telegram handoffs create BriefingArtifact(channel_handoff), pending retrieval |
-| WF8 | Approval and safety parity across channels | `Verified` | 9 integration tests | auto_send_blocked across all channels, review gate verification, no-auto-send boundary proven |
+| WF7 | Cross-surface handoff into the workspace | `Verified` | 11 integration tests + 4 voice API + 7 Telegram API (handoff + pending) | Voice/Telegram handoffs create BriefingArtifact(channel_handoff), pending retrieval, API proof |
+| WF8 | Approval and safety parity across channels | `Verified` | 9 integration tests + API safety proof across all endpoints | auto_send_blocked across all channels, review gate verification, no-auto-send boundary proven at service and API levels |
 
 **Stable working anchor:** `WORKF:Progress.PackageStatusTable`
 
@@ -283,7 +283,7 @@ This section should be updated incrementally during implementation.
   - 23 integration tests (Telegram): session bootstrap/reuse/operator-binding, message normalization/provenance/empty, context increments/topics/bounded, what-matters-now empty/data/shorter, handoff detection triggers/non-triggers/response, shared-core routing/auto_send_blocked — all pass
   - 11 API tests (Telegram): session create/get/404/reuse, message process/handoff-trigger/404/auto_send, what-matters-now empty/data/404 — all pass
   - 20 integration tests (handoff/safety): voice handoff artifact/context/session-update/serialization, Telegram handoff artifact/context/session-update, pending handoffs empty/voice/telegram/mixed, auto_send verification pass/fail/missing, review gate pass/fail/ok, handoff auto_send voice/telegram/all — all pass
-  - Full backend suite: **430/430 pass**
+  - Full backend suite: **441/441 pass**
 - **Files created:**
   - `app/services/telegram.py` (new — Telegram companion service)
   - `app/services/handoff.py` (new — cross-surface handoff + safety parity)
@@ -336,19 +336,19 @@ This section records **executed** verification, not merely intended verification
 - `TEST:Voice.Session.ContinuityPreservedWithinSession` — **Pass** (6 integration tests: topic updates, bounded topics, project merge, capped prompts, utterance count, nonexistent raises)
 - `TEST:Voice.Session.ReviewGatePreservedForMeaningfulActions` — **Pass** (3 integration tests: review conditional edges, auto_send_blocked on routing)
 - `TEST:Voice.Session.SpokenBriefingIsBoundedAndRelevant` — **Pass** (21 integration tests: formatting boundedness, data grounding, length enforcement, artifact persistence, latest-pack resolution, empty-state handling, section-count accuracy, context-response conciseness; 6 API tests: briefing with/without data, 404 handling, auto_send_blocked, context endpoint)
-- `TEST:Voice.Session.HandoffCreatesWorkspaceVisibleContinuation` — **Pass** (4 integration tests: artifact creation, context preservation, channel session update, serialization; 1 API test: voice handoff endpoint)
+- `TEST:Voice.Session.HandoffCreatesWorkspaceVisibleContinuation` — **Pass** (4 integration tests: artifact creation, context preservation, channel session update, serialization; 4 API tests: voice handoff create/404/auto_send/channel_session_id)
 - `TEST:Telegram.Companion.WhatMattersNowReturnsBoundedSummary` — **Pass** (3 integration tests: empty state, bounded summary with data, shorter than voice briefing; 2 API tests: what-matters-now empty/with-data)
-- `TEST:Telegram.Companion.HandoffToWorkspaceOccursWhenNeeded` — **Pass** (6 integration tests: review/approve/compare triggers, no-trigger for simple queries and notes, workspace URL; 1 API test: message triggers handoff)
-- `TEST:Telegram.Companion.ReviewNeededStateSurfacesInWorkspace` — **Pass** (4 integration tests: pending handoffs empty/voice/telegram/mixed; 1 API test: pending handoffs endpoint)
+- `TEST:Telegram.Companion.HandoffToWorkspaceOccursWhenNeeded` — **Pass** (6 integration tests: review/approve/compare triggers, no-trigger for simple queries and notes, workspace URL; 1 API test: message triggers handoff; 3 API tests: explicit handoff create/404/auto_send)
+- `TEST:Telegram.Companion.ReviewNeededStateSurfacesInWorkspace` — **Pass** (4 integration tests: pending handoffs empty/voice/telegram/mixed; 4 API tests: pending empty/voice/telegram/mixed)
 - `TEST:VoiceAndTelegram.SharedCoreFlowParityPreserved` — **Pass** (4 integration tests: voice + Telegram both route through shared IntakeGraph to triage with auto_send_blocked)
 - `TEST:ChannelSession.SummariesPersistWithTraceableOrigin` — **Pass** (5 integration tests: summary creation, completion marking, channel session update, utterance count, project references; 2 API tests: end session + summary)
 - `TEST:Drafting.NoAutoSend.BoundaryPreserved` — **Pass** (2 API tests: auto_send_blocked even for explicit "send" utterances, voice + Telegram)
-- `TEST:Security.NoAutoSend.GlobalBoundaryPreserved` — **Pass** (9 tests: voice service/API/handoff + Telegram service/API/handoff all enforce auto_send_blocked=True; verify_auto_send_blocked helper)
+- `TEST:Security.NoAutoSend.GlobalBoundaryPreserved` — **Pass** (9 integration tests + voice handoff API + Telegram handoff API + pending handoffs: auto_send_blocked proven at every layer)
 - `TEST:Security.ReviewGate.ExternalImpactRequiresApproval` — **Pass** (3 tests: review gate verification pass/fail/ok; review conditional edges in VoiceSessionGraph)
 
 ### 8.2 Verification interpretation
 
-WF1-WF8 verification is complete. 125 new tests pass across 8 work packages. All 14 TEST anchors are now fully proven. The voice session foundation, spoken briefing layer, Telegram companion, cross-surface handoff, and safety parity are all verified with auto_send_blocked enforced throughout. Full backend suite: 430/430 pass.
+WF1-WF8 verification is complete. 136 new tests pass across 8 work packages. All 14 TEST anchors are now fully proven. The voice session foundation, spoken briefing layer, Telegram companion, cross-surface handoff, and safety parity are all verified with auto_send_blocked enforced throughout. Full backend suite: 441/441 pass.
 
 **Stable working anchor:** `WORKF:Progress.VerificationLog`
 
@@ -423,7 +423,7 @@ The recommended next implementation slice is:
 
 When the next implementation session begins for Workstream F, the coding agent should:
 
-1. **Note that WF1-WF8 are complete and verified** (430/430 tests pass).
+1. **Note that WF1-WF8 are complete and verified** (441/441 tests pass).
 2. The workstream is waiting on **human dependencies** for live environment validation:
    - Telegram bot provisioning (bot token, webhook setup)
    - Real audio hardware testing (MLX, Gemma 4 on M5 Max)
@@ -431,7 +431,7 @@ When the next implementation session begins for Workstream F, the coding agent s
    - Review the services: `voice.py`, `briefing.py`, `telegram.py`, `handoff.py`
    - Review the APIs: `api/voice.py`, `api/telegram.py`
    - Review the graphs: `graphs/voice_session.py`
-   - Run `pytest tests/ -v` to confirm baseline (expect 430 pass)
+   - Run `pytest tests/ -v` to confirm baseline (expect 441 pass)
 
 **Stable working anchor:** `WORKF:Progress.PickupGuidance`
 
@@ -455,7 +455,7 @@ This avoids turning the file into vague narration.
 
 ## 14. Final Note
 
-Workstream F is complete. All 8 work packages are implemented and verified with 125 new tests (430 total backend).
+Workstream F is complete. All 8 work packages are implemented and verified with 136 new tests (441 total backend).
 
 The voice and companion model is real: voice sessions bootstrap and normalize into structured signals, spoken briefings are bounded and grounded, Telegram is a bounded companion (not a second control room), cross-surface handoffs create workspace-visible artifacts, and auto_send_blocked is proven at every layer.
 

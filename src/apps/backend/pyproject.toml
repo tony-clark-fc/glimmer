@@ -14,6 +14,7 @@ dependencies = [
     "python-dotenv>=1.2,<2",
     "langgraph>=1.1,<2",
     "langchain-core>=1.2,<2",
+    "playwright>=1.52,<2",
 ]
 
 [project.optional-dependencies]
@@ -31,6 +32,20 @@ build-backend = "setuptools.build_meta"
 testpaths = ["../../tests"]
 asyncio_mode = "auto"
 pythonpath = ["."]
+markers = [
+    "smoke: Smoke pack — baseline startup and reachability proof",
+    "workstream_a: Workstream A — Foundation verification",
+    "workstream_b: Workstream B — Domain and Memory verification",
+    "workstream_c: Workstream C — Connectors verification",
+    "workstream_d: Workstream D — Triage and Prioritization verification",
+    "workstream_e: Workstream E — Drafting and UI verification",
+    "workstream_f: Workstream F — Voice and Companion verification",
+    "workstream_h: Workstream H — Deep Research and Expert Advice verification",
+    "data_integrity: Data-integrity regression — cross-cutting memory spine protection",
+    "release: Release pack — representative cross-system confidence",
+    "manual_only: Manual-only scenario — requires human verification",
+    "deferred: Deferred scenario — automation not yet practical",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -54,6 +54,7 @@ Treat the following as the current implementation baseline unless an explicitly 
 - **Reference model family:** Gemma 4 (31B for deep reasoning, 26B A4B MoE for low-latency chat, E4B for native audio voice)
 - **Voice layer:** Local multi-model inference — native audio model for voice I/O, larger model for reasoning tasks routed through shared orchestration core
 - **Deep research:** Bounded browser-mediated Gemini research adapter (Playwright + Chrome debug mode), Python-native port of existing C# research agent
+- **Expert advice:** Synchronous Gemini chat consultation (Fast / Thinking / Pro modes) through the same browser-mediated adapter — Glimmer's tool for consulting a more powerful LLM
 - **Browser workflow verification:** Playwright
 
 Do not silently introduce an alternative architecture or framework stack.
