@@ -31,6 +31,7 @@ from app.research._browser_helpers import (
     ensure_fresh_chat,
     find_input_box,
     human_pause,
+    human_type,
     safe_goto,
     try_save_screenshot,
     wait_for_input_box,
@@ -86,9 +87,9 @@ async def execute_gemini_chat(
 
         await human_pause(1000, 2000, "mode selected")
 
-        # ── 4. Enter prompt ──
+        # ── 4. Enter prompt (human typing speed) ──
         input_locator = await find_input_box(page)
-        await input_locator.fill(request.prompt)
+        await human_type(page, input_locator, request.prompt)
         logger.debug("Prompt entered (%d chars)", len(request.prompt))
 
         await human_pause(1500, 3000, "reviewing prompt")
@@ -121,8 +122,9 @@ async def execute_gemini_chat(
     finally:
         try:
             await page.close()
-        except Exception:
-            pass  # best effort
+            logger.debug("Chat tab closed")
+        except Exception as exc:
+            logger.warning("Failed to close chat tab: %s", exc)
 
 
 # ═══════════════════════════════════════════════════════════════════════

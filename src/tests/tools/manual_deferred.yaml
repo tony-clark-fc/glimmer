@@ -38,3 +38,11 @@
   status: Deferred
   reason: Requires MLX runtime, Gemma 4 models, and real audio hardware on M5 Max
 
+- anchor: TEST:Research.Adapter.GeminiBrowserPathReturnsStructuredResult
+  status: ManualOnly
+  reason: Requires live Chrome with Gemini profile — run via pytest tests/live/ -v -s -o asyncio_mode=auto
+
+- anchor: TEST:Research.Failure.GeminiInteractionFailureVisible
+  status: ManualOnly
+  reason: Requires live Chrome with Gemini profile — run via pytest tests/live/ -v -s -o asyncio_mode=auto
+

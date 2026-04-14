@@ -161,6 +161,41 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary workstream linkage:** `PLAN:WorkstreamA.Foundation`, `PLAN:WorkstreamE.DraftingUi`
 - **Intent:** Prove the main route structure is navigable at a basic level.
 
+### `TEST:Foundation.Config.LocalFirstDefaultsResolve`
+- **Scenario name:** Local-first configuration defaults resolve correctly
+- **Primary layers:** `unit`, `api`
+- **Primary requirement/architecture drivers:** `REQ:LocalFirstOperatingModel`, `ARCH:DeploymentPosture`
+- **Primary workstream linkage:** `PLAN:WorkstreamA.Foundation`
+- **Intent:** Prove Pydantic Settings load local-first defaults without external dependencies.
+
+### `TEST:Foundation.Persistence.MigrationBaselineExists`
+- **Scenario name:** Alembic migration baseline exists and is recorded
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `ARCH:MemoryStorageStrategy`
+- **Primary workstream linkage:** `PLAN:WorkstreamA.Foundation`
+- **Intent:** Prove the migration chain is initialized and tracked.
+
+### `TEST:Foundation.Backend.StructureRespectsBoundaryShape`
+- **Scenario name:** Backend package structure respects the expected boundary shape
+- **Primary layers:** `unit`
+- **Primary requirement/architecture drivers:** `ARCH:SystemBoundaries`
+- **Primary workstream linkage:** `PLAN:WorkstreamA.Foundation`
+- **Intent:** Prove the backend app structure follows the planned separation.
+
+### `TEST:Foundation.Frontend.WorkspaceShellExists`
+- **Scenario name:** Frontend workspace shell exists with expected route structure
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `ARCH:UiSurfaceMap`
+- **Primary workstream linkage:** `PLAN:WorkstreamA.Foundation`
+- **Intent:** Prove the workspace shell renders with all primary navigation routes.
+
+### `TEST:Foundation.AgentSupport.CoreSurfacesPresent`
+- **Scenario name:** Agent support surfaces — control docs, instructions, skills, tools — are present
+- **Primary layers:** `unit`
+- **Primary requirement/architecture drivers:** `ARCH:SystemBoundaries`
+- **Primary workstream linkage:** `PLAN:WorkstreamA.Foundation`
+- **Intent:** Prove operational support files required for agent-assisted delivery exist.
+
 **Stable verification anchor:** `TESTCATALOG:FoundationAndStartup`
 
 ---
@@ -208,6 +243,76 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary requirement/architecture drivers:** `REQ:TraceabilityAndAuditability`, `ARCH:AuditAndTraceLayer`
 - **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
 - **Intent:** Prove the system records meaningful memory evolution.
+
+### `TEST:Domain.ProjectPortfolio.WorkstreamsAndMilestonesPersist`
+- **Scenario name:** Project workstreams and milestones persist with correct relationships
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:ProjectPortfolioManagement`, `ARCH:ProjectStateModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove workstream and milestone entities belong to projects and persist correctly.
+
+### `TEST:Domain.SourceRecords.MessagesThreadsEventsPersistSeparately`
+- **Scenario name:** Messages, threads, events, and signals persist as separate source records
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:MessageIngestion`, `ARCH:MessageModel`, `ARCH:ConnectedAccountModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove source-layer records remain distinct and provenance-bearing.
+
+### `TEST:Domain.Interpretation.ReviewStateLifecyclePersists`
+- **Scenario name:** Interpretation review state lifecycle persists through all valid transitions
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:HumanApprovalBoundaries`, `ARCH:ReviewGateArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove review states (pending_review, accepted, rejected, amended, superseded) are durable.
+
+### `TEST:Domain.Execution.AcceptedArtifactsPersistSeparately`
+- **Scenario name:** Accepted operational artifacts persist separately from interpreted candidates
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:Explainability`, `ARCH:StateOwnershipBoundaries`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove work items, decisions, risks, blockers, and waiting-on records are durable.
+
+### `TEST:Domain.Drafting.DraftsAndVariantsPersistWithIntent`
+- **Scenario name:** Drafts and variants persist with intent context
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:DraftResponseWorkspace`, `ARCH:DraftModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove draft and variant entities preserve drafting intent and linkage.
+
+### `TEST:Domain.Briefings.FocusAndBriefingArtifactsPersist`
+- **Scenario name:** Focus packs and briefing artifacts persist with scope metadata
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:PreparedBriefings`, `ARCH:TodayViewArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove briefing and focus artifacts are durable and scoped.
+
+### `TEST:Domain.Persona.AssetsAndClassificationPersist`
+- **Scenario name:** Persona assets and classification records persist
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:VisualPersonaSupport`, `ARCH:PersonaAssetModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove persona asset management entities are durable.
+
+### `TEST:Domain.ChannelSessions.TelegramAndVoiceStatePersist`
+- **Scenario name:** Channel sessions with Telegram and voice state persist
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:StateContinuity`, `ARCH:ChannelSessionModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove session continuity records for companion channels are durable.
+
+### `TEST:Domain.Operator.PersistsWithPreferences`
+- **Scenario name:** Primary operator persists with all preference fields
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:ProductPurpose`, `ARCH:PrimaryOperatorModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove operator context (timezone, language, tone, channel preferences) persists.
+
+### `TEST:Domain.Operator.OwnsProjectsAccountsSessions`
+- **Scenario name:** Operator owns projects, connected accounts, and channel sessions
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `ARCH:PrimaryOperatorModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove the operator ownership chain across major entities.
 
 **Stable verification anchor:** `TESTCATALOG:DomainAndMemory`
 
@@ -264,6 +369,41 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary workstream linkage:** `PLAN:WorkstreamC.Connectors`
 - **Intent:** Prove sync and authorization failures are observable.
 
+### `TEST:Connector.Framework.ProviderBoundaryIsolation`
+- **Scenario name:** Connector framework enforces provider boundary isolation
+- **Primary layers:** `unit`, `contract`
+- **Primary requirement/architecture drivers:** `ARCH:ConnectorIsolation`, `ARCH:ApiFirstIntegration`
+- **Primary workstream linkage:** `PLAN:WorkstreamC.Connectors`
+- **Intent:** Prove connector ABC, provider types, and module structure enforce bounded contracts.
+
+### `TEST:Connector.AccountProfiles.ExecutionUsesCorrectProfile`
+- **Scenario name:** Connector execution resolves and uses the correct account profile
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:MultiAccountProfileSupport`, `ARCH:ConnectedAccountModel`, `ARCH:AccountProvenanceModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamC.Connectors`
+- **Intent:** Prove multi-account support is operational, not just modeled.
+
+### `TEST:Connector.IntakeHandoff.BoundedReferenceFlow`
+- **Scenario name:** Connector-to-intake handoff produces bounded references
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:MessageIngestion`, `ARCH:NormalizationPipeline`
+- **Primary workstream linkage:** `PLAN:WorkstreamC.Connectors`
+- **Intent:** Prove handoff uses record IDs, not raw payloads.
+
+### `TEST:Connector.Normalization.PersistBeforeInterpretation`
+- **Scenario name:** Normalized records persist before any interpretation begins
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:TraceabilityAndAuditability`, `ARCH:NormalizationPipeline`
+- **Primary workstream linkage:** `PLAN:WorkstreamC.Connectors`
+- **Intent:** Prove source records exist in the database before triage or classification.
+
+### `TEST:Connector.Security.ReadFirstNoAutoSendPreserved`
+- **Scenario name:** Connector layer remains read-first with no auto-send capability
+- **Primary layers:** `unit`, `contract`
+- **Primary requirement/architecture drivers:** `REQ:SafeBehaviorDefaults`, `ARCH:NoAutoSendPolicy`
+- **Primary workstream linkage:** `PLAN:WorkstreamC.Connectors`
+- **Intent:** Prove no outbound side effects exist at the connector layer.
+
 **Stable verification anchor:** `TESTCATALOG:ConnectorsAndProvenance`
 
 ---
@@ -312,6 +452,20 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary workstream linkage:** `PLAN:WorkstreamD.TriageAndPrioritization`
 - **Intent:** Prove uncertain extraction does not become accepted work automatically.
 
+### `TEST:Triage.Extraction.DecisionAndDeadlineSignalsPersist`
+- **Scenario name:** Extracted decision and deadline signals persist as reviewable artifacts
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:ActionDeadlineDecisionExtraction`, `ARCH:TriageGraph`
+- **Primary workstream linkage:** `PLAN:WorkstreamD.TriageAndPrioritization`
+- **Intent:** Prove decision and deadline extraction creates durable interpreted artifacts.
+
+### `TEST:Triage.ReviewInterrupt.ResumeContinuesSafely`
+- **Scenario name:** Review interrupt and resume continues workflow safely
+- **Primary layers:** `integration`, `graph`
+- **Primary requirement/architecture drivers:** `REQ:HumanApprovalBoundaries`, `ARCH:InterruptAndResumeModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamD.TriageAndPrioritization`
+- **Intent:** Prove the review state lifecycle supports safe transitions.
+
 **Stable verification anchor:** `TESTCATALOG:TriageAndInterpretation`
 
 ---
@@ -338,6 +492,20 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary requirement/architecture drivers:** `REQ:ProjectMemory`, `ARCH:ProjectMemoryRefresh`, `ARCH:AuditAndTraceLayer`
 - **Primary workstream linkage:** `PLAN:WorkstreamD.TriageAndPrioritization`
 - **Intent:** Prove memory evolution caused by planner/triage is visible and durable.
+
+### `TEST:Planner.FocusPack.PersistsTopActionsAndPressureSignals`
+- **Scenario name:** Focus pack persists top actions, risks, waiting-on, and pressure signals
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:PrioritizationEngine`, `ARCH:PlannerGraph`
+- **Primary workstream linkage:** `PLAN:WorkstreamD.TriageAndPrioritization`
+- **Intent:** Prove focus-pack artifacts include prioritized items and pressure indicators.
+
+### `TEST:Planner.PriorityRationale.VisibleInApplicationSurface`
+- **Scenario name:** Priority rationale is visible through application/API surfaces
+- **Primary layers:** `api`
+- **Primary requirement/architecture drivers:** `REQ:Explainability`, `ARCH:TodayViewArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamD.TriageAndPrioritization`
+- **Intent:** Prove the operator can see why items are prioritized.
 
 **Stable verification anchor:** `TESTCATALOG:PlanningAndPrioritization`
 
@@ -373,11 +541,39 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
 - **Intent:** Prove review is a real control path, not UI theater.
 
+### `TEST:ApplicationSurface.TriageAndPriorityEndpointsSupportReviewActions`
+- **Scenario name:** Triage and priority API endpoints support review actions
+- **Primary layers:** `api`
+- **Primary requirement/architecture drivers:** `REQ:HumanApprovalBoundaries`, `ARCH:ReviewGateArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamD.TriageAndPrioritization`
+- **Intent:** Prove triage/priority API surfaces expose review queue and action endpoints.
+
+### `TEST:API.Operator.CreateReadUpdate`
+- **Scenario name:** Operator API supports create, read, and update operations
+- **Primary layers:** `api`
+- **Primary requirement/architecture drivers:** `REQ:ProductPurpose`, `ARCH:PrimaryOperatorModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove the operator entity has a functioning thin API surface.
+
+### `TEST:API.Operator.SingleOperatorConstraint`
+- **Scenario name:** Operator API enforces the single-operator constraint
+- **Primary layers:** `api`
+- **Primary requirement/architecture drivers:** `ARCH:PrimaryOperatorModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamB.DomainAndMemory`
+- **Intent:** Prove only one operator can exist (409 on duplicate creation).
+
 **Stable verification anchor:** `TESTCATALOG:DraftingAndReview`
 
 ---
 
 ## 7.7 Web workspace scenarios
+
+### `TEST:UI.Navigation.WorkspaceRoutesRemainReachable`
+- **Scenario name:** All workspace routes remain reachable after changes
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `ARCH:UiSurfaceMap`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
+- **Intent:** Prove the workspace route structure is stable across development.
 
 ### `TEST:UI.TodayView.ShowsPrioritiesAndPressureClearly`
 - **Scenario name:** Today view presents priorities, pressure, and rationale clearly
@@ -414,6 +610,13 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
 - **Intent:** Prove the draft workspace is a real operator tool, not a text dump.
 
+### `TEST:UI.DraftWorkspace.CopyEditFlowRemainsReviewOnly`
+- **Scenario name:** Draft workspace copy/edit flow remains review-only with no send capability
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `REQ:SafeBehaviorDefaults`, `ARCH:NoAutoSendPolicy`, `ARCH:DraftWorkspaceArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
+- **Intent:** Prove copy button exists but no send button, maintaining review-only posture.
+
 ### `TEST:UI.ReviewQueue.PendingVsAcceptedIsObvious`
 - **Scenario name:** Review queue makes pending vs accepted state obvious
 - **Primary layers:** `browser`
@@ -427,6 +630,13 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary requirement/architecture drivers:** `REQ:VisualPersonaSupport`, `ARCH:VisualPersonaSelection`, `ARCH:PersonaAssetModel`
 - **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
 - **Intent:** Prove persona support is bounded and asset-driven.
+
+### `TEST:UI.Persona.RenderingRemainsSubordinateToOperationalContent`
+- **Scenario name:** Persona rendering remains subordinate to operational content
+- **Primary layers:** `browser`, `api`
+- **Primary requirement/architecture drivers:** `REQ:VisualPersonaSupport`, `ARCH:VisualPersonaSelection`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
+- **Intent:** Prove persona assets enhance but do not dominate the workspace.
 
 **Stable verification anchor:** `TESTCATALOG:WebWorkspace`
 
@@ -468,6 +678,48 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary requirement/architecture drivers:** `REQ:HumanApprovalBoundaries`, `ARCH:ReviewGateArchitecture`, `ARCH:VoiceInteractionArchitecture`
 - **Primary workstream linkage:** `PLAN:WorkstreamF.Voice`
 - **Intent:** Prove voice does not bypass approval discipline.
+
+### `TEST:Voice.Session.BootstrapBindsCorrectOperatorAndSession`
+- **Scenario name:** Voice session bootstrap binds the correct operator and creates session state
+- **Primary layers:** `integration`, `api`
+- **Primary requirement/architecture drivers:** `REQ:VoiceInteraction`, `ARCH:VoiceSessionGraph`, `ARCH:ChannelSessionModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamF.Voice`
+- **Intent:** Prove voice sessions are operator-bound and channel-identified.
+
+### `TEST:Voice.Session.SpokenBriefingIsBoundedAndRelevant`
+- **Scenario name:** Spoken briefing is bounded in length and grounded in focus-pack data
+- **Primary layers:** `integration`, `api`
+- **Primary requirement/architecture drivers:** `REQ:PreparedBriefings`, `REQ:VoiceInteraction`
+- **Primary workstream linkage:** `PLAN:WorkstreamF.Voice`
+- **Intent:** Prove spoken output is concise, numbered, and relevant — not bloated or vague.
+
+### `TEST:Voice.Session.HandoffCreatesWorkspaceVisibleContinuation`
+- **Scenario name:** Voice session handoff creates workspace-visible continuation record
+- **Primary layers:** `integration`, `api`
+- **Primary requirement/architecture drivers:** `REQ:StateContinuity`, `ARCH:ChannelHandoffUx`
+- **Primary workstream linkage:** `PLAN:WorkstreamF.Voice`
+- **Intent:** Prove voice handoff creates BriefingArtifact(channel_handoff) for the main workspace.
+
+### `TEST:Telegram.Companion.ReviewNeededStateSurfacesInWorkspace`
+- **Scenario name:** Telegram review-needed state surfaces in the main workspace
+- **Primary layers:** `integration`, `api`
+- **Primary requirement/architecture drivers:** `REQ:TelegramMobilePresence`, `REQ:HumanApprovalBoundaries`
+- **Primary workstream linkage:** `PLAN:WorkstreamF.Voice`
+- **Intent:** Prove Telegram handoffs create pending workspace records retrievable by the operator.
+
+### `TEST:ChannelSession.SummariesPersistWithTraceableOrigin`
+- **Scenario name:** Channel session summaries persist with traceable origin
+- **Primary layers:** `integration`, `api`
+- **Primary requirement/architecture drivers:** `REQ:StateContinuity`, `ARCH:ChannelSessionModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamF.Voice`
+- **Intent:** Prove session completion creates summaries linked to the originating session.
+
+### `TEST:VoiceAndTelegram.SharedCoreFlowParityPreserved`
+- **Scenario name:** Voice and Telegram both use the shared core flow with safety parity
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:SafeBehaviorDefaults`, `ARCH:LangGraphTopology`, `ARCH:NoAutoSendPolicy`
+- **Primary workstream linkage:** `PLAN:WorkstreamF.Voice`
+- **Intent:** Prove both companion channels route through the same IntakeGraph with auto_send_blocked.
 
 **Stable verification anchor:** `TESTCATALOG:VoiceAndCompanion`
 
@@ -637,6 +889,27 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary requirement/architecture drivers:** `REQ:ContextualMessageClassification`, `REQ:PrioritizationEngine`, `ARCH:GraphVerificationStrategy`
 - **Primary workstream linkage:** `PLAN:WorkstreamG.TestingAndRegression`
 - **Intent:** Prove the assistant core still behaves coherently as a system.
+
+### `TEST:Integrity.SourceLayer.MessagesThreadsEventsSignalsRemainDistinct`
+- **Scenario name:** Source-layer records — messages, threads, events, signals — remain distinct
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:MessageIngestion`, `REQ:TraceabilityAndAuditability`, `ARCH:StructuredMemoryModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamG.TestingAndRegression`
+- **Intent:** Prove source-record types do not collapse into a single table or lose type identity.
+
+### `TEST:Integrity.AcceptedState.PromotionRetainsOriginTrace`
+- **Scenario name:** Accepted-state promotion retains origin trace from interpreted artifacts
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:Explainability`, `REQ:TraceabilityAndAuditability`
+- **Primary workstream linkage:** `PLAN:WorkstreamG.TestingAndRegression`
+- **Intent:** Prove accepted work items retain a provenance link to their source interpretation.
+
+### `TEST:Integrity.Summaries.SupersessionDoesNotEraseHistory`
+- **Scenario name:** Summary supersession does not erase historical summaries
+- **Primary layers:** `integration`
+- **Primary requirement/architecture drivers:** `REQ:ProjectMemory`, `ARCH:ProjectMemoryRefresh`
+- **Primary workstream linkage:** `PLAN:WorkstreamG.TestingAndRegression`
+- **Intent:** Prove memory refresh creates new summaries rather than overwriting old ones.
 
 **Stable verification anchor:** `TESTCATALOG:ReleaseAndRegression`
 

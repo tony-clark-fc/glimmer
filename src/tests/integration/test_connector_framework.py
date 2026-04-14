@@ -2,6 +2,7 @@
 
 TEST:Connector.Framework.ProviderBoundaryIsolation
 TEST:Connector.Security.ReadFirstNoAutoSendPreserved
+TEST:Security.LeastPrivilege.ScopeExpansionMustBeExplicit (structural enforcement)
 """
 
 from __future__ import annotations

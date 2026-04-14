@@ -53,7 +53,11 @@ class ChromeBrowserProvider:
         """Whether a browser is currently connected."""
         if self._browser is None:
             return False
-        return getattr(self._browser, "is_connected", False)
+        # Playwright's Browser.is_connected() is a method, not a property
+        is_connected = getattr(self._browser, "is_connected", None)
+        if callable(is_connected):
+            return is_connected()
+        return bool(is_connected)
 
     @property
     def is_chrome_port_open(self) -> bool:

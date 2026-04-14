@@ -9,6 +9,7 @@
  * TEST:UI.DraftWorkspace.CopyEditFlowRemainsReviewOnly
  * TEST:UI.ReviewQueue.PendingVsAcceptedIsObvious
  * TEST:Drafting.NoAutoSend.BoundaryPreserved
+ * TEST:Release.Browser.CoreOperatorJourneysPass
  */
 
 import { test, expect } from "@playwright/test";

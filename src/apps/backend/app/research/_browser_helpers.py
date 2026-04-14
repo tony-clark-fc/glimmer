@@ -156,6 +156,79 @@ async def human_pause(
     await asyncio.sleep(delay / 1000)
 
 
+# ── Proficient-typist parameters ─────────────────────────────────
+# Models ~90 WPM (a proficient typist). Average word is ~5 chars,
+# so 90 WPM ≈ 450 chars/min ≈ 133ms per character base rate.
+# We add jitter and natural rhythm breaks at word/punctuation
+# boundaries. Total typing time is capped at MAX_TYPING_SECONDS.
+
+_BASE_CHAR_MS: int = 105          # base delay per character
+_JITTER_MS: int = 40              # ± random jitter per keystroke
+_SPACE_EXTRA_MS: int = 60         # extra pause at word boundaries
+_PUNCTUATION_EXTRA_MS: int = 90   # extra pause after punctuation
+_PUNCTUATION_CHARS: str = ".,;:!?—-"
+MAX_TYPING_SECONDS: float = 30.0  # hard cap on total typing time
+
+
+async def human_type(
+    page: Any,
+    locator: Any,
+    text: str,
+    max_seconds: float = MAX_TYPING_SECONDS,
+) -> None:
+    """Type text into a locator with human-like keystroke timing.
+
+    Simulates a proficient typist (~90 WPM) with natural rhythm:
+    - per-character random delay
+    - longer pauses at word boundaries and after punctuation
+    - total time capped at *max_seconds* (scales speed if text is long)
+
+    Falls back to instant fill() if the text is empty.
+    """
+    if not text:
+        await locator.fill("")
+        return
+
+    # Calculate the ideal total typing time
+    ideal_ms = 0.0
+    for ch in text:
+        ideal_ms += _BASE_CHAR_MS
+        if ch == " ":
+            ideal_ms += _SPACE_EXTRA_MS
+        elif ch in _PUNCTUATION_CHARS:
+            ideal_ms += _PUNCTUATION_EXTRA_MS
+
+    cap_ms = max_seconds * 1000
+    # If the ideal time exceeds the cap, scale all delays down
+    scale = min(1.0, cap_ms / ideal_ms) if ideal_ms > 0 else 1.0
+
+    logger.debug(
+        "Human typing: %d chars, estimated %.1fs (scale=%.2f, cap=%.0fs)",
+        len(text), (ideal_ms * scale) / 1000, scale, max_seconds,
+    )
+
+    # Focus the input
+    await locator.click()
+    await asyncio.sleep(random.uniform(0.1, 0.3))
+
+    for ch in text:
+        # Base delay with jitter
+        delay_ms = _BASE_CHAR_MS + random.randint(-_JITTER_MS, _JITTER_MS)
+
+        # Rhythm breaks
+        if ch == " ":
+            delay_ms += random.randint(0, _SPACE_EXTRA_MS)
+        elif ch in _PUNCTUATION_CHARS:
+            delay_ms += random.randint(0, _PUNCTUATION_EXTRA_MS)
+
+        delay_ms = max(30, delay_ms) * scale  # floor at 30ms, then scale
+
+        await page.keyboard.type(ch, delay=0)
+        await asyncio.sleep(delay_ms / 1000)
+
+    logger.debug("Human typing complete (%d chars)", len(text))
+
+
 async def try_save_screenshot(page: Any, suffix: str = "failure") -> None:
     """Save a diagnostic screenshot. Best-effort — never raises."""
     try:

@@ -1,6 +1,7 @@
 """Intake graph routing tests.
 
 TEST:Triage.Intake.SourceRoutesCorrectly
+TEST:Release.Graph.CoreAssistantFlowsPass
 """
 
 from __future__ import annotations

@@ -31,6 +31,7 @@ from app.research._browser_helpers import (
     ensure_fresh_chat,
     find_input_box,
     human_pause,
+    human_type,
     navigate_to_gemini,
     try_save_screenshot,
     wait_for_input_box,
@@ -74,9 +75,9 @@ async def execute_gemini_research(
         await wait_for_input_box(page, timeout_ms=10_000)
         await human_pause(1000, 2000, "fresh chat ready")
 
-        # ── 3. Enter the research prompt ──
+        # ── 3. Enter the research prompt (human typing speed) ──
         input_locator = await find_input_box(page)
-        await input_locator.fill(request.prompt)
+        await human_type(page, input_locator, request.prompt)
         logger.info("Prompt entered (%d chars)", len(request.prompt))
         await human_pause(1500, 3000, "reviewing prompt")
 

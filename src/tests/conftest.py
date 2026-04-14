@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Generator
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -21,6 +22,13 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.main import create_app
 from app.models import Base
+
+
+# ── Exclude live/ tests from normal collection ───────────────────────
+# Live browser tests require a real Chrome instance and are run
+# explicitly via `pytest tests/live/ -v -s`. They must not be
+# collected by the standard `pytest tests/` command.
+collect_ignore_glob = ["live/*"]
 
 
 # ── Pack membership: file-path → markers ─────────────────────────────
@@ -84,8 +92,11 @@ _FILE_PACK_MAP: dict[str, list[str]] = {
     "test_research_models": ["workstream_h", "data_integrity"],
     "test_research_adapter": ["workstream_h", "release"],
     "test_research_escalation": ["workstream_h", "release"],
-    "test_research_api": ["workstream_h"],
+    "test_research_api": ["workstream_h", "release"],
     "test_chrome_lifecycle": ["workstream_h", "release"],
+    # Live browser tests (excluded from normal collection, run explicitly)
+    "test_live_browser_connection": ["workstream_h", "manual_only"],
+    "test_live_expert_advice": ["workstream_h", "manual_only"],
 }
 
 

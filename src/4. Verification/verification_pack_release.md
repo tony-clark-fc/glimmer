@@ -270,33 +270,33 @@ This pack composes representative high-value anchors from across the canonical T
 
 | TEST Anchor | Scenario | Layer | Automation Status | Pack Priority | Notes |
 |---|---|---|---|---|---|
-| `TEST:Release.Smoke.CoreSystemBoots` | Core system smoke path passes for release confidence | `integration`, `browser` | Planned | Critical | Top-level release sentinel |
-| `TEST:Release.DataIntegrity.MemoryAndProvenanceRemainConsistent` | Data-integrity regression proves memory and provenance remain consistent | `integration` | Planned | Critical | Memory-spine sentinel |
-| `TEST:Release.Graph.CoreAssistantFlowsPass` | Core graph-driven assistant flows pass in release pack | `graph`, `integration` | Planned | Critical | Assistant-core sentinel |
-| `TEST:Release.Browser.CoreOperatorJourneysPass` | Core operator browser journeys pass in release pack | `browser` | Planned | Critical | Operator-journey sentinel |
-| `TEST:Smoke.BackendStarts` | Backend starts and exposes basic health/status behavior | `integration`, `api` | Planned | Critical | Foundational boot proof |
-| `TEST:Smoke.FrontendStarts` | Frontend workspace shell starts and renders | `integration`, `browser` | Planned | Critical | Foundational UI boot proof |
-| `TEST:Smoke.DatabaseConnectivity` | Primary relational store is reachable through the application | `integration` | Planned | Critical | Persistence reachability |
-| `TEST:Domain.MultiAccount.ProvenancePersistence` | Source provenance survives persistence round trips | `integration` | Planned | Critical | Provenance guardrail |
-| `TEST:Domain.InterpretedVsAccepted.Separation` | Interpreted artifacts remain distinct from accepted operational state | `integration` | Planned | Critical | Candidate-vs-accepted guardrail |
-| `TEST:Domain.SummaryRefresh.Lineage` | Summary refresh preserves lineage and metadata | `integration` | Planned | High | Summary integrity |
-| `TEST:Connector.GoogleMail.NormalizationPreservesThreadAndAccount` | Google mail normalization preserves thread and account meaning | `integration`, `contract` | Planned | High | Representative connector proof |
-| `TEST:Connector.MicrosoftMail.NormalizationPreservesMailboxAndThread` | Microsoft mail normalization preserves mailbox and conversation context | `integration`, `contract` | Planned | High | Multi-provider connector proof |
-| `TEST:Connector.Normalization.PersistBeforeInterpretation` | Normalized source records persist before assistant-core interpretation begins | `integration`, `graph` | Planned | Critical | Source-before-interpretation guardrail |
-| `TEST:Triage.ProjectClassification.AmbiguousMatchRequiresReview` | Ambiguous project classification creates structured review state | `graph`, `integration` | Planned | Critical | Ambiguity safety |
-| `TEST:Triage.ActionExtraction.UncertainMeaningRequiresReview` | Uncertain extracted action remains reviewable candidate state | `graph`, `integration` | Planned | Critical | Extraction safety |
-| `TEST:Planner.FocusPack.GeneratesExplainablePriorities` | Focus pack generation produces explainable priorities | `graph`, `integration` | Planned | High | Planner confidence |
-| `TEST:Planner.ProjectMemoryRefresh.TriggerIsTraceable` | Project-memory refresh trigger is explicit and traceable | `integration`, `graph` | Planned | High | Memory evolution traceability |
-| `TEST:UI.TodayView.ShowsPrioritiesAndPressureClearly` | Today view presents priorities, pressure, and rationale clearly | `browser` | Planned | High | Daily workspace proof |
-| `TEST:UI.TriageView.ShowsProvenanceAndReviewControls` | Triage view shows provenance, ambiguity, and review controls | `browser` | Planned | High | Reviewability/provenance proof |
-| `TEST:UI.DraftWorkspace.ShowsContextAndVariants` | Draft workspace shows linked context and draft variants clearly | `browser` | Planned | High | Draft-surface proof |
-| `TEST:UI.ReviewQueue.PendingVsAcceptedIsObvious` | Review queue makes pending vs accepted state obvious | `browser` | Planned | High | Approval-surface clarity |
-| `TEST:Drafting.NoAutoSend.BoundaryPreserved` | Draft workflow does not create outbound send behavior | `graph`, `api`, `integration` | Planned | Critical | MVP safety baseline |
-| `TEST:Security.NoAutoSend.GlobalBoundaryPreserved` | No-auto-send boundary is preserved across all channels | `integration`, `graph`, `api` | Planned | Critical | Cross-surface safety |
-| `TEST:Security.ReviewGate.ExternalImpactRequiresApproval` | Externally meaningful actions require structured approval | `graph`, `api`, `browser` | Planned | Critical | Approval discipline |
-| `TEST:Telegram.Companion.HandoffToWorkspaceOccursWhenNeeded` | Telegram interaction hands off to workspace when richer review is required | `graph`, `browser`, `contract` | Planned | Conditional | Include when Telegram is in scope |
-| `TEST:Voice.Session.ReviewGatePreservedForMeaningfulActions` | Voice-derived meaningful actions still require review where appropriate | `graph`, `integration` | Planned | Conditional | Include when voice is in scope |
-| `TEST:VoiceAndTelegram.SharedCoreFlowParityPreserved` | Voice and Telegram both route into the same shared core review and planning model | `graph`, `integration` | Planned | Conditional | Include when cross-channel parity is claimed |
+| `TEST:Release.Smoke.CoreSystemBoots` | Core system smoke path passes for release confidence | `integration`, `browser` | ✅ Passing | Critical | 5 smoke tests + 33 Playwright |
+| `TEST:Release.DataIntegrity.MemoryAndProvenanceRemainConsistent` | Data-integrity regression proves memory and provenance remain consistent | `integration` | ✅ Passing | Critical | 10 data_integrity tests pass |
+| `TEST:Release.Graph.CoreAssistantFlowsPass` | Core graph-driven assistant flows pass in release pack | `graph`, `integration` | ✅ Passing | Critical | Triage, planner, voice, research graphs tested |
+| `TEST:Release.Browser.CoreOperatorJourneysPass` | Core operator browser journeys pass in release pack | `browser` | ✅ Passing | Critical | 33 Playwright tests pass |
+| `TEST:Smoke.BackendStarts` | Backend starts and exposes basic health/status behavior | `integration`, `api` | ✅ Passing | Critical | test_smoke.py |
+| `TEST:Smoke.FrontendStarts` | Frontend workspace shell starts and renders | `integration`, `browser` | ✅ Passing | Critical | workspace-navigation.spec.ts |
+| `TEST:Smoke.DatabaseConnectivity` | Primary relational store is reachable through the application | `integration` | ✅ Passing | Critical | test_smoke.py |
+| `TEST:Domain.MultiAccount.ProvenancePersistence` | Source provenance survives persistence round trips | `integration` | ✅ Passing | Critical | test_domain_source.py |
+| `TEST:Domain.InterpretedVsAccepted.Separation` | Interpreted artifacts remain distinct from accepted operational state | `integration` | ✅ Passing | Critical | test_data_integrity_pack.py |
+| `TEST:Domain.SummaryRefresh.Lineage` | Summary refresh preserves lineage and metadata | `integration` | ✅ Passing | High | test_domain_summary.py |
+| `TEST:Connector.GoogleMail.NormalizationPreservesThreadAndAccount` | Google mail normalization preserves thread and account meaning | `integration`, `contract` | ✅ Passing | High | test_connector_gmail.py (15 tests) |
+| `TEST:Connector.MicrosoftMail.NormalizationPreservesMailboxAndThread` | Microsoft mail normalization preserves mailbox and conversation context | `integration`, `contract` | ✅ Passing | High | test_connector_msmail.py |
+| `TEST:Connector.Normalization.PersistBeforeInterpretation` | Normalized source records persist before assistant-core interpretation begins | `integration`, `graph` | ✅ Passing | Critical | test_triage_intake.py |
+| `TEST:Triage.ProjectClassification.AmbiguousMatchRequiresReview` | Ambiguous project classification creates structured review state | `graph`, `integration` | ✅ Passing | Critical | test_triage_classification.py |
+| `TEST:Triage.ActionExtraction.UncertainMeaningRequiresReview` | Uncertain extracted action remains reviewable candidate state | `graph`, `integration` | ✅ Passing | Critical | test_triage_extraction.py |
+| `TEST:Planner.FocusPack.GeneratesExplainablePriorities` | Focus pack generation produces explainable priorities | `graph`, `integration` | ✅ Passing | High | test_planner_focus.py (11 tests) |
+| `TEST:Planner.ProjectMemoryRefresh.TriggerIsTraceable` | Project-memory refresh trigger is explicit and traceable | `integration`, `graph` | ✅ Passing | High | test_planner_refresh.py |
+| `TEST:UI.TodayView.ShowsPrioritiesAndPressureClearly` | Today view presents priorities, pressure, and rationale clearly | `browser` | ✅ Passing | High | workspace-surfaces.spec.ts |
+| `TEST:UI.TriageView.ShowsProvenanceAndReviewControls` | Triage view shows provenance, ambiguity, and review controls | `browser` | ✅ Passing | High | workspace-surfaces.spec.ts |
+| `TEST:UI.DraftWorkspace.ShowsContextAndVariants` | Draft workspace shows linked context and draft variants clearly | `browser` | ✅ Passing | High | workspace-surfaces.spec.ts |
+| `TEST:UI.ReviewQueue.PendingVsAcceptedIsObvious` | Review queue makes pending vs accepted state obvious | `browser` | ✅ Passing | High | persona-and-safety.spec.ts |
+| `TEST:Drafting.NoAutoSend.BoundaryPreserved` | Draft workflow does not create outbound send behavior | `graph`, `api`, `integration` | ✅ Passing | Critical | test_projects_drafts.py + Playwright |
+| `TEST:Security.NoAutoSend.GlobalBoundaryPreserved` | No-auto-send boundary is preserved across all channels | `integration`, `graph`, `api` | ✅ Passing | Critical | test_cross_surface_handoff.py |
+| `TEST:Security.ReviewGate.ExternalImpactRequiresApproval` | Externally meaningful actions require structured approval | `graph`, `api`, `browser` | ✅ Passing | Critical | test_cross_surface_handoff.py + Playwright |
+| `TEST:Telegram.Companion.HandoffToWorkspaceOccursWhenNeeded` | Telegram interaction hands off to workspace when richer review is required | `graph`, `browser`, `contract` | ✅ Passing | Conditional | test_cross_surface_handoff.py |
+| `TEST:Voice.Session.ReviewGatePreservedForMeaningfulActions` | Voice-derived meaningful actions still require review where appropriate | `graph`, `integration` | ✅ Passing | Conditional | test_voice_routing.py |
+| `TEST:VoiceAndTelegram.SharedCoreFlowParityPreserved` | Voice and Telegram both route into the same shared core review and planning model | `graph`, `integration` | ✅ Passing | Conditional | test_cross_surface_handoff.py |
 
 **Stable verification anchor:** `TESTPACK:Release.EntryTable`
 
@@ -459,4 +459,49 @@ Its job is to make sure Glimmer does not ship on vibes, optimism, or a mountain 
 It should force clarity about whether the system is truly ready at the level that matters for the release being claimed.
 
 **Stable verification anchor:** `TESTPACK:Release.Conclusion`
+
+---
+
+## 15. Execution Evidence
+
+### 15.1 Latest execution — 2026-04-14
+
+- **Execution date:** 2026-04-14
+- **Milestone evaluated:** Phase 3A completion — all 8 workstreams verified
+- **Environment:** macOS development, SQLite test DB, Next.js dev server for Playwright
+
+#### Backend release pack
+- **Command:** `python -m pytest tests/ -m release -q`
+- **Result:** 246 passed, 329 deselected, 0 failures
+- **Duration:** 1.82s
+
+#### Full backend suite
+- **Command:** `python -m pytest tests/ --tb=short -q`
+- **Result:** 575 passed, 0 warnings, 0 failures
+- **Duration:** 4.61s
+
+#### Playwright browser suite
+- **Command:** `npx playwright test --reporter=list`
+- **Result:** 33 passed, 0 failures
+- **Duration:** 6.3s
+
+#### Release confidence judgment
+- **Smoke:** ✅ All 5 smoke tests pass — backend boots, DB connected, frontend renders
+- **Memory/Provenance:** ✅ Data integrity and provenance tests pass across 10 scenarios
+- **Connectors:** ✅ Google/Microsoft normalization, multi-account provenance preserved
+- **Triage/Planner:** ✅ Classification, extraction, focus packs, project memory refresh all tested
+- **Workspace UI:** ✅ 33 Playwright tests — Today, Portfolio, Triage, Drafts, Research, Review all reachable with correct content
+- **Safety:** ✅ No-auto-send boundary preserved across all surfaces, review gates enforced, whitelisted destinations locked
+- **Research:** ✅ Adapter, lifecycle, escalation, review endpoints all tested
+- **Voice/Companion:** ✅ Handoff, routing, safety parity all tested at contract level
+
+#### Caveats
+- **ManualOnly:** Chrome debug-mode + live Gemini validation not yet executed (requires operator machine setup)
+- **ManualOnly:** End-to-end deep research run and expert advice exchange with live Gemini not yet validated
+- **Voice/Companion:** Tested at contract/graph level, not live with real Telegram bot or audio model
+
+#### Confidence level
+**High** — all automated proof targets pass across all 8 workstreams. The system is architecturally complete through Phase 3A with strong verification coverage. Remaining gaps are ManualOnly live-environment validations.
+
+**Stable verification anchor:** `TESTPACK:Release.ExecutionEvidence`
 

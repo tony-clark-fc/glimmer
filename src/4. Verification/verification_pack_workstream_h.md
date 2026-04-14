@@ -25,45 +25,45 @@ It groups the relevant `TEST:` anchors and defines the evidence expectations for
 
 | Anchor | Layer | Status |
 |---|---|---|
-| `TEST:Research.Escalation.RoutesWhenTaskRequiresDeepResearch` | graph, unit | Not executed |
-| `TEST:Research.Invocation.StartsBoundedResearchRun` | integration, graph | Not executed |
-| `TEST:ExpertAdvice.Invocation.SendsPromptAndReturnsResponse` | contract, integration | Not executed |
-| `TEST:ExpertAdvice.Routing.EscalationDistinguishesResearchFromAdvice` | unit, graph | Not executed |
+| `TEST:Research.Escalation.RoutesWhenTaskRequiresDeepResearch` | graph, unit | ✅ Passing (test_research_escalation.py) |
+| `TEST:Research.Invocation.StartsBoundedResearchRun` | integration, graph | ✅ Passing (test_research_escalation.py) |
+| `TEST:ExpertAdvice.Invocation.SendsPromptAndReturnsResponse` | contract, integration | ✅ Passing (test_research_adapter.py) |
+| `TEST:ExpertAdvice.Routing.EscalationDistinguishesResearchFromAdvice` | unit, graph | ✅ Passing (test_research_api.py) |
 
 ### 2.2 Adapter and interaction
 
 | Anchor | Layer | Status |
 |---|---|---|
-| `TEST:Research.Adapter.GeminiBrowserPathReturnsStructuredResult` | contract, manual_only | Not executed |
-| `TEST:ExpertAdvice.ModeSelection.FastThinkingProRespected` | contract, unit | Not executed |
+| `TEST:Research.Adapter.GeminiBrowserPathReturnsStructuredResult` | contract, manual_only | ManualOnly — requires live Gemini |
+| `TEST:ExpertAdvice.ModeSelection.FastThinkingProRespected` | contract, unit | ✅ Passing (test_research_adapter.py) |
 
 ### 2.3 Provenance and persistence
 
 | Anchor | Layer | Status |
 |---|---|---|
-| `TEST:Research.Provenance.RunAndSourceTrailPersisted` | integration | Not executed |
-| `TEST:ExpertAdvice.Provenance.ExchangeRecordPersisted` | integration | Not executed |
+| `TEST:Research.Provenance.RunAndSourceTrailPersisted` | integration | ✅ Passing (test_research_models.py + test_research_api.py) |
+| `TEST:ExpertAdvice.Provenance.ExchangeRecordPersisted` | integration | ✅ Passing (test_research_escalation.py) |
 
 ### 2.4 Failure and degraded mode
 
 | Anchor | Layer | Status |
 |---|---|---|
-| `TEST:Research.Failure.BrowserUnavailableHandledSafely` | contract, integration | Not executed |
-| `TEST:Research.Failure.GeminiInteractionFailureVisible` | contract, integration | Not executed |
-| `TEST:ExpertAdvice.Failure.GeminiUnavailableHandledSafely` | contract, integration | Not executed |
+| `TEST:Research.Failure.BrowserUnavailableHandledSafely` | contract, integration | ✅ Passing (test_chrome_lifecycle.py + test_research_adapter.py) |
+| `TEST:Research.Failure.GeminiInteractionFailureVisible` | contract, integration | ✅ Passing (test_research_escalation.py — failed run records error) |
+| `TEST:ExpertAdvice.Failure.GeminiUnavailableHandledSafely` | contract, integration | ✅ Passing (test_research_adapter.py) |
 
 ### 2.5 Safety and security
 
 | Anchor | Layer | Status |
 |---|---|---|
-| `TEST:Research.Security.NoUnboundedActionTaking` | unit, contract | Not executed |
+| `TEST:Research.Security.NoUnboundedActionTaking` | unit, contract | ✅ Passing (test_research_adapter.py — whitelisted destinations, rate limits, timeouts) |
 
 ### 2.6 Output and workflow re-entry
 
 | Anchor | Layer | Status |
 |---|---|---|
-| `TEST:Research.Output.ResultsReenterWorkflowSafely` | graph, integration | Not executed |
-| `TEST:ExpertAdvice.Output.ResponseEntersAsInterpretedCandidate` | graph, integration | Not executed |
+| `TEST:Research.Output.ResultsReenterWorkflowSafely` | graph, integration | ✅ Passing (test_research_api.py — summary review endpoints) |
+| `TEST:ExpertAdvice.Output.ResponseEntersAsInterpretedCandidate` | graph, integration | ✅ Passing (test_research_api.py + test_research_escalation.py — pending_review default) |
 
 ---
 

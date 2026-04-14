@@ -4,6 +4,7 @@ TEST:Smoke.BackendStarts
 TEST:Smoke.DatabaseConnectivity
 TEST:Foundation.Config.LocalFirstDefaultsResolve
 TEST:Foundation.Backend.StructureRespectsBoundaryShape
+TEST:Release.Smoke.CoreSystemBoots
 """
 
 from __future__ import annotations

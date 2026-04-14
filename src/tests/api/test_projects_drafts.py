@@ -5,6 +5,7 @@ TEST:UI.ProjectWorkspace.ShowsSynthesisNotJustChronology (API backing)
 TEST:UI.DraftWorkspace.ShowsContextAndVariants (API backing)
 TEST:Drafting.Variants.MultipleVariantsRemainLinked (API backing)
 TEST:Drafting.NoAutoSend.BoundaryPreserved (structural: no send endpoint)
+TEST:Review.AcceptAmendRejectDefer.ChangesPersistCorrectly (API backing)
 """
 
 from __future__ import annotations

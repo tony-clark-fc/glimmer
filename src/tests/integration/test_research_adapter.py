@@ -5,6 +5,8 @@ TEST:ExpertAdvice.ModeSelection.FastThinkingProRespected
 TEST:ExpertAdvice.Failure.GeminiUnavailableHandledSafely
 TEST:Research.Failure.BrowserUnavailableHandledSafely
 TEST:Research.Security.NoUnboundedActionTaking
+TEST:Research.Failure.GeminiInteractionFailureVisible (contract level — live browser ManualOnly)
+TEST:Research.Adapter.GeminiBrowserPathReturnsStructuredResult (contract level — live browser ManualOnly)
 
 These are contract-level tests that verify the adapter's behavior
 using mocks/fakes instead of a live browser.

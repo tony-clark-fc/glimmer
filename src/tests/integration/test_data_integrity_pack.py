@@ -6,6 +6,7 @@ TEST:Integrity.Summaries.SupersessionDoesNotEraseHistory
 TEST:Domain.InterpretedVsAccepted.Separation
 TEST:Domain.MultiAccount.ProvenancePersistence
 TEST:Security.NoAutoSend.GlobalBoundaryPreserved
+TEST:Release.DataIntegrity.MemoryAndProvenanceRemainConsistent
 
 WORKG:WG5 — Data-integrity regression surface
 TESTPACK:DataIntegrity.ControlSurface

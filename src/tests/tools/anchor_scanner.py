@@ -13,54 +13,78 @@ from __future__ import annotations
 
 import os
 import re
-import sys
 from pathlib import Path
 
 # Paths relative to the repo src/ root
 TESTS_DIR = Path(__file__).resolve().parent.parent
 SRC_DIR = TESTS_DIR.parent
 CATALOG_PATH = SRC_DIR / "4. Verification" / "test_catalog.md"
+# Additional directories containing test files (e.g. Playwright e2e)
+E2E_DIR = SRC_DIR / "apps" / "web" / "e2e"
 
 
 def scan_catalog(catalog_path: Path) -> set[str]:
-    """Extract all TEST: anchors defined in the test catalog."""
+    """Extract all TEST: anchors defined in the test catalog.
+
+    Only scans the §7 "Catalog Entries" section to avoid picking up
+    example anchors from maintenance rules (§8) like TEST:Planner.Fix2.
+    """
     anchors: set[str] = set()
     if not catalog_path.exists():
         print(f"WARNING: Catalog not found at {catalog_path}")
         return anchors
 
     content = catalog_path.read_text()
+
+    # Restrict to §7 Catalog Entries section only
+    section_start = content.find("## 7. Catalog Entries")
+    section_end = content.find("## 8. Catalog Maintenance Rules")
+    if section_start == -1:
+        # Fallback: scan entire file
+        section = content
+    elif section_end == -1:
+        section = content[section_start:]
+    else:
+        section = content[section_start:section_end]
+
     # Match ### `TEST:Something.Something`
-    for match in re.finditer(r"`(TEST:[A-Za-z0-9_.]+)`", content):
+    for match in re.finditer(r"`(TEST:[A-Za-z0-9_.]+)`", section):
         anchors.add(match.group(1))
     return anchors
 
 
-def scan_test_files(tests_dir: Path) -> dict[str, list[str]]:
+def scan_test_files(*scan_dirs: Path) -> dict[str, list[str]]:
     """Scan test files for TEST: anchor references.
 
-    Returns {anchor: [file_path, ...]} mapping.
+    Accepts one or more directories. Returns {anchor: [file_path, ...]} mapping.
+    Paths are relative to `SRC_DIR` for readability.
     """
     anchor_files: dict[str, list[str]] = {}
 
-    for root, _dirs, files in os.walk(tests_dir):
-        for fname in files:
-            if not fname.endswith(".py") and not fname.endswith(".ts"):
+    for scan_dir in scan_dirs:
+        if not scan_dir.exists():
+            continue
+        for root, _dirs, files in os.walk(scan_dir):
+            # Skip tools directory (contains scanner itself with example anchors)
+            if os.path.basename(root) == "tools":
                 continue
-            if fname.startswith("__"):
-                continue
+            for fname in files:
+                if not fname.endswith(".py") and not fname.endswith(".ts"):
+                    continue
+                if fname.startswith("__"):
+                    continue
 
-            fpath = Path(root) / fname
-            content = fpath.read_text()
+                fpath = Path(root) / fname
+                content = fpath.read_text()
 
-            # Find TEST: references in docstrings, comments, and inline markers
-            for match in re.finditer(r"(TEST:[A-Za-z0-9_.]+)", content):
-                anchor = match.group(1)
-                rel_path = str(fpath.relative_to(tests_dir))
-                if anchor not in anchor_files:
-                    anchor_files[anchor] = []
-                if rel_path not in anchor_files[anchor]:
-                    anchor_files[anchor].append(rel_path)
+                # Find TEST: references in docstrings, comments, and inline markers
+                for match in re.finditer(r"(TEST:[A-Za-z0-9_.]+)", content):
+                    anchor = match.group(1)
+                    rel_path = str(fpath.relative_to(SRC_DIR))
+                    if anchor not in anchor_files:
+                        anchor_files[anchor] = []
+                    if rel_path not in anchor_files[anchor]:
+                        anchor_files[anchor].append(rel_path)
 
     return anchor_files
 
@@ -122,7 +146,7 @@ def generate_report(
 
 def main() -> None:
     catalog_anchors = scan_catalog(CATALOG_PATH)
-    test_anchors = scan_test_files(TESTS_DIR)
+    test_anchors = scan_test_files(TESTS_DIR, E2E_DIR)
     report = generate_report(catalog_anchors, test_anchors)
 
     # Write to evidence directory
