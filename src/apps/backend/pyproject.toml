@@ -15,6 +15,7 @@ dependencies = [
     "langgraph>=1.1,<2",
     "langchain-core>=1.2,<2",
     "playwright>=1.52,<2",
+    "openai>=1.70,<2",
 ]
 
 [project.optional-dependencies]
@@ -41,6 +42,7 @@ markers = [
     "workstream_e: Workstream E — Drafting and UI verification",
     "workstream_f: Workstream F — Voice and Companion verification",
     "workstream_h: Workstream H — Deep Research and Expert Advice verification",
+    "workstream_i: Workstream I — LLM Integration Layer verification",
     "data_integrity: Data-integrity regression — cross-cutting memory spine protection",
     "release: Release pack — representative cross-system confidence",
     "manual_only: Manual-only scenario — requires human verification",

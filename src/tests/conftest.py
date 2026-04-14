@@ -97,6 +97,16 @@ _FILE_PACK_MAP: dict[str, list[str]] = {
     # Live browser tests (excluded from normal collection, run explicitly)
     "test_live_browser_connection": ["workstream_h", "manual_only"],
     "test_live_expert_advice": ["workstream_h", "manual_only"],
+    # Workstream I — LLM Integration Layer
+    "test_inference_provider": ["workstream_i"],
+    "test_prompt_framework": ["workstream_i"],
+    "test_llm_classification": ["workstream_i"],
+    "test_llm_extraction": ["workstream_i"],
+    "test_llm_tasks": ["workstream_i"],
+    "test_llm_orchestration": ["workstream_i", "release"],
+    "test_inference_api": ["workstream_i", "release"],
+    "test_live_llm_connection": ["workstream_i", "manual_only"],
+    "test_live_llm_classification": ["workstream_i", "manual_only"],
 }
 
 
@@ -121,6 +131,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "workstream_e: Workstream E — Drafting and UI verification",
         "workstream_f: Workstream F — Voice and Companion verification",
         "workstream_h: Workstream H — Deep Research and Expert Advice verification",
+        "workstream_i: Workstream I — LLM Integration Layer verification",
         "data_integrity: Data-integrity regression — cross-cutting memory spine protection",
         "release: Release pack — representative cross-system confidence",
         "manual_only: Manual-only scenario — requires human verification",

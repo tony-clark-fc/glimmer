@@ -32,6 +32,21 @@ class ResearchHealthResponse(BaseModel):
     monitor_running: bool = False
 
 
+class InferenceHealthResponse(BaseModel):
+    """Health status for the LLM inference provider.
+
+    PLAN:WorkstreamI.PackageI9.HealthStatusAPI
+    TEST:LLM.API.HealthEndpointReportsProviderStatus
+    """
+
+    status: str  # "healthy" | "degraded" | "unavailable" | "error"
+    model_name: Optional[str] = None
+    latency_ms: Optional[float] = None
+    detail: Optional[str] = None
+    provider_type: str = "openai_compatible"
+    base_url: str = ""
+
+
 @router.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     """Lightweight liveness/readiness probe.
@@ -81,3 +96,36 @@ def health_research(request: Request) -> ResearchHealthResponse:
     return ResearchHealthResponse(**status_dict)
 
 
+@router.get("/health/inference", response_model=InferenceHealthResponse)
+async def health_inference() -> InferenceHealthResponse:
+    """LLM inference provider health — LM Studio availability and model status.
+
+    PLAN:WorkstreamI.PackageI9.HealthStatusAPI
+    TEST:LLM.API.HealthEndpointReportsProviderStatus
+
+    Reports whether the local LLM provider is reachable, which model
+    is loaded, and the health-check latency.
+    """
+    from app.inference.config import InferenceSettings
+    from app.inference.openai_compat import OpenAICompatibleProvider
+    from app.inference.base import ProviderStatus
+
+    try:
+        settings = InferenceSettings()
+        provider = OpenAICompatibleProvider(settings)
+        health = await provider.health_check()
+
+        return InferenceHealthResponse(
+            status=health.status.value,
+            model_name=health.model_name,
+            latency_ms=health.latency_ms,
+            detail=health.detail,
+            provider_type="openai_compatible",
+            base_url=settings.base_url,
+        )
+    except Exception as exc:
+        return InferenceHealthResponse(
+            status="error",
+            detail=f"Health check failed: {exc}",
+            provider_type="openai_compatible",
+        )
