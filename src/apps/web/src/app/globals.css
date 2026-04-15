@@ -311,3 +311,24 @@ button, a {
 .mode-active-pulse {
   animation: mode-pulse 2s ease-in-out infinite;
 }
+
+/* ── Mind-map React Flow overrides ──────────────────────────────── */
+.mindmap-flow .react-flow__pane {
+  cursor: grab;
+}
+.mindmap-flow .react-flow__pane:active {
+  cursor: grabbing;
+}
+.mindmap-flow .react-flow__node {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+.mindmap-flow .react-flow__edge-path {
+  stroke-linecap: round;
+}
+.mindmap-flow .react-flow__minimap {
+  border-radius: 12px;
+}
+.mindmap-flow .react-flow__controls {
+  border-radius: 12px;
+}
+

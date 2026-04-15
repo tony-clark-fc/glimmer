@@ -35,6 +35,7 @@ from app.models.persona import (  # noqa: E402, F401
 )
 from app.models.channel import (  # noqa: E402, F401
     ChannelSession, TelegramConversationState, VoiceSessionState,
+    PersonaPageSession, PersonaPageMessage, MindMapWorkingState,
 )
 from app.models.summary import ProjectSummary, RefreshEvent  # noqa: E402, F401
 from app.models.audit import AuditRecord  # noqa: E402, F401

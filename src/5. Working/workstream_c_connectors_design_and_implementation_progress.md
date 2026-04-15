@@ -251,6 +251,16 @@ This section should be updated incrementally during implementation.
   - Azure Portal: Register app, add redirect URI, grant Mail.Read + Calendars.Read + User.Read delegated permissions
   - Generate and set GLIMMER_TOKEN_ENCRYPTION_KEY in backend .env
 
+### 7.4 Session — 2026-04-16 — OAuth credentials provisioned (human action)
+
+- **State:** Both Google and Microsoft OAuth credentials have been provisioned by the operator.
+- **Meaningful accomplishments:**
+  - Google OAuth 2.0 Web application client created, Gmail + Calendar APIs enabled, email access confirmed working
+  - Microsoft Azure app registered, Mail.Read + Calendars.Read + User.Read delegated permissions, email access confirmed working
+  - Token encryption key generated and configured
+- **Calendar note:** Calendar access is provisioned (read-only scopes) but has not yet been exercised through a live user query. The operator wants to test this by asking Glimmer about upcoming meetings, which requires conversational routing through the orchestration core.
+- **No code changes** — this was a human dependency resolution step.
+
 **Stable working anchor:** `WORKC:Progress.ExecutionLog`
 
 ---
@@ -314,16 +324,16 @@ Any quiet introduction of outbound side effects at the connector layer would vio
 
 ## 10. Human Dependencies
 
-At this point, no hard blocker is known, but this workstream is more likely than A or B to encounter real setup dependencies.
+### 10.1 Resolved human dependencies
 
-Likely future human dependencies may include:
+- **Google OAuth app registration:** ✅ Completed 2026-04-16. OAuth 2.0 Web application client created in Google Cloud Console. Gmail + Calendar APIs enabled. Email access confirmed working.
+- **Microsoft OAuth app registration:** ✅ Completed 2026-04-16. Azure app registered with redirect URI. Mail.Read + Calendars.Read + User.Read delegated permissions granted. Email access confirmed working.
+- **Token encryption key:** ✅ Generated and configured in backend .env.
 
-- OAuth app registration or provider-app setup
-- confirmation of initial scope/permission choices
-- environment-specific connector configuration not yet present locally
-- confirmation of which channels are highest priority if execution needs to be staged tightly
+### 10.2 Remaining observations
 
-No live-provider dependency should be raised as a blocker until the agent has completed fixture-driven, contract-driven, and structure-safe work first.
+- **Google Calendar access:** Provisioned and assumed working (same OAuth scopes as email). Not yet exercised through a live user query. Will be confirmed when the persona conversation can route calendar queries through the orchestration core.
+- **Microsoft Calendar access:** Same status — provisioned, not yet directly tested via user query.
 
 **Stable working anchor:** `WORKC:Progress.HumanDependencies`
 

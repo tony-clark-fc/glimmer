@@ -4,8 +4,10 @@ ARCH:ProjectStateModel
 ARCH:PortfolioViewArchitecture
 ARCH:ProjectWorkspaceArchitecture
 REQ:ProjectPortfolioManagement
+REQ:ProjectCRUD
+PLAN:WorkstreamE.PackageE11.ProjectCrudApi
 
-Thin API surface for project listing, detail, creation, and update.
+Thin API surface for project listing, detail, creation, update, and archive.
 """
 
 from __future__ import annotations
@@ -14,8 +16,8 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -42,6 +44,7 @@ class ProjectSummaryResponse(BaseModel):
     open_items: int = 0
     active_blockers: int = 0
     pending_actions: int = 0
+    archived: bool = False
     created_at: datetime
 
 
@@ -56,6 +59,7 @@ class ProjectDetailResponse(BaseModel):
     short_summary: Optional[str] = None
     phase: Optional[str] = None
     priority_band: Optional[str] = None
+    archived: bool = False
     created_at: datetime
     updated_at: datetime
     open_items: list[dict] = []
@@ -73,6 +77,13 @@ class CreateProjectRequest(BaseModel):
     phase: Optional[str] = None
     priority_band: Optional[str] = None
 
+    @field_validator("name")
+    @classmethod
+    def name_must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Project name must not be empty")
+        return v.strip()
+
 
 class UpdateProjectRequest(BaseModel):
     """Request to update an existing project. All fields optional — partial update."""
@@ -84,19 +95,32 @@ class UpdateProjectRequest(BaseModel):
     priority_band: Optional[str] = None
     archived: Optional[bool] = None
 
+    @field_validator("name")
+    @classmethod
+    def name_must_not_be_empty(cls, v: str | None) -> str | None:
+        if v is not None and not v.strip():
+            raise ValueError("Project name must not be empty")
+        return v.strip() if v else v
+
 
 # ── Routes ───────────────────────────────────────────────────────
 
 
 @router.get("", response_model=list[ProjectSummaryResponse])
-def list_projects(db: Session = Depends(get_db)) -> list[ProjectSummaryResponse]:
+def list_projects(
+    include_archived: bool = Query(False, description="Include archived projects"),
+    db: Session = Depends(get_db),
+) -> list[ProjectSummaryResponse]:
     """List all projects with attention-demand signals.
 
     ARCH:PortfolioViewArchitecture
+    REQ:ProjectCRUD
     """
-    projects = db.execute(
-        select(Project).order_by(Project.created_at.desc())
-    ).scalars().all()
+    query = select(Project).order_by(Project.created_at.desc())
+    if not include_archived:
+        query = query.where(Project.archived == False)  # noqa: E712
+
+    projects = db.execute(query).scalars().all()
 
     results = []
     for p in projects:
@@ -130,6 +154,7 @@ def list_projects(db: Session = Depends(get_db)) -> list[ProjectSummaryResponse]
             open_items=open_count,
             active_blockers=blocker_count,
             pending_actions=pending_count,
+            archived=p.archived,
             created_at=p.created_at,
         ))
 
@@ -185,6 +210,7 @@ def get_project(
         short_summary=project.short_summary,
         phase=project.phase,
         priority_band=project.priority_band,
+        archived=project.archived,
         created_at=project.created_at,
         updated_at=project.updated_at,
         open_items=[
@@ -236,6 +262,7 @@ def create_project(
         short_summary=project.short_summary,
         phase=project.phase,
         priority_band=project.priority_band,
+        archived=project.archived,
         created_at=project.created_at,
         updated_at=project.updated_at,
         open_items=[],
@@ -253,6 +280,7 @@ def update_project(
 ) -> ProjectDetailResponse:
     """Update an existing project. Partial update — only provided fields are changed.
 
+    REQ:ProjectCRUD
     REQ:ProjectPortfolioManagement
     """
     project = db.get(Project, project_id)
@@ -268,3 +296,29 @@ def update_project(
 
     # Re-use get_project logic for full response
     return get_project(project_id, db)
+
+
+@router.post("/{project_id}/archive", response_model=ProjectDetailResponse)
+def archive_project(
+    project_id: uuid.UUID,
+    db: Session = Depends(get_db),
+) -> ProjectDetailResponse:
+    """Archive a project. Sets archived=True and status='archived'.
+
+    REQ:ProjectCRUD
+    """
+    project = db.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    if project.archived:
+        raise HTTPException(status_code=409, detail="Project is already archived")
+
+    project.archived = True
+    project.status = "archived"
+    db.commit()
+    db.refresh(project)
+
+    return get_project(project_id, db)
+
+

@@ -324,7 +324,7 @@ After evaluating tradeoffs between MLX direct and LM Studio:
 5. **Performance optimization** — batch requests, streaming, cache warm responses
 
 The major remaining work across Glimmer is:
-- **Live integration setup** (OAuth credentials, real account connections)
+- **Live integration setup** — OAuth credentials provisioned 2026-04-16 (Google + Microsoft); email access confirmed working; calendar access provisioned but not yet tested via user query
 - **CI/CD pipeline**
 - **Playwright browser tests for UI**
 

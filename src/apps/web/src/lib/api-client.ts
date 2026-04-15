@@ -14,6 +14,8 @@ import type {
   DraftSummary,
   DraftDetail,
   PersonaSelection,
+  PersonaSession,
+  PersonaMessage,
   GlimmerMood,
   ResearchHealth,
   ResearchRunSummary,
@@ -23,6 +25,11 @@ import type {
   AuthUrlResponse,
   SyncTriggerResponse,
   ConnectorStatusResponse,
+  CandidateNodePayload,
+  CandidateEdgePayload,
+  WorkingStateResponse,
+  ConfirmWorkingStateResponse,
+  DiscardWorkingStateResponse,
 } from "./types";
 
 // ── Generic fetch helper ────────────────────────────────────────
@@ -96,6 +103,12 @@ export async function updateProject(
   });
 }
 
+export async function archiveProject(id: string): Promise<ProjectDetail> {
+  return apiFetch<ProjectDetail>(`/projects/${id}/archive`, {
+    method: "POST",
+  });
+}
+
 // ── Triage / Review ─────────────────────────────────────────────
 
 export async function fetchReviewQueue(): Promise<ReviewQueue> {
@@ -153,6 +166,50 @@ export async function fetchGlimmerMood(): Promise<GlimmerMood> {
   return apiFetch<GlimmerMood>("/persona/mood");
 }
 
+// ── Persona Sessions ────────────────────────────────────────────
+
+export async function createPersonaSession(
+  workspaceMode?: string,
+): Promise<PersonaSession> {
+  return apiFetch<PersonaSession>("/persona/sessions", {
+    method: "POST",
+    body: JSON.stringify({ workspace_mode: workspaceMode ?? "update" }),
+  });
+}
+
+export async function fetchPersonaSession(
+  sessionId: string,
+): Promise<PersonaSession> {
+  return apiFetch<PersonaSession>(`/persona/sessions/${sessionId}`);
+}
+
+export async function sendPersonaMessage(
+  sessionId: string,
+  content: string,
+  workspaceMode?: string,
+): Promise<PersonaMessage> {
+  return apiFetch<PersonaMessage>(
+    `/persona/sessions/${sessionId}/messages`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        content,
+        workspace_mode: workspaceMode,
+      }),
+    },
+  );
+}
+
+export async function updatePersonaSessionStatus(
+  sessionId: string,
+  status: string,
+): Promise<PersonaSession> {
+  return apiFetch<PersonaSession>(`/persona/sessions/${sessionId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ session_status: status }),
+  });
+}
+
 // ── Research / Chrome Health ────────────────────────────────────
 
 export async function fetchResearchHealth(): Promise<ResearchHealth> {
@@ -197,6 +254,57 @@ export async function reviewExchange(
     method: "PATCH",
     body: JSON.stringify({ action }),
   });
+}
+
+// ── Mind-map Working State (E14 — Staged Persistence) ───────────
+
+export async function saveWorkingState(
+  sessionId: string,
+  candidateNodes: CandidateNodePayload[],
+  candidateEdges: CandidateEdgePayload[],
+  stateVersion: number = 1,
+): Promise<WorkingStateResponse> {
+  return apiFetch<WorkingStateResponse>(
+    `/persona/sessions/${sessionId}/working-state`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        candidate_nodes: candidateNodes,
+        candidate_edges: candidateEdges,
+        state_version: stateVersion,
+      }),
+    },
+  );
+}
+
+export async function fetchWorkingState(
+  sessionId: string,
+): Promise<WorkingStateResponse> {
+  return apiFetch<WorkingStateResponse>(
+    `/persona/sessions/${sessionId}/working-state`,
+  );
+}
+
+export async function confirmWorkingState(
+  sessionId: string,
+  acceptedNodeIds: string[],
+): Promise<ConfirmWorkingStateResponse> {
+  return apiFetch<ConfirmWorkingStateResponse>(
+    `/persona/sessions/${sessionId}/confirm`,
+    {
+      method: "POST",
+      body: JSON.stringify({ accepted_node_ids: acceptedNodeIds }),
+    },
+  );
+}
+
+export async function discardWorkingState(
+  sessionId: string,
+): Promise<DiscardWorkingStateResponse> {
+  return apiFetch<DiscardWorkingStateResponse>(
+    `/persona/sessions/${sessionId}/discard`,
+    { method: "POST" },
+  );
 }
 
 // ── Connectors / Connected Accounts ─────────────────────────────

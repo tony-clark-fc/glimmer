@@ -16,6 +16,7 @@ export interface ProjectSummary {
   open_items: number;
   active_blockers: number;
   pending_actions: number;
+  archived: boolean;
   created_at: string;
 }
 
@@ -27,6 +28,7 @@ export interface ProjectDetail {
   short_summary: string | null;
   phase: string | null;
   priority_band: string | null;
+  archived: boolean;
   created_at: string;
   updated_at: string;
   open_items: Array<{
@@ -183,6 +185,7 @@ export interface GlimmerMood {
 
 export type InteractionMode = "voice" | "whisper" | "chat";
 export type WorkspaceMode = "idea" | "plan" | "report" | "debrief" | "update";
+export type SessionStatus = "active" | "paused" | "confirmed" | "abandoned";
 
 export interface ChatMessage {
   id: string;
@@ -190,6 +193,111 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   mode?: WorkspaceMode;
+}
+
+export interface PersonaMessage {
+  id: string;
+  role: "user" | "glimmer";
+  content: string;
+  ordering: number;
+  workspace_mode: string | null;
+  inference_metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface PersonaSession {
+  id: string;
+  session_status: SessionStatus;
+  workspace_mode: string | null;
+  summary_intent: string | null;
+  created_at: string;
+  updated_at: string;
+  messages: PersonaMessage[];
+}
+
+// ── Mind-map (Persona Page) ─────────────────────────────────────
+
+export type MindMapEntityType =
+  | "project"
+  | "stakeholder"
+  | "milestone"
+  | "risk"
+  | "blocker"
+  | "work_item"
+  | "decision"
+  | "dependency";
+
+export type MindMapNodeStatus = "pending" | "accepted" | "discarded";
+export type MindMapSourceOrigin = "conversation" | "paste_in" | "operator_created" | "existing";
+
+export interface MindMapNodeData {
+  entityType: MindMapEntityType;
+  label: string;
+  subtitle?: string;
+  status: MindMapNodeStatus;
+  sourceOrigin: MindMapSourceOrigin;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown; // Required by React Flow's Record<string, unknown> constraint
+}
+
+export type MindMapEdgeRelation =
+  | "owns"
+  | "depends_on"
+  | "blocks"
+  | "involves"
+  | "linked_to";
+
+export interface MindMapEdgeData {
+  relation: MindMapEdgeRelation;
+  label?: string;
+  [key: string]: unknown; // Required by React Flow's Record<string, unknown> constraint
+}
+
+// ── Mind-map Working State (E14 — Staged Persistence) ───────────
+
+export interface CandidateNodePayload {
+  node_id: string;
+  entity_type: MindMapEntityType;
+  label: string;
+  subtitle?: string;
+  status: "pending" | "accepted_by_operator" | "discarded_by_operator";
+  source_origin: MindMapSourceOrigin;
+  metadata?: Record<string, unknown>;
+  position_x?: number;
+  position_y?: number;
+}
+
+export interface CandidateEdgePayload {
+  edge_id: string;
+  source_node_id: string;
+  target_node_id: string;
+  relation: MindMapEdgeRelation;
+  label?: string;
+}
+
+export interface WorkingStateResponse {
+  session_id: string;
+  candidate_nodes: CandidateNodePayload[];
+  candidate_edges: CandidateEdgePayload[];
+  state_version: number;
+  updated_at: string;
+}
+
+export interface ConfirmWorkingStateResponse {
+  session_id: string;
+  persisted_count: number;
+  persisted_entities: Array<{
+    entity_type: string;
+    entity_id: string;
+    label: string;
+  }>;
+  session_status: string;
+}
+
+export interface DiscardWorkingStateResponse {
+  session_id: string;
+  discarded: boolean;
+  session_status: string;
 }
 
 // ── Research / Chrome Health ────────────────────────────────────

@@ -50,6 +50,10 @@ from app.inference.tasks.briefing import (
     LLMBriefingResult,
     generate_briefing_llm,
 )
+from app.inference.tasks.conversation import (
+    LLMConversationResult,
+    generate_conversation_reply_llm,
+)
 
 # Import existing deterministic services for fallback
 from app.graphs.triage import (
@@ -336,4 +340,94 @@ async def generate_briefing_smart(
             "LLM briefing failed, returning empty result: %s", exc
         )
         return LLMBriefingResult(used_llm=False)
+
+
+# ── Persona Chat with Fallback ───────────────────────────────────────
+
+
+@dataclass
+class SmartConversationResult(FallbackResult):
+    """Conversation reply result with LLM/fallback tracking."""
+
+    reply_content: str = ""
+    inference_latency_ms: float = 0.0
+    model: str = ""
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+    total_tokens: int | None = None
+
+
+async def persona_chat_smart(
+    *,
+    operator_message: str,
+    workspace_mode: str = "update",
+    message_history: list[dict] | None = None,
+    project_summaries: list[dict] | None = None,
+    portfolio_health: dict | None = None,
+    provider: OpenAICompatibleProvider | None = None,
+) -> SmartConversationResult:
+    """Generate a persona-page chat reply with LLM-first, template-fallback.
+
+    ARCH:PersonaPage.ConversationModel
+    ARCH:PersonaPage.OrchestrationRelationship
+
+    On LLM failure, returns a graceful fallback message acknowledging
+    the inability to generate a proper response.
+    """
+    provider = provider or get_inference_provider()
+
+    try:
+        llm_result: LLMConversationResult = await generate_conversation_reply_llm(
+            provider,
+            operator_message=operator_message,
+            workspace_mode=workspace_mode,
+            message_history=message_history,
+            project_summaries=project_summaries,
+            portfolio_health=portfolio_health,
+        )
+
+        return SmartConversationResult(
+            used_llm=True,
+            reply_content=llm_result.reply_content,
+            inference_latency_ms=llm_result.inference_latency_ms,
+            model=llm_result.model,
+            prompt_tokens=llm_result.prompt_tokens,
+            completion_tokens=llm_result.completion_tokens,
+            total_tokens=llm_result.total_tokens,
+        )
+
+    except InferenceError as exc:
+        logger.info(
+            "LLM conversation failed, using fallback: %s", exc
+        )
+
+        fallback_reply = _generate_conversation_fallback(
+            operator_message, workspace_mode
+        )
+
+        return SmartConversationResult(
+            used_llm=False,
+            fallback_reason=str(exc),
+            reply_content=fallback_reply,
+        )
+
+
+def _generate_conversation_fallback(
+    operator_message: str,
+    workspace_mode: str,
+) -> str:
+    """Generate a graceful fallback response when LLM is unavailable."""
+    mode_hints = {
+        "idea": "I'd love to help you brainstorm that idea",
+        "plan": "I can help you think through the planning",
+        "report": "I'll put together an activity summary for you",
+        "debrief": "I'm ready to capture what you've been working on",
+        "update": "Let me check what needs your attention",
+    }
+    hint = mode_hints.get(workspace_mode, "I'm here to help")
+    return (
+        f"{hint}, but my reasoning engine isn't available right now. "
+        f"I've noted your message and will be able to respond properly "
+        f"once inference is back online."
+    )
 

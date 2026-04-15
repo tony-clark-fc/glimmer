@@ -2,10 +2,12 @@
  * WorkspaceCanvas — bottom section of the Glimmer persona page.
  *
  * REQ:GlimmerPersonaPage
+ * PLAN:WorkstreamE.PackageE13.PersonaPageMindMap
+ * PLAN:WorkstreamE.PackageE14.PersonaPageStagedPersistence
  *
  * Fills the remaining viewport below the top conversation area.
  * Content adapts to the active workspace mode:
- * - Idea: Mind-map canvas for project creation/editing
+ * - Idea: Mind-map canvas (React Flow) for project creation/editing
  * - Plan: Project work items, milestones, tasks
  * - Report: What Glimmer has been doing (activity log)
  * - Debrief: Structured input for what the operator has been doing
@@ -18,9 +20,20 @@ import { useEffect, useState } from "react";
 import type { WorkspaceMode } from "@/lib/types";
 import type { ProjectSummary } from "@/lib/types";
 import { fetchProjects } from "@/lib/api-client";
+import { MindMapCanvas } from "./mind-map-canvas";
+import { MindMapToolbar } from "./mind-map-toolbar";
+import type { WorkingStateActions } from "./use-working-state";
+import type { Node, Edge } from "@xyflow/react";
+import type { MindMapNodeData, MindMapEdgeData } from "@/lib/types";
 
 interface WorkspaceCanvasProps {
   mode: WorkspaceMode;
+  /** Working state nodes from the E14 staged persistence hook */
+  workingNodes?: Node<MindMapNodeData>[];
+  /** Working state edges from the E14 staged persistence hook */
+  workingEdges?: Edge<MindMapEdgeData>[];
+  /** Working state actions for the toolbar */
+  workingStateActions?: WorkingStateActions;
 }
 
 const MODE_HEADERS: Record<WorkspaceMode, { title: string; desc: string; icon: string }> = {
@@ -31,12 +44,18 @@ const MODE_HEADERS: Record<WorkspaceMode, { title: string; desc: string; icon: s
   update: { title: "Inbox Update", desc: "New items that need attention, triage, or assignment", icon: "📥" },
 };
 
-export function WorkspaceCanvas({ mode }: WorkspaceCanvasProps) {
+export function WorkspaceCanvas({
+  mode,
+  workingNodes,
+  workingEdges,
+  workingStateActions,
+}: WorkspaceCanvasProps) {
   const header = MODE_HEADERS[mode];
+  const hasWorkingData = workingNodes && workingNodes.length > 0;
 
   return (
     <div
-      className="flex-1 min-h-0 rounded-t-2xl overflow-hidden relative z-10"
+      className="flex-1 min-h-0 rounded-t-2xl overflow-hidden relative z-10 flex flex-col"
       style={{
         background: "linear-gradient(180deg, rgba(14,14,17,0.6), rgba(10,10,12,0.8))",
         borderTop: "1px solid rgba(129, 140, 248, 0.06)",
@@ -55,34 +74,27 @@ export function WorkspaceCanvas({ mode }: WorkspaceCanvasProps) {
         </div>
       </div>
 
+      {/* E14 toolbar — only in idea mode with working state */}
+      {mode === "idea" && workingStateActions && (
+        <div className="px-6 py-2 border-b border-outline-variant/10" data-testid="mindmap-toolbar-container">
+          <MindMapToolbar actions={workingStateActions} />
+        </div>
+      )}
+
       {/* Canvas content */}
-      <div className="h-full overflow-y-auto p-6">
-        {mode === "idea" && <IdeaCanvas />}
+      <div className={`flex-1 min-h-0 ${mode === "idea" ? "" : "overflow-y-auto p-6"}`}>
+        {mode === "idea" && (
+          <MindMapCanvas
+            externalNodes={hasWorkingData ? workingNodes : undefined}
+            externalEdges={hasWorkingData ? workingEdges : undefined}
+            showDemo={!hasWorkingData}
+          />
+        )}
         {mode === "plan" && <PlanCanvas />}
         {mode === "report" && <ReportCanvas />}
         {mode === "debrief" && <DebriefCanvas />}
         {mode === "update" && <UpdateCanvas />}
       </div>
-    </div>
-  );
-}
-
-// ── Mode-specific canvases ──────────────────────────────────────
-
-function IdeaCanvas() {
-  return (
-    <div className="flex flex-col items-center justify-center h-64 text-center">
-      <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
-        <span className="text-3xl">💡</span>
-      </div>
-      <p className="text-sm text-on-surface-variant max-w-md">
-        Describe your idea in the chat — Glimmer will extract concepts, stakeholders,
-        and milestones into a visual mind-map here.
-      </p>
-      <p className="text-xs text-muted-light mt-2">
-        Say things like &ldquo;I want to start a new project for…&rdquo; or
-        &ldquo;Let&apos;s update the scope on…&rdquo;
-      </p>
     </div>
   );
 }

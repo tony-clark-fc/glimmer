@@ -87,7 +87,10 @@ _FILE_PACK_MAP: dict[str, list[str]] = {
     "test_draft_creation": ["workstream_e", "workstream_i", "release"],
     # Workstream E — Drafting and UI
     "test_projects_drafts": ["workstream_e", "release"],
+    "test_project_crud": ["workstream_e", "release"],
     "test_persona": ["workstream_e"],
+    "test_persona_conversation": ["workstream_e", "release"],
+    "test_staged_persistence": ["workstream_e", "release"],
     "test_operator": ["workstream_e"],
     "test_operational_support": ["workstream_e"],
     # Workstream F — Voice and Companion
