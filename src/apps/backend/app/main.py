@@ -22,6 +22,7 @@ from app.api.voice import router as voice_router
 from app.api.telegram import router as telegram_router
 from app.api.research import router as research_router
 from app.api.connectors import router as connectors_router
+from app.api.ask import router as ask_router
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -88,6 +89,7 @@ def create_app() -> FastAPI:
     app.include_router(telegram_router)
     app.include_router(research_router)
     app.include_router(connectors_router)
+    app.include_router(ask_router)
 
     return app
 

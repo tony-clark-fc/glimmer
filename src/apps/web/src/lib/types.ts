@@ -300,6 +300,33 @@ export interface DiscardWorkingStateResponse {
   session_status: string;
 }
 
+// ── Paste-in Ingestion (E15) ────────────────────────────────────
+
+export interface PasteInRequest {
+  content: string;
+  content_type_hint?: string;
+}
+
+export interface PasteInCandidateNode {
+  node_id: string;
+  entity_type: MindMapEntityType;
+  label: string;
+  subtitle?: string;
+  status: string;
+  source_origin: string;
+  confidence: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface PasteInResponse {
+  artifact_id: string;
+  extraction_status: string;
+  candidate_nodes: PasteInCandidateNode[];
+  explanation: string;
+  used_llm: boolean;
+  inference_metadata?: Record<string, unknown> | null;
+}
+
 // ── Research / Chrome Health ────────────────────────────────────
 
 export interface ResearchHealth {
@@ -424,3 +451,20 @@ export interface ConnectorStatusResponse {
   active_accounts: number;
 }
 
+// ── Ask Glimmer (E16) ───────────────────────────────────────────
+
+export interface AskGlimmerRequest {
+  element_type: string;
+  element_id: string;
+  element_context: Record<string, unknown>;
+  surface: string;
+  question: string;
+}
+
+export interface AskGlimmerResponse {
+  reply: string;
+  review_required: boolean;
+  review_reason: string | null;
+  used_llm: boolean;
+  inference_latency_ms: number;
+}

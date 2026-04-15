@@ -13,6 +13,7 @@ import {
   ActionButton,
 } from "@/components/ui";
 import type { DraftSummary } from "@/lib/types";
+import { AskGlimmerPopover } from "@/components/ask-glimmer-popover";
 
 type LoadState = "loading" | "loaded" | "empty" | "error";
 
@@ -140,13 +141,21 @@ export default function DraftsPage() {
                 </div>
 
                 {/* Copy button — review-only, no send */}
-                <ActionButton
-                  testId="draft-copy"
-                  variant={copiedId === draft.id ? "success" : "primary"}
-                  onClick={() => handleCopy(draft)}
-                >
-                  {copiedId === draft.id ? "Copied ✓" : "Copy Draft"}
-                </ActionButton>
+                <div className="flex flex-col items-end gap-2">
+                  <ActionButton
+                    testId="draft-copy"
+                    variant={copiedId === draft.id ? "success" : "primary"}
+                    onClick={() => handleCopy(draft)}
+                  >
+                    {copiedId === draft.id ? "Copied ✓" : "Copy Draft"}
+                  </ActionButton>
+                  <AskGlimmerPopover
+                    elementType="draft"
+                    elementId={draft.id}
+                    elementContext={{ intent_label: draft.intent_label, body_content: draft.body_content?.slice(0, 200), tone_mode: draft.tone_mode, channel_type: draft.channel_type, status: draft.status }}
+                    surface="drafts"
+                  />
+                </div>
               </div>
             </div>
           ))}

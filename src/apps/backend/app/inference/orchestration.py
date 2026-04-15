@@ -54,6 +54,15 @@ from app.inference.tasks.conversation import (
     LLMConversationResult,
     generate_conversation_reply_llm,
 )
+from app.inference.tasks.paste_in_extraction import (
+    LLMPasteInExtractionResult,
+    ExtractedEntity,
+    extract_entities_from_paste_in_llm,
+)
+from app.inference.tasks.contextual_ask import (
+    LLMContextualAskResult,
+    generate_contextual_ask_llm,
+)
 
 # Import existing deterministic services for fallback
 from app.graphs.triage import (
@@ -431,3 +440,149 @@ def _generate_conversation_fallback(
         f"once inference is back online."
     )
 
+
+# ── Paste-in Entity Extraction with Fallback ─────────────────────────
+
+
+@dataclass
+class SmartPasteInExtractionResult(FallbackResult):
+    """Paste-in entity extraction result with LLM/fallback tracking.
+
+    ARCH:PersonaPage.PasteInPipeline
+    """
+
+    entities: list[dict] = None  # type: ignore[assignment]
+    explanation: str = ""
+    inference_latency_ms: float = 0.0
+
+    def __post_init__(self):
+        if self.entities is None:
+            self.entities = []
+
+
+async def paste_in_extract_smart(
+    *,
+    raw_content: str,
+    content_type_hint: str = "freeform",
+    project_summaries: list[dict] | None = None,
+    provider: OpenAICompatibleProvider | None = None,
+) -> SmartPasteInExtractionResult:
+    """Extract entities from paste-in content with LLM-first, empty-fallback.
+
+    ARCH:PersonaPage.PasteInPipeline
+    ARCH:PersonaPage.StagedPersistence — extracted entities are candidates, not accepted state.
+
+    On LLM failure, returns an empty extraction result and a message
+    explaining that extraction is currently unavailable. The raw artifact
+    is already persisted, so no data loss occurs.
+    """
+    provider = provider or get_inference_provider()
+
+    try:
+        llm_result: LLMPasteInExtractionResult = await extract_entities_from_paste_in_llm(
+            provider,
+            raw_content=raw_content,
+            content_type_hint=content_type_hint,
+            project_summaries=project_summaries,
+        )
+
+        return SmartPasteInExtractionResult(
+            used_llm=True,
+            entities=[
+                {
+                    "entity_type": e.entity_type,
+                    "label": e.label,
+                    "subtitle": e.subtitle,
+                    "confidence": e.confidence,
+                }
+                for e in llm_result.entities
+            ],
+            explanation=llm_result.explanation,
+            inference_latency_ms=llm_result.inference_latency_ms,
+        )
+
+    except InferenceError as exc:
+        logger.info(
+            "LLM paste-in extraction failed, returning empty result: %s", exc
+        )
+        return SmartPasteInExtractionResult(
+            used_llm=False,
+            fallback_reason=str(exc),
+            entities=[],
+            explanation=(
+                "I've saved the pasted content, but I couldn't analyze it right now "
+                "because my reasoning engine is unavailable. The raw text is preserved "
+                "and I'll be able to extract entities when inference is back online."
+            ),
+        )
+
+
+# ── Contextual "Ask Glimmer" with Fallback ───────────────────────────
+
+
+@dataclass
+class SmartContextualAskResult(FallbackResult):
+    """Contextual Ask Glimmer result with LLM/fallback tracking.
+
+    ARCH:ContextualAskGlimmerInteraction
+    """
+
+    reply_content: str = ""
+    review_required: bool = False
+    review_reason: str | None = None
+    inference_latency_ms: float = 0.0
+
+
+async def contextual_ask_smart(
+    *,
+    element_type: str,
+    element_id: str,
+    element_context: dict,
+    surface: str,
+    question: str,
+    project_summaries: list[dict] | None = None,
+    provider: OpenAICompatibleProvider | None = None,
+) -> SmartContextualAskResult:
+    """Answer a contextual question about a workspace element.
+
+    ARCH:ContextualAskGlimmerInteraction
+    ARCH:ReviewGateArchitecture — review_required flag preserved from LLM output.
+
+    LLM-first with graceful fallback when inference is unavailable.
+    """
+    provider = provider or get_inference_provider()
+
+    try:
+        llm_result: LLMContextualAskResult = await generate_contextual_ask_llm(
+            provider,
+            element_type=element_type,
+            element_id=element_id,
+            element_context=element_context,
+            surface=surface,
+            question=question,
+            project_summaries=project_summaries,
+        )
+
+        return SmartContextualAskResult(
+            used_llm=True,
+            reply_content=llm_result.reply_content,
+            review_required=llm_result.review_required,
+            review_reason=llm_result.review_reason,
+            inference_latency_ms=llm_result.inference_latency_ms,
+        )
+
+    except InferenceError as exc:
+        logger.info(
+            "LLM contextual ask failed, using fallback: %s", exc
+        )
+
+        return SmartContextualAskResult(
+            used_llm=False,
+            fallback_reason=str(exc),
+            reply_content=(
+                f"I'd like to help with your question about this {element_type}, "
+                f"but my reasoning engine isn't available right now. "
+                f"Please try again shortly."
+            ),
+            review_required=False,
+        )

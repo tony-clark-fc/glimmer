@@ -91,6 +91,8 @@ _FILE_PACK_MAP: dict[str, list[str]] = {
     "test_persona": ["workstream_e"],
     "test_persona_conversation": ["workstream_e", "release"],
     "test_staged_persistence": ["workstream_e", "release"],
+    "test_paste_in": ["workstream_e", "release"],
+    "test_contextual_ask": ["workstream_e", "release"],
     "test_operator": ["workstream_e"],
     "test_operational_support": ["workstream_e"],
     # Workstream F — Voice and Companion

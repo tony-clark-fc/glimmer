@@ -49,13 +49,13 @@ A work item should not be treated as complete merely because code exists. Verifi
 ## 3. Current Overall Status
 
 - **Overall Workstream Status:** `Verified`
-- **Current Confidence Level:** WE1-WE9 all implemented and verified; E11-E14 implemented and verified; 863 backend tests pass; 56 Playwright tests pass (including 6 mind-map + 6 staged-persistence tests)
-- **Last Meaningful Update:** 2026-04-16 — E14 (Staged Persistence and Confirm Flow) implemented: MindMapWorkingState model, working state backup/restore API, confirm & save batch commit, discard flow, frontend working state hook, toolbar UI with accept/confirm/discard controls, 20 backend API tests + 6 Playwright tests all pass; full suite 56/56 Playwright, 863/863 backend
-- **Ready for Coding:** E14 complete — E15 (Paste-in Ingestion) is next
+- **Current Confidence Level:** WE1-WE9 all implemented and verified; E11-E16 implemented and verified; 905 backend tests pass; 63 Playwright tests pass (including 7 Ask Glimmer tests)
+- **Last Meaningful Update:** 2026-04-16 — E16 (Cross-surface "Ask Glimmer" contextual interaction) implemented: shared AskGlimmerPopover component, backend contextual ask endpoint + inference task + prompt + orchestration wiring with LLM-first/fallback, review-gate compliance with review_required flag, sparkle ✦ affordance integrated across all 6 primary workspace surfaces (Today, Portfolio, Project, Triage, Drafts, Review), 23 backend API tests all pass, 7 Playwright e2e tests all pass; full suite 63/63 Playwright, 905/905 backend
+- **Ready for Coding:** Workstream E is fully complete — all 16 packages implemented and verified
 
 ### Current summary
 
-Workstream E is complete. All nine work packages are implemented and verified:
+Workstream E is fully complete. All sixteen work packages are implemented and verified:
 
 - **WE1** — Workspace route/layout baseline (carried forward from WS-A foundation, confirmed stable)
 - **WE2** — Today view connected to focus-pack API, with loading/empty/error/loaded states
@@ -89,6 +89,7 @@ Frontend additions: typed API client (`api-client.ts`, `types.ts`), all 6 worksp
 - `REQ:ContextAwareVisualPresentation`
 - `REQ:MultiAccountProfileSupport`
 - `REQ:SafeBehaviorDefaults`
+- `REQ:ContextualAskGlimmer`
 
 ### 4.2 Architecture anchors
 
@@ -104,6 +105,7 @@ Frontend additions: typed API client (`api-client.ts`, `types.ts`), all 6 worksp
 - `ARCH:DraftModel`
 - `ARCH:ProjectStateModel`
 - `ARCH:SystemBoundaries`
+- `ARCH:ContextualAskGlimmerInteraction`
 
 ### 4.3 Build-plan anchors
 
@@ -134,6 +136,8 @@ Frontend additions: typed API client (`api-client.ts`, `types.ts`), all 6 worksp
 - `TEST:Security.ReviewGate.ExternalImpactRequiresApproval`
 - `TEST:UI.Persona.FallbackAndContextSelectionWorks`
 - `TEST:UI.Persona.RenderingRemainsSubordinateToOperationalContent`
+- `TEST:UI.AskGlimmer.AffordanceVisibleOnDataElements`
+- `TEST:UI.AskGlimmer.ResponseRespectsReviewGates`
 
 **Stable working anchor:** `WORKE:Progress.ControlAnchors`
 
@@ -156,6 +160,8 @@ Frontend additions: typed API client (`api-client.ts`, `types.ts`), all 6 worksp
 | E12 | Persona page conversation UI | `Verified` | 22 API tests + 6 Playwright tests | Session lifecycle, LLM-backed chat, message persistence, workspace mode, fallback handling |
 | E13 | Persona page mind-map visualization | `Verified` | 6 Playwright tests | React Flow canvas, 8 semantic node types, dagre layout, zoom/pan/minimap, working state indicators |
 | E14 | Persona page staged persistence and confirm flow | `Verified` | 20 API tests + 6 Playwright tests | MindMapWorkingState model, save/restore backup, Confirm & Save batch commit (projects first, then subsidiary entities), discard flow, toolbar UI, accept/confirm/discard controls |
+| E15 | Persona page paste-in ingestion | `Verified` | 19 API tests | PasteInSourceArtifact model, paste-in API endpoint, LLM entity extraction task + prompt, orchestration wiring with fallback, frontend paste-in UI, working state integration, provenance linkage |
+| E16 | Cross-surface "Ask Glimmer" contextual interaction | `Verified` | 23 API tests + 7 Playwright tests | Shared AskGlimmerPopover component, backend /ask/contextual endpoint, contextual_ask inference task + prompt, orchestration wiring with LLM-first/fallback, review-gate compliance (review_required flag), sparkle ✦ affordance on all 6 primary surfaces |
 
 **Stable working anchor:** `WORKE:Progress.PackageStatusTable`
 
@@ -422,6 +428,63 @@ This section should be updated incrementally during implementation.
   - `apps/web/src/app/glimmer/page.tsx` (useWorkingState hook wiring)
   - `tests/conftest.py` (test_staged_persistence pack mapping)
 
+### 7.9 Session 2026-04-16 — E15 Persona page paste-in ingestion
+
+- **State:** E15 implemented and verified.
+- **Scope:** Full paste-in pipeline — operator pastes content → raw artifact preserved → LLM entity extraction → candidate nodes in working state → conversational explanation.
+- **Backend model:** `PasteInSourceArtifact` (SQLAlchemy model in `channel.py`) with fields: id, session_id, raw_content, paste_timestamp, content_type_hint, extraction_status, linked_candidate_node_ids. Alembic migration `e15a0d4e8f63`.
+- **LLM extraction:** `paste_in_extraction.py` prompt + `paste_in_extraction.py` task — extracts 8 entity types (project, stakeholder, milestone, risk, blocker, work_item, decision, dependency) with confidence scores and deduplication.
+- **Orchestration:** `paste_in_extract_smart()` in `orchestration.py` — LLM-first with graceful fallback when inference unavailable. Raw artifact always preserved regardless of extraction outcome.
+- **API endpoint:** `POST /persona/sessions/{session_id}/paste-in` — validates session, persists artifact BEFORE interpretation, calls extraction, returns candidate nodes with `source_origin="paste_in"` and metadata linking to artifact ID.
+- **Frontend:** Paste toggle button (📋) in chat input bar, expandable multi-line paste area with content type selector (freeform/email/meeting_notes/requirements), `handlePasteIn` handler in page.tsx, `addNodesFromPasteIn` action in `useWorkingState` hook.
+- **Tests:** 19 API tests covering 3 TEST anchors — artifact preservation, candidate node extraction, staged persistence compliance. All pass with mocked orchestration (LLM unavailable in test env).
+- **Safety:** Paste-in does NOT bypass staged persistence. Extracted entities enter working state as pending candidates. Raw artifact preserved before interpretation. Terminal sessions (confirmed/abandoned) reject paste-in.
+- **Files touched:**
+  - `apps/backend/app/models/channel.py` (PasteInSourceArtifact + relationship)
+  - `apps/backend/app/models/__init__.py` (PasteInSourceArtifact export)
+  - `apps/backend/alembic/versions/e15a0d4e8f63_add_paste_in_source_artifact_table.py` (new)
+  - `apps/backend/app/inference/prompts/paste_in_extraction.py` (new)
+  - `apps/backend/app/inference/tasks/paste_in_extraction.py` (new)
+  - `apps/backend/app/inference/orchestration.py` (paste_in_extract_smart)
+  - `apps/backend/app/api/persona.py` (paste-in endpoint + contracts)
+  - `apps/web/src/lib/types.ts` (PasteInRequest/Response/CandidateNode)
+  - `apps/web/src/lib/api-client.ts` (submitPasteIn)
+  - `apps/web/src/app/glimmer/use-working-state.ts` (addNodesFromPasteIn)
+  - `apps/web/src/app/glimmer/chat-window.tsx` (paste-in UI)
+  - `apps/web/src/app/glimmer/page.tsx` (handlePasteIn + wiring)
+  - `tests/api/test_paste_in.py` (new — 19 tests)
+  - `tests/conftest.py` (test_paste_in pack mapping)
+
+### 7.10 Session 2026-04-16 — E16 Cross-surface "Ask Glimmer" contextual interaction
+
+- **State:** E16 implemented and verified. Workstream E is fully complete.
+- **Scope:** Shared cross-surface contextual interaction affordance — operator hovers/clicks sparkle ✦ on any data element → compact popover with Glimmer avatar + text input → contextual routing to orchestration core → response with review-gate compliance.
+- **Backend inference:**
+  - `app/inference/prompts/contextual_ask.py` (new — system + user prompt with review-gate [REVIEW_REQUIRED] marker instruction)
+  - `app/inference/tasks/contextual_ask.py` (new — LLMContextualAskResult with review flag extraction from marker)
+  - `app/inference/orchestration.py` — added `SmartContextualAskResult` dataclass and `contextual_ask_smart()` function with LLM-first / graceful fallback
+- **Backend API:**
+  - `app/api/ask.py` (new — `POST /ask/contextual` endpoint with ContextualAskRequest/Response Pydantic contracts, input validation, orchestration call)
+  - `app/main.py` — registered `/ask` router
+- **Frontend component:**
+  - `src/components/ask-glimmer-popover.tsx` (new — shared `AskGlimmerPopover` component with sparkle ✦ trigger, compact popover, Glimmer avatar, text input, loading/error/response states, review-required badge, Escape/click-outside dismissal)
+- **Surface integration (6 surfaces):**
+  - `src/app/today/page.tsx` — sparkle on action items, risk items, waiting-on items
+  - `src/app/portfolio/page.tsx` — sparkle on project cards
+  - `src/app/projects/[id]/page.tsx` — sparkle on open items, blockers, waiting-on, pending actions
+  - `src/app/triage/page.tsx` — sparkle on classification cards, action cards
+  - `src/app/drafts/page.tsx` — sparkle on draft cards
+  - `src/app/review/page.tsx` — sparkle on review classification cards, review action cards
+- **Types + API client:**
+  - `src/lib/types.ts` — AskGlimmerRequest, AskGlimmerResponse interfaces
+  - `src/lib/api-client.ts` — askGlimmerContextual() function
+- **Verification executed:**
+  - 23 new backend API tests — all pass (endpoint behavior, review-gate propagation, validation, fallback, various element types, empty context)
+  - 7 new Playwright e2e tests — all pass (sparkle visible on Today/Portfolio/Triage, popover opens with input, reply display, review badge on review-required response, Escape key dismissal)
+  - Full backend suite: 905/905 pass (0 regressions)
+  - Full Playwright suite: 63/63 pass (0 regressions)
+  - TypeScript type check: 0 errors
+
 ---
 
 ## 8. Verification Log
@@ -463,10 +526,15 @@ This section records **executed** verification, not merely intended verification
 - `TEST:PersonaPage.MindMap.WorkingStateVisuallyDistinct` — **Pass** (6 Playwright tests: toolbar visible in idea mode, pending vs accepted nodes visually distinct with dashed/solid borders and DRAFT badge, Confirm & Save disabled when no accepted nodes, toolbar absent in non-idea modes)
 - `TEST:PersonaPage.StagedPersistence.ConfirmSaveCommitsAllEntities` — **Pass** (20 API tests: save/retrieve working state, confirm persists projects/stakeholders/risks/blockers/milestones/work_items/decisions in one batch, only accepted_node_ids are persisted, session transitions to confirmed, edge cases)
 - `TEST:PersonaPage.StagedPersistence.DiscardDoesNotPersist` — **Pass** (5 API tests: discard transitions to abandoned, deletes working state, no orphan entities, terminal-state rejection)
+- `TEST:PersonaPage.PasteIn.CapturePreservesRawArtifact` — **Pass** (6 API tests: artifact ID returned, extraction status present, explanation returned, default content type freeform, empty/whitespace content rejected)
+- `TEST:PersonaPage.PasteIn.ExtractedEntitiesAppearAsCandidateNodes` — **Pass** (6 API tests: paste_in source origin, valid entity types, artifact provenance in metadata, unique node IDs, used_llm field, empty extraction returns explanation)
+- `TEST:PersonaPage.PasteIn.DoesNotBypassStagedPersistence` — **Pass** (7 API tests: confirmed session rejected, abandoned session rejected, no operational entities created, invalid session 404, bad UUID 404, multiple paste-ins on same session, paused session accepted)
+- `TEST:UI.AskGlimmer.AffordanceVisibleOnDataElements` — **Pass** (3 Playwright tests: sparkle ✦ visible on Today page action/risk/waiting-on items, Portfolio page project cards, Triage page classification/action cards; backend: 23 API tests with all element type/surface combinations)
+- `TEST:UI.AskGlimmer.ResponseRespectsReviewGates` — **Pass** (4 Playwright tests: popover opens with input/submit, submitting shows Glimmer reply, review-required response shows review badge, Escape key dismisses popover; backend: review_required flag propagated correctly, informational response not flagged)
 
 ### 8.2 Verification interpretation
 
-WE1-WE9 + E11 + E12 + E13 + E14 verification is complete. 863 backend tests pass. 56 Playwright tests pass (including 6 mind-map + 6 staged-persistence tests). TypeScript type check: 0 errors. The workspace is a review-first, safety-aware, persona-supported control room with direct project CRUD capability, LLM-backed conversational interaction on the persona page, a React Flow mind-map visualization for idea mode, and a staged persistence model that enforces candidate-vs-accepted state separation with explicit Confirm & Save batch commit.
+WE1-WE9 + E11 + E12 + E13 + E14 + E15 + E16 verification is complete. 905 backend tests pass. 63 Playwright tests pass (including 7 Ask Glimmer tests). TypeScript type check: 0 errors. The workspace is a review-first, safety-aware, persona-supported control room with direct project CRUD capability, LLM-backed conversational interaction on the persona page, a React Flow mind-map visualization for idea mode, a staged persistence model that enforces candidate-vs-accepted state separation with explicit Confirm & Save batch commit, a paste-in ingestion pipeline that preserves raw artifacts before interpretation and integrates extracted entities as candidate nodes in the working mind-map, and a cross-surface contextual "Ask Glimmer" interaction affordance that provides consistent ✦ sparkle triggers on data elements across all 6 primary workspace surfaces with review-gate compliant responses.
 
 **Stable working anchor:** `WORKE:Progress.VerificationLog`
 
@@ -520,9 +588,11 @@ No human intervention should be requested until the agent has completed the firs
 
 ## 11. Immediate Next Slice
 
-Workstream E is complete, including E14. All work packages (WE1–WE9, E11, E12, E13, E14) are implemented and verified with 56 Playwright tests and 863 backend tests passing.
+Workstream E is fully complete, including E16. All work packages (WE1–WE9, E11, E12, E13, E14, E15, E16) are implemented and verified with 63 Playwright tests and 905 backend tests passing.
 
-The next package in the build plan sequence is **E15 — Persona page paste-in ingestion**, which depends on E14's staged persistence model for candidate entity management.
+Workstream E has no remaining packages. The next work should be:
+- Real-data operational testing with connected email/calendar accounts
+- Or pivot to a different workstream (e.g., Workstream D triage pipeline enhancement, Workstream F voice/Telegram, or Workstream G regression testing)
 
 **Stable working anchor:** `WORKE:Progress.ImmediateNextSlice`
 
@@ -530,13 +600,13 @@ The next package in the build plan sequence is **E15 — Persona page paste-in i
 
 ## 12. Pickup Guidance for the Next Session
 
-Workstream E is fully complete through E14. All packages are verified. The next session should:
+Workstream E is fully complete through E16. All 16 packages are verified. The next session should:
 
-1. Implement **E15 — Persona page paste-in ingestion** (depends on E14's staged persistence model)
-2. E15 scope: paste-in capture, raw artifact preservation, entity extraction through orchestration core, extracted entities as candidate nodes in working mind-map, provenance linkage
-3. After E15, consider E16 (Ask Glimmer) or pivot to real-data operational testing
+1. Conduct **real-data operational testing** with the connected Google/Microsoft accounts (email sync, calendar queries through conversational interaction)
+2. Consider **Workstream pivot** — possible next workstreams: D (triage pipeline enhancement), F (voice/Telegram), G (regression testing)
+3. Calendar access has been provisioned but not yet exercised — the operator wants to test conversational queries like "Are there any meetings I need to attend this week?"
 
-**Note:** Google and Microsoft OAuth credentials have been provisioned (2026-04-16). Email access confirmed working for both providers. Calendar access provisioned but not yet exercised via user query. The operator wants to test calendar queries through conversational interaction (e.g., "Are there any meetings I need to attend this week?").
+**Note:** Google and Microsoft OAuth credentials have been provisioned (2026-04-16). Email access confirmed working for both providers. Calendar access provisioned but not yet exercised via user query.
 
 **Stable working anchor:** `WORKE:Progress.PickupGuidance`
 
@@ -560,9 +630,9 @@ This avoids turning the file into vague narration.
 
 ## 14. Final Note
 
-Workstream E is now materially real. All nine work packages are implemented and verified, with browser-visible workspace surfaces connected to real API endpoints. The workspace is a control room, not a chatbot shell.
+Workstream E is now fully complete. All sixteen work packages are implemented and verified, with browser-visible workspace surfaces connected to real API endpoints. The workspace is a control room, not a chatbot shell.
 
-Persona rendering is bounded, context-aware, and subordinate to operational content. Safety fidelity is proven across all surfaces: no send buttons, no auto-approve, visible no-auto-send notices, and review gates that require explicit operator action.
+Every significant data element across the main workspace surfaces has a consistent, functional "Ask Glimmer" ✦ interaction affordance that routes through the orchestration core and respects review-gate discipline. Persona rendering is bounded, context-aware, and subordinate to operational content. Safety fidelity is proven across all surfaces: no send buttons, no auto-approve, visible no-auto-send notices, and review gates that require explicit operator action.
 
 **Stable working anchor:** `WORKE:Progress.Conclusion`
 

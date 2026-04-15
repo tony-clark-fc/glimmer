@@ -30,6 +30,9 @@ import type {
   WorkingStateResponse,
   ConfirmWorkingStateResponse,
   DiscardWorkingStateResponse,
+  PasteInResponse,
+  AskGlimmerRequest,
+  AskGlimmerResponse,
 } from "./types";
 
 // ── Generic fetch helper ────────────────────────────────────────
@@ -307,6 +310,25 @@ export async function discardWorkingState(
   );
 }
 
+// ── Paste-in Ingestion (E15) ────────────────────────────────────
+
+export async function submitPasteIn(
+  sessionId: string,
+  content: string,
+  contentTypeHint?: string,
+): Promise<PasteInResponse> {
+  return apiFetch<PasteInResponse>(
+    `/persona/sessions/${sessionId}/paste-in`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        content,
+        content_type_hint: contentTypeHint ?? "freeform",
+      }),
+    },
+  );
+}
+
 // ── Connectors / Connected Accounts ─────────────────────────────
 
 export async function fetchConnectedAccounts(): Promise<ConnectedAccountSummary[]> {
@@ -334,3 +356,15 @@ export async function triggerSync(accountId: string): Promise<SyncTriggerRespons
 export async function fetchConnectorStatus(): Promise<ConnectorStatusResponse> {
   return apiFetch<ConnectorStatusResponse>("/connectors/status");
 }
+
+// ── Ask Glimmer (E16 — Contextual Interaction) ──────────────────
+
+export async function askGlimmerContextual(
+  request: AskGlimmerRequest,
+): Promise<AskGlimmerResponse> {
+  return apiFetch<AskGlimmerResponse>("/ask/contextual", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
+}
+

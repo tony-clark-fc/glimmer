@@ -17,6 +17,7 @@ import {
   ActionButton,
 } from "@/components/ui";
 import type { ReviewQueue, ClassificationItem, ExtractedActionItem } from "@/lib/types";
+import { AskGlimmerPopover } from "@/components/ask-glimmer-popover";
 
 type LoadState = "loading" | "loaded" | "empty" | "error";
 
@@ -183,21 +184,29 @@ function ReviewClassificationCard({
           </div>
         </div>
 
-        <div className="flex gap-1 bg-[#121215] p-1 rounded-full border border-outline-variant/30">
-          <ActionButton
-            variant="success"
-            testId="review-btn-accept"
-            onClick={() => onAction(item.id, "accepted")}
-          >
-            Accept
-          </ActionButton>
-          <ActionButton
-            variant="danger"
-            testId="review-btn-reject"
-            onClick={() => onAction(item.id, "rejected")}
-          >
-            Reject
-          </ActionButton>
+        <div className="flex items-start gap-2">
+          <AskGlimmerPopover
+            elementType="classification"
+            elementId={item.id}
+            elementContext={{ source_record_type: item.source_record_type, rationale: item.classification_rationale, confidence: item.confidence, ambiguity: item.ambiguity_flag }}
+            surface="review"
+          />
+          <div className="flex gap-1 bg-[#121215] p-1 rounded-full border border-outline-variant/30">
+            <ActionButton
+              variant="success"
+              testId="review-btn-accept"
+              onClick={() => onAction(item.id, "accepted")}
+            >
+              Accept
+            </ActionButton>
+            <ActionButton
+              variant="danger"
+              testId="review-btn-reject"
+              onClick={() => onAction(item.id, "rejected")}
+            >
+              Reject
+            </ActionButton>
+          </div>
         </div>
       </div>
     </li>
@@ -238,21 +247,29 @@ function ReviewActionCard({
           )}
         </div>
 
-        <div className="flex gap-1 bg-[#121215] p-1 rounded-full border border-outline-variant/30">
-          <ActionButton
-            variant="success"
-            testId="review-btn-accept"
-            onClick={() => onAction(item.id, "accepted")}
-          >
-            Accept
-          </ActionButton>
-          <ActionButton
-            variant="danger"
-            testId="review-btn-reject"
-            onClick={() => onAction(item.id, "rejected")}
-          >
-            Reject
-          </ActionButton>
+        <div className="flex items-start gap-2">
+          <AskGlimmerPopover
+            elementType="extracted_action"
+            elementId={item.id}
+            elementContext={{ action_text: item.action_text, urgency_signal: item.urgency_signal, source_record_type: item.source_record_type }}
+            surface="review"
+          />
+          <div className="flex gap-1 bg-[#121215] p-1 rounded-full border border-outline-variant/30">
+            <ActionButton
+              variant="success"
+              testId="review-btn-accept"
+              onClick={() => onAction(item.id, "accepted")}
+            >
+              Accept
+            </ActionButton>
+            <ActionButton
+              variant="danger"
+              testId="review-btn-reject"
+              onClick={() => onAction(item.id, "rejected")}
+            >
+              Reject
+            </ActionButton>
+          </div>
         </div>
       </div>
     </li>

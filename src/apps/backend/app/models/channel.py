@@ -219,6 +219,11 @@ class PersonaPageSession(Base):
         uselist=False,
         cascade="all, delete-orphan",
     )
+    paste_in_artifacts: Mapped[list["PasteInSourceArtifact"]] = relationship(
+        back_populates="session",
+        order_by="PasteInSourceArtifact.paste_timestamp",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return (
@@ -326,3 +331,56 @@ class PersonaPageMessage(Base):
             f"<PersonaPageMessage {self.id!s:.8} "
             f"role={self.role!r} order={self.ordering}>"
         )
+
+
+class PasteInSourceArtifact(Base):
+    """Raw content pasted by the operator for entity extraction.
+
+    ARCH:PasteInSourceArtifactModel
+    ARCH:PersonaPage.PasteInPipeline
+    REQ:PersonaPagePasteInIngestion
+
+    Preserves provenance for conversation-originated data. The raw source
+    material is persisted immediately upon paste — before any interpretation —
+    so it is never lost regardless of extraction outcome.
+    """
+
+    __tablename__ = "paste_in_source_artifacts"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=_genuuid
+    )
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("persona_page_sessions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    raw_content: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )
+    paste_timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow
+    )
+    content_type_hint: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="freeform"
+    )  # freeform, email_snippet, meeting_notes, requirements_excerpt
+    extraction_status: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="pending"
+    )  # pending, extracted, failed
+    linked_candidate_node_ids: Mapped[Optional[dict]] = mapped_column(
+        JSONB, nullable=True
+    )  # list of node IDs that were extracted from this artifact
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow
+    )
+
+    session: Mapped["PersonaPageSession"] = relationship(
+        back_populates="paste_in_artifacts",
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<PasteInSourceArtifact {self.id!s:.8} "
+            f"session={self.session_id!s:.8} status={self.extraction_status!r}>"
+        )
+

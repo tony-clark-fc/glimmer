@@ -30,6 +30,7 @@ import type {
   MindMapEdgeRelation,
   CandidateNodePayload,
   CandidateEdgePayload,
+  PasteInCandidateNode,
 } from "@/lib/types";
 import {
   saveWorkingState,
@@ -151,6 +152,8 @@ export interface WorkingStateActions {
   saveBackup: () => Promise<void>;
   /** Restore from server backup */
   restoreFromBackup: () => Promise<boolean>;
+  /** Batch-add candidate nodes from paste-in extraction */
+  addNodesFromPasteIn: (nodes: PasteInCandidateNode[]) => void;
   /** Check if there are unsaved working changes */
   hasUnsavedChanges: boolean;
   /** Current state version */
@@ -402,6 +405,28 @@ export function useWorkingState(
     }
   }, [sessionId]);
 
+  const addNodesFromPasteIn = useCallback(
+    (pasteInNodes: PasteInCandidateNode[]) => {
+      const newNodes: Node<MindMapNodeData>[] = pasteInNodes.map((n) => ({
+        id: n.node_id,
+        type: "mindMapNode",
+        position: { x: 0, y: 0 },
+        data: {
+          entityType: n.entity_type as MindMapEntityType,
+          label: n.label,
+          subtitle: n.subtitle,
+          status: "pending" as const,
+          sourceOrigin: "paste_in" as MindMapSourceOrigin,
+          metadata: n.metadata,
+        },
+      }));
+      setNodes((prev) => [...prev, ...newNodes]);
+      setStateVersion((v) => v + newNodes.length);
+      scheduleSave();
+    },
+    [scheduleSave],
+  );
+
   // ── Computed counts ────────────────────────────────────────────
 
   const pendingCount = nodes.filter((n) => n.data.status === "pending").length;
@@ -421,6 +446,7 @@ export function useWorkingState(
       discardAll,
       saveBackup,
       restoreFromBackup,
+      addNodesFromPasteIn,
       hasUnsavedChanges,
       stateVersion,
       isSaving,

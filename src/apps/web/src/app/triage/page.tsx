@@ -16,6 +16,7 @@ import {
   ActionButton,
 } from "@/components/ui";
 import type { ReviewQueue, ClassificationItem, ExtractedActionItem } from "@/lib/types";
+import { AskGlimmerPopover } from "@/components/ask-glimmer-popover";
 
 type LoadState = "loading" | "loaded" | "empty" | "error";
 
@@ -185,7 +186,15 @@ function ClassificationCard({
         </div>
 
         {/* Review actions */}
-        <ReviewActions onReview={(action) => onReview(item.id, action)} />
+        <div className="flex items-start gap-2">
+          <AskGlimmerPopover
+            elementType="classification"
+            elementId={item.id}
+            elementContext={{ source_record_type: item.source_record_type, rationale: item.classification_rationale, confidence: item.confidence, ambiguity: item.ambiguity_flag }}
+            surface="triage"
+          />
+          <ReviewActions onReview={(action) => onReview(item.id, action)} />
+        </div>
       </div>
     </li>
   );
@@ -232,7 +241,15 @@ function ActionCard({
           </div>
         </div>
 
-        <ReviewActions onReview={(action) => onReview(item.id, action)} />
+        <div className="flex items-start gap-2">
+          <AskGlimmerPopover
+            elementType="extracted_action"
+            elementId={item.id}
+            elementContext={{ action_text: item.action_text, urgency_signal: item.urgency_signal, source_record_type: item.source_record_type }}
+            surface="triage"
+          />
+          <ReviewActions onReview={(action) => onReview(item.id, action)} />
+        </div>
       </div>
     </li>
   );

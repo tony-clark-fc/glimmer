@@ -13,6 +13,7 @@ import {
   ActionButton,
 } from "@/components/ui";
 import type { ProjectDetail } from "@/lib/types";
+import { AskGlimmerPopover } from "@/components/ask-glimmer-popover";
 
 type LoadState = "loading" | "loaded" | "not-found" | "error";
 
@@ -358,11 +359,19 @@ export default function ProjectPage() {
                         </span>
                         <Badge variant="neutral">{item.status}</Badge>
                       </div>
-                      {item.due_date && (
-                        <span className="text-xs text-muted-light whitespace-nowrap">
-                          Due {new Date(item.due_date).toLocaleDateString()}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {item.due_date && (
+                          <span className="text-xs text-muted-light whitespace-nowrap">
+                            Due {new Date(item.due_date).toLocaleDateString()}
+                          </span>
+                        )}
+                        <AskGlimmerPopover
+                          elementType="work_item"
+                          elementId={item.id}
+                          elementContext={{ title: item.title, status: item.status, due_date: item.due_date }}
+                          surface="project"
+                        />
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -383,9 +392,15 @@ export default function ProjectPage() {
                   {project.blockers.map((b) => (
                     <li
                       key={b.id}
-                      className="rounded-2xl bg-red-500/5 p-4 text-sm text-error border border-error/10"
+                      className="flex items-start justify-between gap-2 rounded-2xl bg-red-500/5 p-4 text-sm text-error border border-error/10"
                     >
-                      {b.summary}
+                      <span>{b.summary}</span>
+                      <AskGlimmerPopover
+                        elementType="blocker"
+                        elementId={b.id}
+                        elementContext={{ summary: b.summary }}
+                        surface="project"
+                      />
                     </li>
                   ))}
                 </ul>
@@ -408,10 +423,20 @@ export default function ProjectPage() {
                       key={w.id}
                       className="rounded-2xl bg-surface-container-lowest p-4 ghost-border"
                     >
-                      <span className="text-sm font-semibold text-tertiary">
-                        {w.waiting_on}
-                      </span>
-                      <p className="text-xs text-on-surface-variant mt-1">{w.description}</p>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <span className="text-sm font-semibold text-tertiary">
+                            {w.waiting_on}
+                          </span>
+                          <p className="text-xs text-on-surface-variant mt-1">{w.description}</p>
+                        </div>
+                        <AskGlimmerPopover
+                          elementType="waiting_on"
+                          elementId={w.id}
+                          elementContext={{ waiting_on: w.waiting_on, description: w.description }}
+                          surface="project"
+                        />
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -432,14 +457,22 @@ export default function ProjectPage() {
                   {project.pending_actions.map((a) => (
                     <li
                       key={a.id}
-                      className="rounded-2xl bg-tertiary-container/5 p-4 border border-tertiary/10"
+                      className="flex items-start justify-between gap-2 rounded-2xl bg-tertiary-container/5 p-4 border border-tertiary/10"
                     >
-                      <span className="text-sm text-foreground">
-                        {a.action_text}
-                      </span>
-                      {a.urgency && (
-                        <Badge variant="warning">{a.urgency}</Badge>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-foreground">
+                          {a.action_text}
+                        </span>
+                        {a.urgency && (
+                          <Badge variant="warning">{a.urgency}</Badge>
+                        )}
+                      </div>
+                      <AskGlimmerPopover
+                        elementType="pending_action"
+                        elementId={a.id}
+                        elementContext={{ action_text: a.action_text, urgency: a.urgency }}
+                        surface="project"
+                      />
                     </li>
                   ))}
                 </ul>

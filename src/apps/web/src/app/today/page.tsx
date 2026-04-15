@@ -19,6 +19,7 @@ import type {
   FocusPackWaitingItem,
   ResearchHealth,
 } from "@/lib/types";
+import { AskGlimmerPopover } from "@/components/ask-glimmer-popover";
 
 type LoadState = "loading" | "loaded" | "empty" | "error";
 
@@ -183,6 +184,12 @@ function TopActionsSection({ items }: { items: FocusPackActionItem[] }) {
               <div className="flex shrink-0 items-center gap-2">
                 <ItemTypeBadge type={item.item_type} />
                 <PriorityIndicator score={item.priority_score} />
+                <AskGlimmerPopover
+                  elementType="action_item"
+                  elementId={item.item_id}
+                  elementContext={{ title: item.title, rationale: item.rationale, priority_score: item.priority_score, item_type: item.item_type }}
+                  surface="today"
+                />
               </div>
             </li>
           ))}
@@ -210,7 +217,15 @@ function HighRiskSection({ items }: { items: FocusPackRiskItem[] }) {
               <p className="text-sm text-error">
                 {item.summary}
               </p>
-              <SeverityBadge severity={item.severity} />
+              <div className="flex items-center gap-2 shrink-0">
+                <SeverityBadge severity={item.severity} />
+                <AskGlimmerPopover
+                  elementType="risk"
+                  elementId={item.risk_id}
+                  elementContext={{ summary: item.summary, severity: item.severity, project_id: item.project_id }}
+                  surface="today"
+                />
+              </div>
             </li>
           ))}
         </ul>
@@ -236,18 +251,28 @@ function WaitingOnSection({ items }: { items: FocusPackWaitingItem[] }) {
               data-testid={`focus-waiting-${item.waiting_id}`}
               className="rounded-2xl bg-tertiary-container/5 p-4 border border-tertiary/10"
             >
-              <p className="text-sm font-semibold text-tertiary">
-                {item.waiting_on}
-              </p>
-              <p className="mt-1 text-xs text-on-surface-variant">
-                {item.description}
-              </p>
-              {item.expected_by && (
-                <p className="mt-1 text-xs text-muted-light">
-                  Expected by{" "}
-                  {new Date(item.expected_by).toLocaleDateString()}
-                </p>
-              )}
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-tertiary">
+                    {item.waiting_on}
+                  </p>
+                  <p className="mt-1 text-xs text-on-surface-variant">
+                    {item.description}
+                  </p>
+                  {item.expected_by && (
+                    <p className="mt-1 text-xs text-muted-light">
+                      Expected by{" "}
+                      {new Date(item.expected_by).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+                <AskGlimmerPopover
+                  elementType="waiting_on"
+                  elementId={item.waiting_id}
+                  elementContext={{ waiting_on: item.waiting_on, description: item.description, expected_by: item.expected_by }}
+                  surface="today"
+                />
+              </div>
             </li>
           ))}
         </ul>

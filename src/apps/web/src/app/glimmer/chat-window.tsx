@@ -2,10 +2,12 @@
  * ChatWindow — conversational interface for the Glimmer persona page.
  *
  * REQ:GlimmerPersonaPage
+ * REQ:PersonaPagePasteInIngestion
  *
  * Standard chatbot layout: messages scroll up, input at bottom.
  * User messages right-aligned, Glimmer messages left-aligned.
  * Input disabled in voice mode (user speaks instead of types).
+ * Paste button toggles a multi-line paste area for content ingestion.
  */
 
 "use client";
@@ -18,15 +20,27 @@ interface ChatWindowProps {
   interactionMode: InteractionMode;
   isThinking: boolean;
   onSendMessage: (content: string) => void;
+  onPasteIn?: (content: string, contentTypeHint: string) => void;
 }
+
+const CONTENT_TYPE_OPTIONS = [
+  { value: "freeform", label: "Freeform" },
+  { value: "email_snippet", label: "Email" },
+  { value: "meeting_notes", label: "Meeting notes" },
+  { value: "requirements_excerpt", label: "Requirements" },
+];
 
 export function ChatWindow({
   messages,
   interactionMode,
   isThinking,
   onSendMessage,
+  onPasteIn,
 }: ChatWindowProps) {
   const [input, setInput] = useState("");
+  const [pasteMode, setPasteMode] = useState(false);
+  const [pasteContent, setPasteContent] = useState("");
+  const [pasteContentType, setPasteContentType] = useState("freeform");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -42,6 +56,15 @@ export function ChatWindow({
     if (!trimmed) return;
     onSendMessage(trimmed);
     setInput("");
+  };
+
+  const handlePasteSubmit = () => {
+    const trimmed = pasteContent.trim();
+    if (!trimmed || !onPasteIn) return;
+    onPasteIn(trimmed, pasteContentType);
+    setPasteContent("");
+    setPasteMode(false);
+    setPasteContentType("freeform");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -121,8 +144,63 @@ export function ChatWindow({
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 mr-2 animate-pulse" />
             Voice mode active — speak to Glimmer
           </div>
+        ) : pasteMode ? (
+          /* ── Paste-in area ──────────────────────────────── */
+          <div className="space-y-2" data-testid="paste-in-area">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-primary">📋 Paste content for analysis</span>
+                <select
+                  value={pasteContentType}
+                  onChange={(e) => setPasteContentType(e.target.value)}
+                  className="text-[10px] bg-surface-container-lowest border border-outline-variant/20 rounded px-1.5 py-0.5 text-muted-light"
+                  data-testid="paste-in-type"
+                >
+                  {CONTENT_TYPE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={() => { setPasteMode(false); setPasteContent(""); }}
+                className="text-xs text-muted-light hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+            <textarea
+              value={pasteContent}
+              onChange={(e) => setPasteContent(e.target.value)}
+              placeholder="Paste email, meeting notes, requirements, or any content for Glimmer to analyze…"
+              rows={4}
+              className="w-full resize-none rounded-xl bg-surface-container-lowest border border-primary/20 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-light/50 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all"
+              data-testid="paste-in-input"
+              autoFocus
+            />
+            <div className="flex justify-end">
+              <button
+                onClick={handlePasteSubmit}
+                disabled={!pasteContent.trim() || isThinking}
+                className="px-4 py-1.5 rounded-lg bg-primary/20 text-primary text-xs font-medium hover:bg-primary/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                data-testid="paste-in-submit"
+              >
+                Analyze Content
+              </button>
+            </div>
+          </div>
         ) : (
+          /* ── Normal chat input ──────────────────────────── */
           <div className="flex gap-2 items-end">
+            {onPasteIn && (
+              <button
+                onClick={() => setPasteMode(true)}
+                title="Paste content for analysis"
+                className="shrink-0 h-10 w-10 rounded-xl bg-surface-container-low text-muted-light hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-all border border-outline-variant/10"
+                data-testid="paste-in-toggle"
+              >
+                <span className="text-base">📋</span>
+              </button>
+            )}
             <textarea
               ref={inputRef}
               value={input}

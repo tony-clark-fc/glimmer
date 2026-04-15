@@ -30,7 +30,7 @@ from app.db import get_db
 from app.models.persona import PersonaAsset, PersonaClassification
 from app.models.portfolio import Project, Milestone
 from app.models.execution import WorkItem, BlockerRecord, RiskRecord, DecisionRecord
-from app.models.channel import ChannelSession, PersonaPageSession, PersonaPageMessage, MindMapWorkingState
+from app.models.channel import ChannelSession, PersonaPageSession, PersonaPageMessage, MindMapWorkingState, PasteInSourceArtifact
 from app.models.stakeholder import Stakeholder
 
 logger = logging.getLogger(__name__)
@@ -1052,6 +1052,164 @@ def discard_working_state(
         session_id=str(session.id),
         discarded=True,
         session_status="abandoned",
+    )
+
+
+# ── Paste-in ingestion contracts ──────────────────────────────────
+
+
+class PasteInRequest(BaseModel):
+    """Request to submit pasted content for entity extraction.
+
+    ARCH:PersonaPage.PasteInPipeline
+    ARCH:PasteInSourceArtifactModel
+    """
+    content: str
+    content_type_hint: str = "freeform"
+
+
+class PasteInCandidateNode(BaseModel):
+    """A candidate node extracted from pasted content."""
+    node_id: str
+    entity_type: str
+    label: str
+    subtitle: str | None = None
+    status: str = "pending"
+    source_origin: str = "paste_in"
+    confidence: float = 0.5
+    metadata: dict | None = None
+
+
+class PasteInResponse(BaseModel):
+    """Response from paste-in ingestion.
+
+    Contains the persisted artifact ID, extracted candidate nodes,
+    and a conversational explanation from Glimmer.
+    """
+    artifact_id: str
+    extraction_status: str
+    candidate_nodes: list[PasteInCandidateNode]
+    explanation: str
+    used_llm: bool
+    inference_metadata: dict | None = None
+
+
+# ── Paste-in ingestion route ──────────────────────────────────────
+
+
+@router.post(
+    "/sessions/{session_id}/paste-in",
+    response_model=PasteInResponse,
+    status_code=201,
+)
+async def submit_paste_in(
+    session_id: str,
+    request: PasteInRequest,
+    db: Session = Depends(get_db),
+) -> PasteInResponse:
+    """Submit pasted content for entity extraction.
+
+    ARCH:PersonaPage.PasteInPipeline
+    ARCH:PasteInSourceArtifactModel
+    REQ:PersonaPagePasteInIngestion
+
+    Pipeline:
+    1. Validate session is active/paused
+    2. Persist PasteInSourceArtifact with raw content BEFORE interpretation
+    3. Call LLM entity extraction through orchestration core
+    4. Update artifact with extraction status and linked node IDs
+    5. Return extracted candidate nodes for working-state integration
+
+    Extracted entities enter the working state as pending candidates.
+    Nothing reaches the operational database until explicit confirmation.
+    """
+    session = _resolve_session(session_id, db)
+
+    if session.session_status in ("confirmed", "abandoned"):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Session is {session.session_status} — cannot submit paste-in",
+        )
+
+    content = (request.content or "").strip()
+    if not content:
+        raise HTTPException(status_code=422, detail="Content cannot be empty")
+
+    # Step 1: Persist raw artifact BEFORE interpretation
+    artifact = PasteInSourceArtifact(
+        session_id=session.id,
+        raw_content=content,
+        content_type_hint=request.content_type_hint or "freeform",
+        extraction_status="pending",
+    )
+    db.add(artifact)
+    db.commit()
+    db.refresh(artifact)
+
+    # Step 2: Extract entities through orchestration core
+    from app.inference.orchestration import paste_in_extract_smart
+
+    project_summaries = _get_project_summaries(db)
+
+    try:
+        extraction_result = await paste_in_extract_smart(
+            raw_content=content,
+            content_type_hint=request.content_type_hint or "freeform",
+            project_summaries=project_summaries,
+        )
+    except Exception as exc:
+        logger.error("Paste-in extraction failed unexpectedly: %s", exc)
+        artifact.extraction_status = "failed"
+        db.commit()
+        return PasteInResponse(
+            artifact_id=str(artifact.id),
+            extraction_status="failed",
+            candidate_nodes=[],
+            explanation=(
+                "I've saved the pasted content, but encountered an unexpected "
+                "error during analysis. The raw text is preserved — you can "
+                "try again later."
+            ),
+            used_llm=False,
+        )
+
+    # Step 3: Build candidate nodes from extraction result
+    import uuid as _uuid
+
+    candidate_nodes: list[PasteInCandidateNode] = []
+    node_ids: list[str] = []
+
+    for entity in extraction_result.entities:
+        node_id = f"paste-{_uuid.uuid4().hex[:8]}"
+        node_ids.append(node_id)
+        candidate_nodes.append(PasteInCandidateNode(
+            node_id=node_id,
+            entity_type=entity.get("entity_type", "work_item"),
+            label=entity.get("label", "Unnamed"),
+            subtitle=entity.get("subtitle"),
+            status="pending",
+            source_origin="paste_in",
+            confidence=entity.get("confidence", 0.5),
+            metadata={
+                "paste_in_artifact_id": str(artifact.id),
+            },
+        ))
+
+    # Step 4: Update artifact with extraction outcome
+    artifact.extraction_status = "extracted" if candidate_nodes else "extracted"
+    artifact.linked_candidate_node_ids = node_ids
+    db.commit()
+
+    return PasteInResponse(
+        artifact_id=str(artifact.id),
+        extraction_status=artifact.extraction_status,
+        candidate_nodes=candidate_nodes,
+        explanation=extraction_result.explanation,
+        used_llm=extraction_result.used_llm,
+        inference_metadata={
+            "inference_latency_ms": extraction_result.inference_latency_ms,
+            "fallback_reason": extraction_result.fallback_reason,
+        } if extraction_result.inference_latency_ms or extraction_result.fallback_reason else None,
     )
 
 

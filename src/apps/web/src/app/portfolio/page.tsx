@@ -14,6 +14,7 @@ import {
 } from "@/components/ui";
 import { ProjectFormModal } from "@/components/project-form-modal";
 import type { ProjectSummary, ProjectDetail } from "@/lib/types";
+import { AskGlimmerPopover } from "@/components/ask-glimmer-popover";
 
 type LoadState = "loading" | "loaded" | "empty" | "error";
 
@@ -122,7 +123,15 @@ export default function PortfolioPage() {
                   <h2 className="font-headline font-bold text-foreground truncate group-hover:text-primary transition-colors">
                     {p.name}
                   </h2>
-                  <StatusBadge status={p.status} archived={p.archived} />
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={p.status} archived={p.archived} />
+                    <AskGlimmerPopover
+                      elementType="project"
+                      elementId={p.id}
+                      elementContext={{ name: p.name, status: p.status, objective: p.objective, open_items: p.open_items, active_blockers: p.active_blockers }}
+                      surface="portfolio"
+                    />
+                  </div>
                 </div>
 
                 {p.short_summary && (

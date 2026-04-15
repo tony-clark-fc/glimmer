@@ -28,13 +28,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchGlimmerMood,
   createPersonaSession,
+  fetchPersonaSession,
   sendPersonaMessage,
+  submitPasteIn,
 } from "@/lib/api-client";
 import type {
   ChatMessage,
   InteractionMode,
   WorkspaceMode,
   GlimmerMood,
+  PersonaSession,
 } from "@/lib/types";
 
 import { GlimmerAvatar } from "./glimmer-avatar";
@@ -44,8 +47,23 @@ import { ControlsGutter } from "./controls-gutter";
 import { WorkspaceCanvas } from "./workspace-canvas";
 import { useWorkingState } from "./use-working-state";
 
+const SESSION_STORAGE_KEY = "glimmer-session-id";
+
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** Convert backend PersonaMessage[] → ChatMessage[] for the UI. */
+function sessionMessagesToChatMessages(
+  session: PersonaSession,
+): ChatMessage[] {
+  return session.messages.map((m) => ({
+    id: m.id,
+    role: m.role as "user" | "glimmer",
+    content: m.content,
+    timestamp: m.created_at,
+    mode: (m.workspace_mode as WorkspaceMode) || undefined,
+  }));
 }
 
 export default function GlimmerPage() {
@@ -59,6 +77,8 @@ export default function GlimmerPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionError, setSessionError] = useState<string | null>(null);
   const sessionInitRef = useRef(false);
+  /** True when session was restored from localStorage (not freshly created). */
+  const [restoredSession, setRestoredSession] = useState(false);
 
   // ── E14: Working state for mind-map staged persistence ─────────
   const { nodes: workingNodes, edges: workingEdges, actions: workingStateActions } =
@@ -77,36 +97,78 @@ export default function GlimmerPage() {
       });
   }, []);
 
-  // ── Create session on mount ───────────────────────────────────
+  // ── Restore or create session on mount ────────────────────────
   useEffect(() => {
     if (sessionInitRef.current) return;
     sessionInitRef.current = true;
 
-    createPersonaSession(workspaceMode)
-      .then((session: { id: string }) => {
-        setSessionId(session.id);
-        setSessionError(null);
+    const makeWelcomeMessage = (mode: WorkspaceMode): ChatMessage => ({
+      id: generateId(),
+      role: "glimmer",
+      content:
+        "Hi! I'm Glimmer, your project chief-of-staff. What would you like to work on? You can switch modes in the controls panel, or just tell me what you need.",
+      timestamp: new Date().toISOString(),
+      mode,
+    });
 
-        // Add welcome message after session is created
-        const welcomeTimer = setTimeout(() => {
-          setMessages([
-            {
-              id: generateId(),
-              role: "glimmer",
-              content:
-                "Hi! I'm Glimmer, your project chief-of-staff. What would you like to work on? You can switch modes in the controls panel, or just tell me what you need.",
-              timestamp: new Date().toISOString(),
-              mode: workspaceMode,
-            },
-          ]);
-        }, 400);
-        return () => clearTimeout(welcomeTimer);
-      })
-      .catch((_err: unknown) => {
-        setSessionError("Could not start a session — the backend may be unavailable.");
-        console.error("Failed to create persona session:", _err);
-      });
+    /** Create a brand-new session and store it. */
+    const createNewSession = (mode: WorkspaceMode) => {
+      createPersonaSession(mode)
+        .then((session: { id: string }) => {
+          try { localStorage.setItem(SESSION_STORAGE_KEY, session.id); } catch { /* private browsing */ }
+          setSessionId(session.id);
+          setSessionError(null);
+          setTimeout(() => setMessages([makeWelcomeMessage(mode)]), 400);
+        })
+        .catch((_err: unknown) => {
+          setSessionError("Could not start a session — the backend may be unavailable.");
+          console.error("Failed to create persona session:", _err);
+        });
+    };
+
+    /** Try to restore from a previous session; fall back to creating new. */
+    let storedId: string | null = null;
+    try { storedId = localStorage.getItem(SESSION_STORAGE_KEY); } catch { /* private browsing */ }
+
+    if (storedId) {
+      fetchPersonaSession(storedId)
+        .then((session: PersonaSession) => {
+          if (session.session_status === "active" || session.session_status === "paused") {
+            // ── Restore ──
+            setSessionId(session.id);
+            setSessionError(null);
+            setRestoredSession(true);
+
+            const restoredMode = (session.workspace_mode as WorkspaceMode) || "update";
+            setWorkspaceMode(restoredMode);
+
+            const restored = sessionMessagesToChatMessages(session);
+            setMessages(restored.length > 0 ? restored : [makeWelcomeMessage(restoredMode)]);
+          } else {
+            // Terminal state — start fresh
+            try { localStorage.removeItem(SESSION_STORAGE_KEY); } catch { /* */ }
+            createNewSession(workspaceMode);
+          }
+        })
+        .catch(() => {
+          // Fetch failed (404, network error) — start fresh
+          try { localStorage.removeItem(SESSION_STORAGE_KEY); } catch { /* */ }
+          createNewSession(workspaceMode);
+        });
+    } else {
+      createNewSession(workspaceMode);
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Auto-restore working state for recovered sessions ─────────
+  useEffect(() => {
+    if (restoredSession && sessionId) {
+      workingStateActions.restoreFromBackup().catch(() => {
+        /* best-effort — working state may simply be empty */
+      });
+      setRestoredSession(false);
+    }
+  }, [restoredSession, sessionId, workingStateActions]);
 
   // ── Handle user sending a message ─────────────────────────────
   const handleSendMessage = useCallback(
@@ -192,6 +254,58 @@ export default function GlimmerPage() {
     [workspaceMode, sessionId],
   );
 
+  // ── Handle paste-in content submission ─────────────────────────
+  const handlePasteIn = useCallback(
+    async (content: string, contentTypeHint: string) => {
+      if (!sessionId) return;
+
+      // Show user paste-in summary in chat
+      const preview = content.length > 120 ? content.slice(0, 120) + "…" : content;
+      const userMsg: ChatMessage = {
+        id: generateId(),
+        role: "user",
+        content: `📋 Pasted content (${contentTypeHint}):\n${preview}`,
+        timestamp: new Date().toISOString(),
+        mode: workspaceMode,
+      };
+      setMessages((prev) => [...prev, userMsg]);
+      setIsThinking(true);
+
+      try {
+        const result = await submitPasteIn(sessionId, content, contentTypeHint);
+
+        // Add extracted nodes to working state
+        if (result.candidate_nodes.length > 0) {
+          workingStateActions.addNodesFromPasteIn(result.candidate_nodes);
+        }
+
+        // Show Glimmer's explanation in chat
+        const glimmerMsg: ChatMessage = {
+          id: generateId(),
+          role: "glimmer",
+          content: result.explanation,
+          timestamp: new Date().toISOString(),
+          mode: workspaceMode,
+        };
+        setMessages((prev) => [...prev, glimmerMsg]);
+      } catch (err) {
+        console.error("Paste-in failed:", err);
+        const errorMsg: ChatMessage = {
+          id: generateId(),
+          role: "glimmer",
+          content:
+            "I'm sorry, I couldn't process the pasted content right now. Please try again in a moment.",
+          timestamp: new Date().toISOString(),
+          mode: workspaceMode,
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+      }
+
+      setIsThinking(false);
+    },
+    [sessionId, workspaceMode, workingStateActions],
+  );
+
   // ── Render ────────────────────────────────────────────────────
   return (
     <div
@@ -228,6 +342,7 @@ export default function GlimmerPage() {
             interactionMode={interactionMode}
             isThinking={isThinking}
             onSendMessage={handleSendMessage}
+            onPasteIn={handlePasteIn}
           />
         </div>
 
