@@ -248,3 +248,47 @@ export interface ExpertAdviceExchange {
   completed_at: string | null;
 }
 
+// ── Connected Accounts / Connectors ─────────────────────────────
+
+export interface ConnectedAccountSummary {
+  id: string;
+  provider_type: string;
+  account_label: string;
+  account_address: string | null;
+  tenant_context: string | null;
+  purpose_label: string | null;
+  status: string;
+  created_at: string;
+  last_sync_at: string | null;
+  last_sync_status: string | null;
+  last_sync_items: number | null;
+  last_error: string | null;
+  has_credentials: boolean;
+}
+
+export interface AuthUrlResponse {
+  auth_url: string;
+  state: string;
+  provider: string;
+}
+
+export interface SyncTriggerResponse {
+  account_id: string;
+  results: Array<{
+    connector_type: string;
+    success: boolean;
+    items_fetched: number;
+    error: string | null;
+    duration_ms: number;
+  }>;
+  overall_success: boolean;
+}
+
+export interface ConnectorStatusResponse {
+  google_configured: boolean;
+  microsoft_configured: boolean;
+  accounts: ConnectedAccountSummary[];
+  total_accounts: number;
+  active_accounts: number;
+}
+

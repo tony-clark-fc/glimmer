@@ -12,7 +12,8 @@ Responsible for:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import logging
+from datetime import datetime, timezone, timedelta
 from typing import Any, Optional
 
 from app.connectors.base import BaseConnector
@@ -20,7 +21,10 @@ from app.connectors.contracts import (
     ConnectorExecutionContext,
     FetchResult,
     NormalizedEventData,
+    SyncCheckpoint,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class GoogleCalendarConnector(BaseConnector):
@@ -45,18 +49,87 @@ class GoogleCalendarConnector(BaseConnector):
     def fetch_and_normalize(
         self, context: ConnectorExecutionContext
     ) -> FetchResult:
-        """Fetch and normalize Google Calendar events."""
-        raise NotImplementedError(
-            "Live Google Calendar fetch requires OAuth credentials. "
-            "Use normalize_gcal_event() for fixture-driven testing."
+        """Fetch and normalize Google Calendar events.
+
+        ARCH:GoogleCalendarConnector
+        ARCH:ConnectorPrinciple.ReadFirst
+
+        Fetches events from the next 7 days by default.
+        """
+        access_token = (context.sync_metadata or {}).get("_access_token")
+        if not access_token:
+            raise NotImplementedError(
+                "Live Google Calendar fetch requires OAuth credentials. "
+                "Use normalize_gcal_event() for fixture-driven testing."
+            )
+
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+
+        credentials = Credentials(token=access_token)
+        service = build("calendar", "v3", credentials=credentials)
+
+        # Fetch events from now through the next 7 days
+        now = datetime.now(timezone.utc)
+        time_min = now.isoformat()
+        time_max = (now + timedelta(days=7)).isoformat()
+
+        calendar_id = "primary"
+        if context.profile_label:
+            calendar_id = context.profile_label
+
+        results = service.events().list(
+            calendarId=calendar_id,
+            timeMin=time_min,
+            timeMax=time_max,
+            maxResults=100,
+            singleEvents=True,
+            orderBy="startTime",
+        ).execute()
+
+        raw_events = results.get("items", [])
+        normalized_events: list[NormalizedEventData] = []
+
+        for raw_event in raw_events:
+            try:
+                normalized = self.normalize_gcal_event(raw_event, context)
+                normalized_events.append(normalized)
+            except Exception as exc:
+                logger.warning(
+                    "Google Calendar: failed to normalize event %s: %s",
+                    raw_event.get("id"),
+                    exc,
+                )
+
+        checkpoint = SyncCheckpoint(
+            connected_account_id=context.connected_account_id,
+            status="success",
+            items_fetched=len(normalized_events),
+        )
+
+        return FetchResult(
+            events=normalized_events,
+            checkpoint=checkpoint,
         )
 
     def validate_credentials(
         self, context: ConnectorExecutionContext
     ) -> bool:
-        raise NotImplementedError(
-            "Live credential validation requires OAuth app registration."
-        )
+        """Validate Google Calendar OAuth credentials."""
+        access_token = (context.sync_metadata or {}).get("_access_token")
+        if not access_token:
+            return False
+
+        try:
+            from google.oauth2.credentials import Credentials
+            from googleapiclient.discovery import build
+
+            credentials = Credentials(token=access_token)
+            service = build("calendar", "v3", credentials=credentials)
+            service.calendarList().list(maxResults=1).execute()
+            return True
+        except Exception:
+            return False
 
     @staticmethod
     def normalize_gcal_event(

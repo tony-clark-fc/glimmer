@@ -13,7 +13,8 @@ Responsible for:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import logging
+from datetime import datetime, timezone, timedelta
 from typing import Any, Optional
 
 from app.connectors.base import BaseConnector
@@ -22,7 +23,10 @@ from app.connectors.contracts import (
     FetchResult,
     NormalizedMessageData,
     NormalizedThreadData,
+    SyncCheckpoint,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class MicrosoftMailConnector(BaseConnector):
@@ -31,6 +35,8 @@ class MicrosoftMailConnector(BaseConnector):
     ARCH:MicrosoftGraphConnector
     ARCH:ConnectorPrinciple.ReadFirst
     """
+
+    GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 
     @property
     def provider_type(self) -> str:
@@ -47,17 +53,115 @@ class MicrosoftMailConnector(BaseConnector):
     def fetch_and_normalize(
         self, context: ConnectorExecutionContext
     ) -> FetchResult:
-        raise NotImplementedError(
-            "Live Microsoft mail fetch requires OAuth credentials. "
-            "Use normalize_graph_message() for fixture-driven testing."
+        """Fetch and normalize Microsoft Graph mail messages.
+
+        ARCH:MicrosoftGraphConnector
+        ARCH:ConnectorPrinciple.ReadFirst
+
+        Fetches recent messages from the last 24 hours.
+        """
+        access_token = (context.sync_metadata or {}).get("_access_token")
+        if not access_token:
+            raise NotImplementedError(
+                "Live Microsoft mail fetch requires OAuth credentials. "
+                "Use normalize_graph_message() for fixture-driven testing."
+            )
+
+        import httpx
+
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        # Fetch recent messages (last 24h or since last sync)
+        since = (datetime.now(timezone.utc) - timedelta(days=1)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
+
+        params = {
+            "$top": "50",
+            "$orderby": "receivedDateTime desc",
+            "$filter": f"receivedDateTime ge {since}",
+            "$select": "id,conversationId,subject,from,toRecipients,ccRecipients,"
+                       "body,sentDateTime,receivedDateTime,parentFolderId,"
+                       "importance,isRead",
+        }
+
+        response = httpx.get(
+            f"{self.GRAPH_BASE}/me/messages",
+            headers=headers,
+            params=params,
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        raw_messages = data.get("value", [])
+        normalized_messages: list[NormalizedMessageData] = []
+        normalized_threads: list[NormalizedThreadData] = []
+        conversation_messages: dict[str, list[dict]] = {}
+
+        for raw_msg in raw_messages:
+            try:
+                normalized = self.normalize_graph_message(raw_msg, context)
+                normalized_messages.append(normalized)
+
+                # Group by conversation for thread normalization
+                conv_id = raw_msg.get("conversationId")
+                if conv_id:
+                    if conv_id not in conversation_messages:
+                        conversation_messages[conv_id] = []
+                    conversation_messages[conv_id].append(raw_msg)
+
+            except Exception as exc:
+                logger.warning(
+                    "Microsoft Mail: failed to normalize message %s: %s",
+                    raw_msg.get("id"),
+                    exc,
+                )
+
+        # Build thread records from conversations
+        for conv_id, conv_msgs in conversation_messages.items():
+            try:
+                thread = self.normalize_graph_thread(conv_id, conv_msgs, context)
+                normalized_threads.append(thread)
+            except Exception as exc:
+                logger.warning(
+                    "Microsoft Mail: failed to normalize thread %s: %s",
+                    conv_id,
+                    exc,
+                )
+
+        checkpoint = SyncCheckpoint(
+            connected_account_id=context.connected_account_id,
+            status="success",
+            items_fetched=len(normalized_messages),
+        )
+
+        return FetchResult(
+            messages=normalized_messages,
+            threads=normalized_threads,
+            checkpoint=checkpoint,
         )
 
     def validate_credentials(
         self, context: ConnectorExecutionContext
     ) -> bool:
-        raise NotImplementedError(
-            "Live credential validation requires OAuth app registration."
-        )
+        """Validate Microsoft Graph credentials with a lightweight call."""
+        access_token = (context.sync_metadata or {}).get("_access_token")
+        if not access_token:
+            return False
+
+        try:
+            import httpx
+
+            headers = {"Authorization": f"Bearer {access_token}"}
+            response = httpx.get(
+                f"{self.GRAPH_BASE}/me",
+                headers=headers,
+                timeout=10.0,
+            )
+            return response.status_code == 200
+        except Exception:
+            return False
 
     @staticmethod
     def normalize_graph_message(

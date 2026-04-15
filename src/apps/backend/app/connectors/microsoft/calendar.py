@@ -11,7 +11,8 @@ Responsible for:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import logging
+from datetime import datetime, timezone, timedelta
 from typing import Any, Optional
 
 from app.connectors.base import BaseConnector
@@ -19,7 +20,10 @@ from app.connectors.contracts import (
     ConnectorExecutionContext,
     FetchResult,
     NormalizedEventData,
+    SyncCheckpoint,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class MicrosoftCalendarConnector(BaseConnector):
@@ -28,6 +32,8 @@ class MicrosoftCalendarConnector(BaseConnector):
     ARCH:MicrosoftCalendarConnector
     ARCH:ConnectorPrinciple.ReadFirst
     """
+
+    GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 
     @property
     def provider_type(self) -> str:
@@ -44,17 +50,94 @@ class MicrosoftCalendarConnector(BaseConnector):
     def fetch_and_normalize(
         self, context: ConnectorExecutionContext
     ) -> FetchResult:
-        raise NotImplementedError(
-            "Live Microsoft Calendar fetch requires OAuth credentials. "
-            "Use normalize_graph_event() for fixture-driven testing."
+        """Fetch and normalize Microsoft Graph calendar events.
+
+        ARCH:MicrosoftCalendarConnector
+        ARCH:ConnectorPrinciple.ReadFirst
+
+        Fetches events from the next 7 days.
+        """
+        access_token = (context.sync_metadata or {}).get("_access_token")
+        if not access_token:
+            raise NotImplementedError(
+                "Live Microsoft Calendar fetch requires OAuth credentials. "
+                "Use normalize_graph_event() for fixture-driven testing."
+            )
+
+        import httpx
+
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Prefer": 'outlook.timezone="UTC"',
+        }
+
+        now = datetime.now(timezone.utc)
+        time_min = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        time_max = (now + timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        params = {
+            "$top": "100",
+            "$orderby": "start/dateTime",
+            "$filter": f"start/dateTime ge '{time_min}' and start/dateTime le '{time_max}'",
+            "$select": "id,subject,bodyPreview,body,start,end,attendees,"
+                       "locations,isOnlineMeeting,onlineMeeting,organizer",
+        }
+
+        response = httpx.get(
+            f"{self.GRAPH_BASE}/me/events",
+            headers=headers,
+            params=params,
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        raw_events = data.get("value", [])
+        normalized_events: list[NormalizedEventData] = []
+
+        for raw_event in raw_events:
+            try:
+                normalized = self.normalize_graph_event(raw_event, context)
+                normalized_events.append(normalized)
+            except Exception as exc:
+                logger.warning(
+                    "Microsoft Calendar: failed to normalize event %s: %s",
+                    raw_event.get("id"),
+                    exc,
+                )
+
+        checkpoint = SyncCheckpoint(
+            connected_account_id=context.connected_account_id,
+            status="success",
+            items_fetched=len(normalized_events),
+        )
+
+        return FetchResult(
+            events=normalized_events,
+            checkpoint=checkpoint,
         )
 
     def validate_credentials(
         self, context: ConnectorExecutionContext
     ) -> bool:
-        raise NotImplementedError(
-            "Live credential validation requires OAuth app registration."
-        )
+        """Validate Microsoft Graph calendar credentials."""
+        access_token = (context.sync_metadata or {}).get("_access_token")
+        if not access_token:
+            return False
+
+        try:
+            import httpx
+
+            headers = {"Authorization": f"Bearer {access_token}"}
+            response = httpx.get(
+                f"{self.GRAPH_BASE}/me/calendars",
+                headers=headers,
+                params={"$top": "1"},
+                timeout=10.0,
+            )
+            return response.status_code == 200
+        except Exception:
+            return False
 
     @staticmethod
     def normalize_graph_event(

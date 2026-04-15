@@ -219,6 +219,38 @@ This section should be updated incrementally during implementation.
   - All 12 Workstream C verification anchors now have executed proof
 - **Workstream C is complete. Proceeding to Workstream D — Triage and Prioritization.**
 
+### 7.3 Session — 2026-04-15 — Live OAuth connector integration (Google + Microsoft)
+
+- **State:** Live connector integration infrastructure implemented. Connectors can now perform real OAuth authorization and fetch live data from Google (Gmail + Calendar) and Microsoft (Outlook + Calendar).
+- **Meaningful accomplishments:**
+  - **OAuth Configuration** — `app/config.py`: Added Google OAuth (client_id, client_secret, redirect_uri, scopes), Microsoft OAuth (client_id, client_secret, redirect_uri, tenant_id, scopes), and token encryption key settings with GLIMMER_ env prefix
+  - **Token Manager** — `app/connectors/token_manager.py`: Fernet-encrypted token storage/retrieval on ConnectedAccount.auth_metadata, with store_tokens, get_tokens, clear_tokens, is_expired methods
+  - **OAuth Providers** — `app/connectors/oauth_providers.py`: GoogleOAuthProvider (google-auth-oauthlib) and MicrosoftOAuthProvider (MSAL) with get_authorization_url, exchange_code, refresh_access_token, get_user_info
+  - **Connector API** — `app/api/connectors.py`: Full connector management API router with 9 endpoints — accounts CRUD, Google/Microsoft OAuth flows (auth-url + callback), manual sync trigger, connector status
+  - **Live Gmail Fetch** — `app/connectors/google/gmail.py`: fetch_and_normalize now calls Gmail API (messages.list + messages.get + threads.get), with incremental sync cursor support via historyId
+  - **Live Google Calendar Fetch** — `app/connectors/google/calendar.py`: fetch_and_normalize calls Calendar API (events.list) for next 7 days
+  - **Live Microsoft Mail Fetch** — `app/connectors/microsoft/mail.py`: fetch_and_normalize calls Graph /me/messages with $filter for last 24h, groups by conversationId for threads
+  - **Live Microsoft Calendar Fetch** — `app/connectors/microsoft/calendar.py`: fetch_and_normalize calls Graph /me/events for next 7 days
+  - **Sync Orchestration** — `app/services/sync_orchestration.py`: Coordinates token refresh, connector dispatch, IntakeHandoffService persistence, SyncStateManager checkpoint updates
+  - **Frontend — Settings/Connectors** — `src/app/settings/connectors/page.tsx`: Full connector management UI with Google/Microsoft connect buttons, account list, sync status, disconnect, sync-now actions
+  - **Frontend — API Client** — Updated api-client.ts and types.ts with connector management functions and types
+  - **Frontend — Nav** — Added Settings nav item to workspace-nav.tsx
+  - **Dependencies** — Added google-auth-oauthlib, google-api-python-client, msal, cryptography, httpx to pyproject.toml
+  - **Environment** — Updated .env.example with Google/Microsoft OAuth setup instructions and token encryption key generation hint
+  - **All 785 existing tests still pass** (zero regressions)
+  - **Frontend builds successfully** with new /settings/connectors route
+- **Architecture compliance:**
+  - Read-first: all connectors use read-only scopes (gmail.readonly, calendar.readonly, Mail.Read, Calendars.Read)
+  - No-auto-send: no write/send capabilities in any connector
+  - Provenance: account/provider/tenant context preserved through execution context
+  - Token isolation: encrypted tokens stay in connector layer, never exposed in API responses
+  - Multi-account: supports multiple Google + multiple Microsoft accounts
+  - Least privilege: minimum OAuth scopes requested
+- **Human dependencies remaining:**
+  - Google Cloud Console: Create OAuth 2.0 "Web application" client, enable Gmail + Calendar APIs
+  - Azure Portal: Register app, add redirect URI, grant Mail.Read + Calendars.Read + User.Read delegated permissions
+  - Generate and set GLIMMER_TOKEN_ENCRYPTION_KEY in backend .env
+
 **Stable working anchor:** `WORKC:Progress.ExecutionLog`
 
 ---

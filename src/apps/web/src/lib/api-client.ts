@@ -18,6 +18,10 @@ import type {
   ResearchRunSummary,
   ResearchRunDetail,
   ExpertAdviceExchange,
+  ConnectedAccountSummary,
+  AuthUrlResponse,
+  SyncTriggerResponse,
+  ConnectorStatusResponse,
 } from "./types";
 
 // ── Generic fetch helper ────────────────────────────────────────
@@ -156,5 +160,33 @@ export async function reviewExchange(
     method: "PATCH",
     body: JSON.stringify({ action }),
   });
+}
+
+// ── Connectors / Connected Accounts ─────────────────────────────
+
+export async function fetchConnectedAccounts(): Promise<ConnectedAccountSummary[]> {
+  return apiFetch<ConnectedAccountSummary[]>("/connectors/accounts");
+}
+
+export async function deleteConnectedAccount(id: string): Promise<void> {
+  await apiFetch(`/connectors/accounts/${id}`, { method: "DELETE" });
+}
+
+export async function getGoogleAuthUrl(): Promise<AuthUrlResponse> {
+  return apiFetch<AuthUrlResponse>("/connectors/google/auth-url");
+}
+
+export async function getMicrosoftAuthUrl(): Promise<AuthUrlResponse> {
+  return apiFetch<AuthUrlResponse>("/connectors/microsoft/auth-url");
+}
+
+export async function triggerSync(accountId: string): Promise<SyncTriggerResponse> {
+  return apiFetch<SyncTriggerResponse>(`/connectors/sync/${accountId}`, {
+    method: "POST",
+  });
+}
+
+export async function fetchConnectorStatus(): Promise<ConnectorStatusResponse> {
+  return apiFetch<ConnectorStatusResponse>("/connectors/status");
 }
 

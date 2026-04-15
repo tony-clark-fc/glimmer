@@ -9,6 +9,7 @@ import {
   PenLine,
   Search,
   CheckCircle,
+  Settings,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -19,6 +20,7 @@ const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/drafts", label: "Drafts", icon: PenLine },
   { href: "/research", label: "Research", icon: Search },
   { href: "/review", label: "Review", icon: CheckCircle },
+  { href: "/settings/connectors", label: "Settings", icon: Settings },
 ];
 
 export function WorkspaceNav() {

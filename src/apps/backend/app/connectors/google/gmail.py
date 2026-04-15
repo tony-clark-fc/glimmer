@@ -13,6 +13,7 @@ Responsible for:
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -23,6 +24,8 @@ from app.connectors.contracts import (
     NormalizedMessageData,
     NormalizedThreadData,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class GmailConnector(BaseConnector):
@@ -47,24 +50,127 @@ class GmailConnector(BaseConnector):
     def fetch_and_normalize(
         self, context: ConnectorExecutionContext
     ) -> FetchResult:
-        """Fetch and normalize Gmail messages.
+        """Fetch and normalize Gmail messages using the Gmail API.
 
-        In production, this will use the Gmail API. For now, this is
-        the structural boundary — live provider integration requires
-        OAuth app registration (human dependency).
+        ARCH:GmailConnector
+        ARCH:ConnectorPrinciple.ReadFirst
+
+        Requires valid OAuth tokens in context.sync_metadata._access_token.
+        Falls back to NotImplementedError if no tokens are available.
         """
-        raise NotImplementedError(
-            "Live Gmail fetch requires OAuth credentials. "
-            "Use normalize_gmail_payload() for fixture-driven testing."
+        access_token = (context.sync_metadata or {}).get("_access_token")
+        if not access_token:
+            raise NotImplementedError(
+                "Live Gmail fetch requires OAuth credentials. "
+                "Use normalize_gmail_payload() for fixture-driven testing."
+            )
+
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+
+        credentials = Credentials(token=access_token)
+        service = build("gmail", "v1", credentials=credentials)
+
+        # Determine query — incremental from last sync or recent messages
+        sync_metadata = context.sync_metadata or {}
+        query = "newer_than:1d"
+        if sync_metadata.get("sync_cursor", {}).get("gmail_history_id"):
+            # Use history-based incremental (future enhancement)
+            query = "newer_than:1d"
+
+        # Fetch message list (read-only)
+        results = service.users().messages().list(
+            userId="me",
+            q=query,
+            maxResults=50,
+        ).execute()
+
+        messages_list = results.get("messages", [])
+
+        normalized_messages: list[NormalizedMessageData] = []
+        normalized_threads: list[NormalizedThreadData] = []
+        seen_thread_ids: set[str] = set()
+
+        for msg_stub in messages_list:
+            try:
+                # Fetch full message
+                raw_message = service.users().messages().get(
+                    userId="me",
+                    id=msg_stub["id"],
+                    format="full",
+                ).execute()
+
+                normalized = self.normalize_gmail_payload(raw_message, context)
+                normalized_messages.append(normalized)
+
+                # Track thread for thread normalization
+                thread_id = raw_message.get("threadId")
+                if thread_id and thread_id not in seen_thread_ids:
+                    seen_thread_ids.add(thread_id)
+
+            except Exception as exc:
+                logger.warning(
+                    "Gmail: failed to fetch message %s: %s",
+                    msg_stub.get("id"),
+                    exc,
+                )
+
+        # Fetch thread data for unique threads
+        for thread_id in seen_thread_ids:
+            try:
+                raw_thread = service.users().threads().get(
+                    userId="me",
+                    id=thread_id,
+                    format="metadata",
+                    metadataHeaders=["From", "To", "Subject", "Date"],
+                ).execute()
+                thread_data = self.normalize_gmail_thread(raw_thread, context)
+                normalized_threads.append(thread_data)
+            except Exception as exc:
+                logger.warning("Gmail: failed to fetch thread %s: %s", thread_id, exc)
+
+        # Build sync checkpoint
+        history_id = None
+        if messages_list:
+            # Get the latest historyId for future incremental sync
+            try:
+                profile = service.users().getProfile(userId="me").execute()
+                history_id = profile.get("historyId")
+            except Exception:
+                pass
+
+        from app.connectors.contracts import SyncCheckpoint
+        checkpoint = SyncCheckpoint(
+            connected_account_id=context.connected_account_id,
+            status="success",
+            items_fetched=len(normalized_messages),
+            sync_cursor={"gmail_history_id": history_id} if history_id else None,
+        )
+
+        return FetchResult(
+            messages=normalized_messages,
+            threads=normalized_threads,
+            checkpoint=checkpoint,
         )
 
     def validate_credentials(
         self, context: ConnectorExecutionContext
     ) -> bool:
-        """Validate Gmail OAuth credentials."""
-        raise NotImplementedError(
-            "Live credential validation requires OAuth app registration."
-        )
+        """Validate Gmail OAuth credentials with a lightweight API call."""
+        access_token = (context.sync_metadata or {}).get("_access_token")
+        if not access_token:
+            return False
+
+        try:
+            from google.oauth2.credentials import Credentials
+            from googleapiclient.discovery import build
+
+            credentials = Credentials(token=access_token)
+            service = build("gmail", "v1", credentials=credentials)
+            service.users().getProfile(userId="me").execute()
+            return True
+        except Exception:
+            return False
 
     @staticmethod
     def normalize_gmail_payload(
