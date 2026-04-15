@@ -41,10 +41,19 @@ class IntakeState(TypedDict, total=False):
     route_target: str  # triage, planner, drafting, telegram, voice
     route_reason: str
 
+    # Triage results (populated by triage_handoff when pipeline runs)
+    triage_classification_ids: list[uuid.UUID]
+    triage_extraction_ids: list[uuid.UUID]
+    triage_needs_review: bool
+    triage_review_reasons: list[str]
+    triage_records_processed: int
+    triage_error: Optional[str]
+
     # Metadata
     workflow_id: str
     initiated_at: str
     channel: str  # web, telegram, voice, api
+    current_step: str
 
 
 # ── Triage Graph State ───────────────────────────────────────────────

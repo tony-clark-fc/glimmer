@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db import get_session
+from app.db import get_db
 from app.models.interpretation import (
     MessageClassification,
     ExtractedAction,
@@ -84,6 +84,7 @@ class FocusPackResponse(BaseModel):
     waiting_on_items: Optional[dict] = None
     reply_debt_summary: Optional[str] = None
     calendar_pressure_summary: Optional[str] = None
+    narrative_summary: Optional[str] = None
 
 
 class NextStepResponse(BaseModel):
@@ -110,6 +111,30 @@ class GenerateFocusPackRequest(BaseModel):
     trigger_type: str = "on_demand"
 
 
+class ProcessMessagesRequest(BaseModel):
+    """Request body for manual triage processing of source records."""
+    source_record_ids: list[uuid.UUID] = Field(
+        ..., description="IDs of persisted source records to triage"
+    )
+    record_type: str = Field(
+        ..., description="Type: message, calendar_event, imported_signal"
+    )
+    connected_account_id: Optional[uuid.UUID] = Field(
+        None, description="Connected account for provenance context"
+    )
+
+
+class ProcessMessagesResponse(BaseModel):
+    """Response from manual triage processing."""
+    classification_ids: list[uuid.UUID] = []
+    extraction_ids: list[uuid.UUID] = []
+    needs_review: bool = False
+    review_reasons: list[str] = []
+    records_processed: int = 0
+    records_skipped: int = 0
+    errors: list[str] = []
+
+
 class ReviewQueueResponse(BaseModel):
     """Response model for the review queue."""
     classifications: list[ClassificationResponse] = []
@@ -117,23 +142,13 @@ class ReviewQueueResponse(BaseModel):
     total_pending: int = 0
 
 
-# ── Dependency ───────────────────────────────────────────────────
-
-
-def _get_db():
-    """Yield a database session for request lifecycle."""
-    session = get_session()
-    try:
-        yield session
-    finally:
-        session.close()
 
 
 # ── Review Queue ─────────────────────────────────────────────────
 
 
 @router.get("/review-queue", response_model=ReviewQueueResponse)
-def get_review_queue(db: Session = Depends(_get_db)) -> ReviewQueueResponse:
+def get_review_queue(db: Session = Depends(get_db)) -> ReviewQueueResponse:
     """Get all items pending review.
 
     ARCH:ReviewQueueArchitecture
@@ -168,7 +183,7 @@ def get_review_queue(db: Session = Depends(_get_db)) -> ReviewQueueResponse:
 def review_classification(
     classification_id: uuid.UUID,
     body: ReviewActionRequest,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> ClassificationResponse:
     """Apply a review action to a classification.
 
@@ -209,7 +224,7 @@ def review_classification(
 def review_action(
     action_id: uuid.UUID,
     body: ReviewActionRequest,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> ExtractedActionResponse:
     """Apply a review action to an extracted action.
 
@@ -243,13 +258,55 @@ def review_action(
     return ExtractedActionResponse.model_validate(action)
 
 
+# ── Triage Pipeline ──────────────────────────────────────────────
+
+
+@router.post(
+    "/process-messages",
+    response_model=ProcessMessagesResponse,
+    status_code=200,
+)
+def process_messages(
+    body: ProcessMessagesRequest,
+    db: Session = Depends(get_db),
+) -> ProcessMessagesResponse:
+    """Manually trigger triage processing for specific source records.
+
+    ARCH:TriageGraph
+    PLAN:WorkstreamI.PackageI8.OrchestrationWiring
+    TEST:Triage.Pipeline.APIEndpointReturnsCorrectShape
+
+    Runs classification and extraction on the given source record IDs.
+    Results are persisted and returned.
+    """
+    from app.services.triage_pipeline import process_triage_batch
+
+    result = process_triage_batch(
+        session=db,
+        source_record_ids=body.source_record_ids,
+        record_type=body.record_type,
+        connected_account_id=body.connected_account_id,
+    )
+    db.commit()
+
+    return ProcessMessagesResponse(
+        classification_ids=result.classification_ids,
+        extraction_ids=result.extraction_ids,
+        needs_review=result.needs_review,
+        review_reasons=result.review_reasons,
+        records_processed=result.records_processed,
+        records_skipped=result.records_skipped,
+        errors=result.errors,
+    )
+
+
 # ── Focus Pack ───────────────────────────────────────────────────
 
 
 @router.post("/focus-pack", response_model=FocusPackResponse, status_code=201)
 def create_focus_pack(
     body: GenerateFocusPackRequest,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> FocusPackResponse:
     """Generate a new focus pack from current operational state.
 
@@ -270,7 +327,7 @@ def create_focus_pack(
 
 @router.get("/focus-pack/latest", response_model=FocusPackResponse)
 def get_latest_focus_pack(
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> FocusPackResponse:
     """Get the most recent focus pack.
 
@@ -295,7 +352,7 @@ def get_latest_focus_pack(
 )
 def get_next_steps(
     project_id: uuid.UUID,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> list[NextStepResponse]:
     """Get advisory next-step suggestions for a project.
 

@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.db import get_session
+from app.db import get_db
 from app.models.operator import PrimaryOperator
 
 router = APIRouter(prefix="/operator", tags=["operator"])
@@ -65,23 +65,13 @@ class OperatorResponse(BaseModel):
     escalation_preferences: Optional[dict] = None
 
 
-# ── Dependency ───────────────────────────────────────────────────
-
-
-def _get_db() -> Session:
-    """Yield a database session for request lifecycle."""
-    session = get_session()
-    try:
-        yield session  # type: ignore[misc]
-    finally:
-        session.close()
 
 
 # ── Routes ───────────────────────────────────────────────────────
 
 
 @router.get("", response_model=OperatorResponse)
-def get_operator(db: Session = Depends(_get_db)) -> OperatorResponse:
+def get_operator(db: Session = Depends(get_db)) -> OperatorResponse:
     """Return the primary operator.
 
     MVP assumes a single operator.  Returns 404 if none exists yet.
@@ -95,7 +85,7 @@ def get_operator(db: Session = Depends(_get_db)) -> OperatorResponse:
 @router.post("", response_model=OperatorResponse, status_code=201)
 def create_operator(
     body: OperatorCreate,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> OperatorResponse:
     """Create the primary operator.
 
@@ -117,7 +107,7 @@ def create_operator(
 @router.patch("", response_model=OperatorResponse)
 def update_operator(
     body: OperatorUpdate,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> OperatorResponse:
     """Update operator preferences.
 

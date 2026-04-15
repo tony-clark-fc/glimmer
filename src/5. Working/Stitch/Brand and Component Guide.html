@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Glimmer: Brand &amp; Component Guide</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb783",
+                        "primary-container": "#2f2ebe",
+                        "on-surface-variant": "#c7c4d7",
+                        "surface-container-low": "#1b1b1e",
+                        "surface-container": "#1f1f22",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "background": "#0a0a0c",
+                        "on-surface": "#e4e1e6",
+                        "secondary-fixed": "#e1e0ff",
+                        "tertiary-fixed": "#ffdcc5",
+                        "surface-container-highest": "#353438",
+                        "surface-dim": "#0a0a0c",
+                        "on-primary-fixed": "#07006c",
+                        "surface": "#131316",
+                        "on-tertiary-container": "#452000",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "secondary": "#c0c1ff",
+                        "on-secondary-container": "#b2b3f2",
+                        "on-error-container": "#ffdad6",
+                        "outline-variant": "#32313d",
+                        "on-primary-container": "#e1e0ff",
+                        "on-background": "#e4e1e6",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "surface-container-high": "#242427",
+                        "surface-bright": "#39393c",
+                        "on-secondary": "#292a60",
+                        "error-container": "#93000a",
+                        "tertiary": "#ffb783",
+                        "surface-container-lowest": "#0e0e11",
+                        "on-secondary-fixed-variant": "#404178",
+                        "surface-variant": "#353438",
+                        "primary": "#818cf8",
+                        "on-secondary-fixed": "#13144a",
+                        "inverse-on-surface": "#303033",
+                        "error": "#ffb4ab",
+                        "inverse-primary": "#494bd6",
+                        "outline": "#6b7280",
+                        "surface-tint": "#818cf8",
+                        "on-tertiary-fixed": "#301400",
+                        "on-primary": "#000000",
+                        "inverse-surface": "#e4e1e6",
+                        "secondary-container": "#1e1b4b",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-error": "#690005",
+                        "tertiary-container": "#d97721",
+                        "primary-fixed": "#e1e0ff",
+                        "on-tertiary": "#4f2500"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-effect {
+            backdrop-filter: blur(24px);
+            background: rgba(26, 26, 30, 0.6);
+            border: 1px solid rgba(129, 140, 248, 0.1);
+        }
+        .atmospheric-glow {
+            position: relative;
+        }
+        .atmospheric-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140%;
+            height: 140%;
+            background: radial-gradient(circle, rgba(129, 140, 248, 0.08) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .luminous-card {
+            background: linear-gradient(145deg, rgba(31, 31, 34, 0.8), rgba(20, 20, 22, 0.9));
+            border: 1px solid rgba(129, 140, 248, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(129, 140, 248, 0.03);
+            transition: all 0.3s ease;
+        }
+        .luminous-card:hover {
+            border-color: rgba(129, 140, 248, 0.3);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(129, 140, 248, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- Background Atmospheric Glows -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-indigo-900/10 blur-[120px] rounded-full"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/5 blur-[100px] rounded-full"></div>
+</div>
+<!-- Top Navigation Shell -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-16 bg-[#0a0a0c]/80 backdrop-blur-2xl border-b border-outline-variant/30">
+    <div class="flex items-center gap-8">
+        <span class="text-xl font-black tracking-tighter text-primary font-headline">Glimmer</span>
+        <div class="hidden md:flex gap-6 items-center">
+            <a class="text-on-surface-variant font-headline font-bold tracking-tight hover:text-primary transition-colors duration-200" href="#">Dashboard</a>
+            <a class="text-on-surface-variant font-headline font-bold tracking-tight hover:text-primary transition-colors duration-200" href="#">Projects</a>
+            <a class="text-on-surface-variant font-headline font-bold tracking-tight hover:text-primary transition-colors duration-200" href="#">Triage</a>
+            <a class="text-on-surface-variant font-headline font-bold tracking-tight hover:text-primary transition-colors duration-200" href="#">Intelligence</a>
+        </div>
+    </div>
+    <div class="flex items-center gap-4">
+        <span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">notifications</span>
+        <span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">colors_spark</span>
+        <div class="w-8 h-8 rounded-full ring-1 ring-primary/20 p-0.5">
+            <div class="w-full h-full rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+                <img class="w-full h-full object-cover" data-alt="professional portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXme-CPZo28e7q-6MxuP5tYZWDLQZjLurOiSY1-njouQXUBrXsIsAVyODJs3-O_JSmGJgQvK-pgj_yCN3zFhwSKX_vvaoeNprM2caNKwKJHsU3z0fxTalEM0TDPrC3SuB8qCjqLL1Hprhe5eScaibv0AFQhBkGA5vO2Eq8C1mAnKjmQv0_k6ThQxWQHm8Al8lQ0oTVmpl7oIMMZwE0rlXuEFpWmCjWQ-m53ih7isnX_5CjuKMReP5XJ8aCwgTOYLNj_vp5CcLhYG8"/>
+            </div>
+        </div>
+    </div>
+</nav>
+<!-- Main Content Container -->
+<main class="relative z-10 max-w-[960px] mx-auto pt-32 pb-24 px-6 md:px-0">
+    <!-- Header -->
+    <header class="mb-20 text-left atmospheric-glow">
+        <h1 class="font-headline font-extrabold text-5xl md:text-6xl tracking-tighter mb-4 text-on-surface bg-gradient-to-r from-on-surface to-on-surface-variant bg-clip-text text-transparent">Glimmer: Brand &amp; Component Guide</h1>
+        <p class="text-on-surface-variant text-xl max-w-2xl font-body leading-relaxed">
+            Your local-first AI partner. A chief-of-staff designed for precision, velocity, and luminous clarity in project management.
+        </p>
+    </header>
+    <!-- Core Identity -->
+    <section class="mb-24 atmospheric-glow">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="h-[2px] w-8 bg-primary shadow-[0_0_10px_rgba(129,140,248,0.5)]"></div>
+            <h2 class="font-headline font-bold text-sm tracking-[0.2em] uppercase text-primary">Core Identity</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="luminous-card p-10 rounded-lg flex flex-col items-center justify-center space-y-6">
+                <div class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-primary rounded-[1.5rem] flex items-center justify-center shadow-[0_0_40px_rgba(129,140,248,0.4)]">
+                    <span class="text-white font-headline font-black text-6xl">G</span>
+                </div>
+                <p class="text-label-sm text-outline font-medium tracking-wide">LOGO MARK</p>
+            </div>
+            <div class="luminous-card p-10 rounded-lg space-y-6">
+                <div>
+                    <p class="text-label-sm text-outline font-medium mb-4 tracking-wide">TYPOGRAPHY: MANROPE</p>
+                    <p class="font-headline font-extrabold text-3xl tracking-tight leading-snug">The quick brown fox jumps over the lazy dog.</p>
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                    <div class="h-12 bg-background rounded border border-outline-variant/30" title="Background"></div>
+                    <div class="h-12 bg-surface-container rounded border border-outline-variant/30" title="Surface Container"></div>
+                    <div class="h-12 bg-primary rounded shadow-[0_0_15px_rgba(129,140,248,0.3)]" title="Primary Indigo"></div>
+                    <div class="h-12 bg-secondary-container rounded border border-primary/20" title="Secondary Container"></div>
+                </div>
+                <p class="text-label-sm text-outline font-medium tracking-wide uppercase">Luminous Colors</p>
+            </div>
+        </div>
+    </section>
+    <!-- Buttons & Actions -->
+    <section class="mb-24">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="h-[2px] w-8 bg-primary shadow-[0_0_10px_rgba(129,140,248,0.5)]"></div>
+            <h2 class="font-headline font-bold text-sm tracking-[0.2em] uppercase text-primary">Buttons &amp; Actions</h2>
+        </div>
+        <div class="luminous-card p-10 rounded-lg">
+            <div class="flex flex-wrap items-center gap-6">
+                <button class="bg-primary text-background px-6 py-3 rounded-DEFAULT font-bold shadow-[0_0_20px_rgba(129,140,248,0.4)] hover:shadow-[0_0_30px_rgba(129,140,248,0.6)] transition-all active:scale-95">Primary Action</button>
+                <div class="flex gap-2 bg-[#121215] p-1 rounded-full border border-outline-variant/50">
+                    <button class="bg-primary/20 text-primary px-6 py-2 rounded-full font-semibold text-sm transition-all hover:bg-primary/30">Accept</button>
+                    <button class="text-on-surface-variant px-6 py-2 rounded-full font-semibold text-sm hover:bg-white/5 transition-all">Reject</button>
+                </div>
+                <button class="text-primary border border-primary/30 hover:border-primary/60 hover:bg-primary/5 px-6 py-3 rounded-DEFAULT font-bold transition-all">Ghost Button</button>
+                <button class="flex items-center gap-2 bg-secondary-container hover:bg-indigo-900/40 text-primary px-6 py-3 rounded-DEFAULT font-bold transition-all border border-primary/20 group">
+                    <span class="material-symbols-outlined text-primary group-hover:animate-pulse">colors_spark</span>
+                    Ask Glimmer
+                </button>
+            </div>
+        </div>
+    </section>
+    <!-- Status & Classification -->
+    <section class="mb-24 atmospheric-glow">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="h-[2px] w-8 bg-primary shadow-[0_0_10px_rgba(129,140,248,0.5)]"></div>
+            <h2 class="font-headline font-bold text-sm tracking-[0.2em] uppercase text-primary">Status &amp; Classification</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-4">
+                <div class="flex flex-wrap gap-3">
+                    <span class="px-3 py-1 bg-primary/10 text-primary border border-primary/30 rounded-full text-xs font-bold tracking-wide">ACTIVE</span>
+                    <span class="px-3 py-1 bg-surface-container-highest/40 text-outline border border-outline-variant/30 rounded-full text-xs font-bold tracking-wide">PAUSED</span>
+                    <span class="px-3 py-1 bg-red-500/10 text-error border border-error/30 rounded-full text-xs font-bold tracking-wide uppercase">High Risk</span>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <span class="px-3 py-1 bg-tertiary-container/10 text-tertiary border border-tertiary/20 rounded-DEFAULT text-xs font-medium">Work Item</span>
+                    <span class="px-3 py-1 bg-secondary-container/30 text-secondary border border-secondary/20 rounded-DEFAULT text-xs font-medium">Pending Action</span>
+                </div>
+            </div>
+            <div class="bg-[#121215] p-6 rounded-DEFAULT border border-outline-variant/30 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-outline uppercase tracking-widest">Confidence Score</span>
+                    <span class="text-primary font-headline font-bold text-xl drop-shadow-[0_0_10px_rgba(129,140,248,0.5)]">94%</span>
+                </div>
+                <div class="w-full bg-surface-container-highest/50 h-1 rounded-full overflow-hidden">
+                    <div class="bg-primary h-full w-[94%] shadow-[0_0_10px_rgba(129,140,248,0.8)]"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Surface Patterns -->
+    <section class="mb-24">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="h-[2px] w-8 bg-primary shadow-[0_0_10px_rgba(129,140,248,0.5)]"></div>
+            <h2 class="font-headline font-bold text-sm tracking-[0.2em] uppercase text-primary">Surface Patterns</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Project Card -->
+            <div class="luminous-card p-6 rounded-DEFAULT group cursor-pointer">
+                <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-4 border border-primary/20">
+                    <span class="material-symbols-outlined">folder</span>
+                </div>
+                <h3 class="font-headline font-bold text-lg text-on-surface mb-1 group-hover:text-primary transition-colors">Neptune Launch</h3>
+                <p class="text-sm text-on-surface-variant line-clamp-2">Quarterly infrastructure migration and scaling operations.</p>
+            </div>
+            <!-- Triage Card -->
+            <div class="luminous-card p-6 rounded-DEFAULT relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-2">
+                    <span class="material-symbols-outlined text-tertiary text-sm animate-pulse">priority_high</span>
+                </div>
+                <div class="text-xs font-bold text-outline uppercase tracking-widest mb-3">Triage Signal</div>
+                <p class="text-sm font-medium text-on-surface mb-4 italic text-indigo-100/90 leading-relaxed">"Possible bottleneck in frontend PR review cycle detected."</p>
+                <div class="flex -space-x-2">
+                    <div class="w-6 h-6 rounded-full border-2 border-surface-container bg-indigo-900/40 ring-1 ring-primary/20"></div>
+                    <div class="w-6 h-6 rounded-full border-2 border-surface-container bg-indigo-800/40 ring-1 ring-primary/20"></div>
+                </div>
+            </div>
+            <!-- Draft Card -->
+            <div class="bg-background p-6 rounded-DEFAULT border-dashed border-2 border-outline-variant/30 group hover:border-primary/50 transition-all cursor-pointer">
+                <h3 class="font-headline font-bold text-lg text-outline group-hover:text-primary transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">add</span> New Project
+                </h3>
+            </div>
+        </div>
+    </section>
+    <!-- Interactive Patterns -->
+    <section class="mb-24 atmospheric-glow">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="h-[2px] w-8 bg-primary shadow-[0_0_10px_rgba(129,140,248,0.5)]"></div>
+            <h2 class="font-headline font-bold text-sm tracking-[0.2em] uppercase text-primary">Interactive Patterns</h2>
+        </div>
+        <!-- Narrative Banner -->
+        <div class="luminous-card p-1 rounded-lg mb-8 bg-gradient-to-br from-primary/20 via-transparent to-transparent">
+            <div class="bg-[#121215]/95 p-8 rounded-[0.8rem] flex gap-6 items-start">
+                <div class="w-12 h-12 bg-primary rounded-full flex-shrink-0 flex items-center justify-center shadow-[0_0_20px_rgba(129,140,248,0.4)]">
+                    <span class="material-symbols-outlined text-background" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="font-headline font-bold text-xl text-on-surface">The Glimmer Persona</h4>
+                    <p class="text-on-surface-variant leading-relaxed">
+                        Glimmer provides summaries and insights as a cohesive narrative. It avoids bullet-point fatigue by framing data within a strategic context.
+                    </p>
+                    <div class="bg-primary/5 p-4 rounded-DEFAULT border-l-4 border-primary italic text-indigo-100/80 backdrop-blur-sm">
+                        "I've observed a shift in the Neptune timeline. Based on current PR velocity, we should consider re-allocating assets from the Triage team by Thursday."
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- No-Auto-Send Banner -->
+        <div class="glass-effect border border-outline-variant/40 p-4 rounded-DEFAULT flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary">lock_open</span>
+                <p class="text-sm font-medium text-on-surface-variant">Draft saved locally. <span class="text-on-surface">No data has been sent to external servers.</span></p>
+            </div>
+            <button class="text-xs font-bold text-primary uppercase tracking-widest hover:underline hover:drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]">Settings</button>
+        </div>
+    </section>
+</main>
+<!-- Mobile Navigation Shell -->
+<div class="md:hidden fixed bottom-0 left-0 w-full bg-[#0a0a0c]/90 backdrop-blur-2xl border-t border-outline-variant/30 flex justify-around items-center h-16 px-4 z-50">
+    <div class="flex flex-col items-center gap-1 text-primary">
+        <span class="material-symbols-outlined">grid_view</span>
+        <span class="text-[10px] font-bold">Overview</span>
+    </div>
+    <div class="flex flex-col items-center gap-1 text-on-surface-variant">
+        <span class="material-symbols-outlined">insights</span>
+        <span class="text-[10px] font-medium">Strategy</span>
+    </div>
+    <div class="bg-primary text-background w-12 h-12 rounded-full -mt-10 flex items-center justify-center shadow-[0_0_20px_rgba(129,140,248,0.4)]">
+        <span class="material-symbols-outlined">colors_spark</span>
+    </div>
+    <div class="flex flex-col items-center gap-1 text-on-surface-variant">
+        <span class="material-symbols-outlined">bolt</span>
+        <span class="text-[10px] font-medium">Active</span>
+    </div>
+    <div class="flex flex-col items-center gap-1 text-on-surface-variant">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="text-[10px] font-medium">Settings</span>
+    </div>
+</div>
+</body></html>

@@ -14,13 +14,16 @@ and routes them to the appropriate downstream workflow:
 
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any  # noqa: F401 — preserved for potential subclass usage
 
 from langgraph.graph import StateGraph, END
 
 from app.graphs.state import IntakeState
+
+logger = logging.getLogger(__name__)
 
 
 def _genuuid() -> str:
@@ -80,6 +83,68 @@ def route_to_target(state: IntakeState) -> str:
 # ── Graph Construction ───────────────────────────────────────────────
 
 
+def triage_handoff(state: IntakeState) -> IntakeState:
+    """Execute real triage on source records that were routed to triage.
+
+    ARCH:TriageGraph
+    ARCH:OrchestrationPrinciple.VisibleArtifacts
+    PLAN:WorkstreamI.PackageI8.OrchestrationWiring
+    TEST:Triage.Pipeline.EndToEndClassificationAndExtraction
+
+    Loads the source records from DB, classifies each, extracts
+    actions/decisions/deadlines, and persists the results.  If DB is
+    unavailable or records are not found, degrades gracefully.
+    """
+    source_record_ids = state.get("source_record_ids", [])
+    record_type = state.get("record_type", "")
+    connected_account_id = state.get("connected_account_id")
+
+    if not source_record_ids:
+        logger.debug("triage_handoff: no source_record_ids, skipping pipeline")
+        return {**state, "current_step": "triage_handoff_complete"}
+
+    try:
+        from app.db import get_session
+        from app.services.triage_pipeline import process_triage_batch
+
+        session = get_session()
+        try:
+            result = process_triage_batch(
+                session=session,
+                source_record_ids=source_record_ids,
+                record_type=record_type,
+                connected_account_id=connected_account_id,
+            )
+            session.commit()
+
+            logger.info(
+                "triage_handoff: processed=%d skipped=%d needs_review=%s",
+                result.records_processed,
+                result.records_skipped,
+                result.needs_review,
+            )
+
+            return {
+                **state,
+                "current_step": "triage_handoff_complete",
+                "triage_classification_ids": result.classification_ids,
+                "triage_extraction_ids": result.extraction_ids,
+                "triage_needs_review": result.needs_review,
+                "triage_review_reasons": result.review_reasons,
+                "triage_records_processed": result.records_processed,
+            }
+        finally:
+            session.close()
+
+    except Exception as exc:
+        logger.warning("triage_handoff: pipeline error — %s", exc)
+        return {
+            **state,
+            "current_step": "triage_handoff_failed",
+            "triage_error": str(exc),
+        }
+
+
 def build_intake_graph() -> StateGraph:
     """Build the Intake Graph.
 
@@ -92,10 +157,8 @@ def build_intake_graph() -> StateGraph:
 
     graph.add_node("classify_source", classify_source)
 
-    # Terminal routing — the intake graph hands off to the next graph
-    # In a production setup these would invoke subgraphs.
-    # For now, routing decision is the output.
-    graph.add_node("triage_handoff", lambda s: {**s, "current_step": "triage_handoff_complete"})
+    # Triage handoff — runs real classification and extraction pipeline
+    graph.add_node("triage_handoff", triage_handoff)
     graph.add_node("planner_handoff", lambda s: {**s, "current_step": "planner_handoff_complete"})
     graph.add_node("drafting_handoff", lambda s: {**s, "current_step": "drafting_handoff_complete"})
 

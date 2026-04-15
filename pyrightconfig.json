@@ -3,6 +3,10 @@
     {
       "root": "src/apps/backend",
       "extraPaths": ["src/apps/backend"]
+    },
+    {
+      "root": "src/tests",
+      "extraPaths": ["src/apps/backend"]
     }
   ],
   "extraPaths": ["src/apps/backend"],

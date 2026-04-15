@@ -57,3 +57,21 @@ class InferenceSettings(BaseSettings):
     # Maximum retries on transient errors (connection reset, etc.)
     max_retries: int = 1
 
+    # ── Per-task LLM toggles ──────────────────────────────────────
+    # These allow the operator to enable/disable LLM inference per task
+    # type for operational tuning.  When disabled for a given task, the
+    # system uses the deterministic baseline instead.
+    #
+    # Operational tuning guidance:
+    # - Start with all enabled and observe quality + latency.
+    # - Disable individual tasks if the LLM adds unacceptable latency
+    #   (e.g. classification at ~15s may be too slow for interactive use).
+    # - Disable drafting LLM if tone/style calibration is incomplete.
+    # - Disable briefing LLM if the template output is preferred.
+    # - All tasks fall back cleanly to deterministic logic when disabled.
+    llm_classification_enabled: bool = True
+    llm_extraction_enabled: bool = True
+    llm_prioritization_enabled: bool = True
+    llm_drafting_enabled: bool = True
+    llm_briefing_enabled: bool = True
+

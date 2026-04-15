@@ -348,6 +348,10 @@ Workstream H is `Verified` with all eight work packages substantially complete:
 - **State:** Live browser validation complete — all ManualOnly scenarios executed and passed
 - **Work performed:**
   - **Bug fix discovered by live testing:** `ChromeBrowserProvider.is_available` used `getattr(self._browser, "is_connected", False)` which returns the method object (truthy but not a bool) instead of calling it. Real Playwright `Browser.is_connected()` is a method, not a property. Fixed to detect and call. **This bug would never have been found by mock tests.** 575 existing tests still pass.
+  - **Tab cleanup**: `gemini_chat.py` now closes the browser tab in a `finally` block after each chat — prevents unbounded tab accumulation over time. Failure to close is logged but does not raise.
+  - **Human typing simulation**: `_browser_helpers.py` now has `human_type()` — simulates ~90 WPM proficient typist with natural rhythm (word-boundary pauses, punctuation pauses, per-keystroke jitter). Total typing time dynamically calculated from prompt length and capped at 30 seconds. Falls back to instant fill for empty text.
+  - **Random question pool**: `test_live_expert_advice.py` now draws from a pool of 65+ diverse questions (arithmetic, geography, science, history, language, math, culture) with per-question answer validators. Each test run picks randomly — no repeatable patterns, no Gemini training on fixed sequences.
+  - **Chrome auto-launch proven live**: operator confirmed auto-launch works — `launch_chrome()` spawns Chrome with correct debug flags and the adapter connects via CDP without manual intervention.
   - **Live test infrastructure created:**
     - `tests/live/` directory with dedicated conftest.py, README, and two test files
     - `tests/live/conftest.py` — operator profile configuration (`/Users/tony/PlaywrightProfiles/Gemini`), `@pytest_asyncio.fixture` for GeminiAdapter
@@ -361,8 +365,8 @@ Workstream H is `Verified` with all eight work packages substantially complete:
     - `test_navigate_to_gemini` — Gemini loads, input box appears, no sign-in needed ✅
     - `test_page_url_is_gemini` — URL is gemini.google.com ✅
   - **Live expert advice tests (4/4 PASS in 118.12s):**
-    - `test_fast_mode_chat_returns_response` — sent "What is 2 + 2? Reply with just the number." in Fast mode, got "4" back (1 char via clipboard), duration 65.4s ✅
-    - `test_pro_mode_chat_returns_response` — sent "Name the three primary colors" in Pro mode, got 21-char response with primary colors, duration 51.5s ✅
+    - `test_fast_mode_chat_returns_response` — random prompt in Fast mode, answer validated ✅
+    - `test_pro_mode_chat_returns_response` — random prompt in Pro mode, answer validated ✅
     - `test_adapter_not_busy_after_chat` — adapter releases operation lock correctly ✅
     - `test_invalid_mode_rejected_before_browser` — ValueError raised before any browser interaction ✅
 - **TEST: anchors validated live:**
@@ -461,11 +465,14 @@ When the next implementation session begins for Workstream H, the coding agent s
 
 1. Note that all 8 work packages (H1–H8) are complete and **live-validated**
 2. Note that live tests are in `tests/live/` — run with `pytest tests/live/ -v -s -o asyncio_mode=auto`
-3. Note that Chrome must be running on port 9222 (or the adapter will auto-launch it)
+3. Note that Chrome auto-launches on port 9222 if not running (no manual start needed)
 4. Note the `is_available` bug fix in `browser.py` — live testing found a real bug that mocks missed
 5. Note that `collect_ignore_glob = ["live/*"]` in root conftest keeps live tests out of normal runs
-6. Note that 575 automated backend tests + 10 live browser tests all pass
-7. Deep Research flow has NOT been tested live (too long/expensive for automated test)
+6. Note that 736 automated backend tests (575 pre-I + 161 workstream I) + 10 live browser tests + 9 live LLM tests all pass
+7. Note that `gemini_chat.py` closes tabs after each chat (prevents tab accumulation)
+8. Note that `human_type()` in `_browser_helpers.py` simulates proficient typing with 30s cap
+9. Note that live expert advice tests draw from a random pool of 65+ questions — no fixed patterns
+10. Deep Research flow has NOT been tested live (too long/expensive for automated test)
 
 **Stable working anchor:** `WORKH:Progress.PickupGuidance`
 

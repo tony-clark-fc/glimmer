@@ -31,6 +31,17 @@ from app.models import Base
 collect_ignore_glob = ["live/*"]
 
 
+# ── Disable LLM per-task toggles in tests by default ─────────────────
+# Unless a test explicitly enables LLM, the graph/service wiring
+# should use the deterministic path.  This avoids tests hanging on
+# unreachable LM Studio.
+os.environ.setdefault("GLIMMER_INFERENCE_LLM_CLASSIFICATION_ENABLED", "false")
+os.environ.setdefault("GLIMMER_INFERENCE_LLM_EXTRACTION_ENABLED", "false")
+os.environ.setdefault("GLIMMER_INFERENCE_LLM_PRIORITIZATION_ENABLED", "false")
+os.environ.setdefault("GLIMMER_INFERENCE_LLM_DRAFTING_ENABLED", "false")
+os.environ.setdefault("GLIMMER_INFERENCE_LLM_BRIEFING_ENABLED", "false")
+
+
 # ── Pack membership: file-path → markers ─────────────────────────────
 # Maps test file name prefixes to their verification-pack markers.
 # Applied programmatically so no test file needs modification.
@@ -57,6 +68,7 @@ _FILE_PACK_MAP: dict[str, list[str]] = {
     "test_connector_gcal": ["workstream_c"],
     "test_connector_gmail": ["workstream_c", "release"],
     "test_connector_intake": ["workstream_c"],
+    "test_connector_dispatch": ["workstream_c", "workstream_d", "workstream_i", "release"],
     "test_connector_manual": ["workstream_c"],
     "test_connector_mscal": ["workstream_c"],
     "test_connector_msmail": ["workstream_c"],
@@ -71,6 +83,8 @@ _FILE_PACK_MAP: dict[str, list[str]] = {
     "test_planner_nextsteps": ["workstream_d"],
     "test_planner_refresh": ["workstream_d"],
     "test_drafting_handoff": ["workstream_d"],
+    "test_triage_pipeline": ["workstream_d", "workstream_i", "release"],
+    "test_draft_creation": ["workstream_e", "workstream_i", "release"],
     # Workstream E — Drafting and UI
     "test_projects_drafts": ["workstream_e", "release"],
     "test_persona": ["workstream_e"],
@@ -104,8 +118,8 @@ _FILE_PACK_MAP: dict[str, list[str]] = {
     "test_llm_extraction": ["workstream_i"],
     "test_llm_tasks": ["workstream_i"],
     "test_llm_orchestration": ["workstream_i", "release"],
+    "test_llm_wiring": ["workstream_i", "release"],
     "test_inference_api": ["workstream_i", "release"],
-    "test_live_llm_connection": ["workstream_i", "manual_only"],
     "test_live_llm_classification": ["workstream_i", "manual_only"],
 }
 

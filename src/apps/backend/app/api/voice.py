@@ -18,7 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.db import get_session
+from app.db import get_db
 from app.models.channel import ChannelSession, VoiceSessionState
 from app.services.voice import (
     bootstrap_voice_session,
@@ -93,7 +93,7 @@ class VoiceSessionDetailResponse(BaseModel):
 @router.post("/sessions")
 def create_voice_session(
     req: VoiceSessionCreateRequest,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> VoiceSessionResponse:
     """Create a new voice session.
 
@@ -121,7 +121,7 @@ def create_voice_session(
 @router.get("/sessions/{session_id}")
 def get_voice_session(
     session_id: str,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> VoiceSessionDetailResponse:
     """Get the current state of a voice session."""
     import uuid
@@ -146,7 +146,7 @@ def get_voice_session(
 def submit_utterance(
     session_id: str,
     req: VoiceUtteranceRequest,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> VoiceUtteranceResponse:
     """Submit a voice utterance for normalization and routing.
 
@@ -207,7 +207,7 @@ def submit_utterance(
 @router.post("/sessions/{session_id}/end")
 def end_voice_session(
     session_id: str,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> VoiceSessionResponse:
     """End a voice session, creating a summary.
 
@@ -232,7 +232,7 @@ def end_voice_session(
 @router.post("/sessions/{session_id}/briefing")
 def request_spoken_briefing(
     session_id: str,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> SpokenBriefingResponse:
     """Generate a spoken briefing for a voice session.
 
@@ -273,7 +273,7 @@ def request_spoken_briefing(
 @router.get("/sessions/{session_id}/context")
 def get_session_context_summary(
     session_id: str,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> dict:
     """Get a spoken context summary for the current session state.
 
@@ -306,7 +306,7 @@ def get_session_context_summary(
 @router.post("/sessions/{session_id}/handoff")
 def create_voice_handoff(
     session_id: str,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> dict:
     """Create a workspace-visible handoff from a voice session.
 

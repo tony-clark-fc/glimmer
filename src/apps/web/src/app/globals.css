@@ -1,26 +1,230 @@
 @import "tailwindcss";
 
+/*
+ * Glimmer — "The Luminous Workframe" design system tokens.
+ *
+ * Dark-first palette rooted in Deep Zinc, punctuated by vibrant Indigo.
+ * Surfaces use tonal shifts instead of hard borders (the "No-Line Rule").
+ * See: src/5. Working/Stitch/DESIGN.md
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── Surface hierarchy (dark-first) ──────────────────── */
+  --background: #0a0a0c;
+  --surface: #131316;
+  --surface-dim: #0a0a0c;
+  --surface-container-lowest: #0e0e11;
+  --surface-container-low: #1b1b1e;
+  --surface-container: #1f1f22;
+  --surface-container-high: #242427;
+  --surface-container-highest: #353438;
+  --surface-bright: #39393c;
+
+  /* ── Text ────────────────────────────────────────────── */
+  --foreground: #e4e1e6;
+  --on-surface-variant: #c7c4d7;
+  --muted: #c7c4d7;
+  --muted-light: #908fa0;
+
+  /* ── Primary (Indigo) ────────────────────────────────── */
+  --primary: #818cf8;
+  --primary-container: #2f2ebe;
+  --primary-fixed-dim: #c0c1ff;
+  --on-primary: #000000;
+
+  /* ── Secondary ───────────────────────────────────────── */
+  --secondary: #c0c1ff;
+  --secondary-container: #1e1b4b;
+  --on-secondary-container: #b2b3f2;
+
+  /* ── Tertiary (Amber / Orange) ───────────────────────── */
+  --tertiary: #ffb783;
+  --tertiary-container: #d97721;
+  --on-tertiary-container: #452000;
+
+  /* ── Error ───────────────────────────────────────────── */
+  --error: #ffb4ab;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+
+  /* ── Outline / borders ───────────────────────────────── */
+  --outline: #6b7280;
+  --outline-variant: #32313d;
+
+  /* ── Accent aliases (backward-compat with existing code) */
+  --accent: #818cf8;
+  --accent-light: #1e1b4b;
+  --accent-text: #c0c1ff;
+
+  /* ── Legacy token aliases ────────────────────────────── */
+  --border: rgba(50, 49, 61, 0.35);
+  --border-subtle: #1f1f22;
+  --surface-raised: #1f1f22;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-surface-bright: var(--surface-bright);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-accent-text: var(--accent-text);
+  --color-primary: var(--primary);
+  --color-primary-container: var(--primary-container);
+  --color-primary-fixed-dim: var(--primary-fixed-dim);
+  --color-on-primary: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-error: var(--error);
+  --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-muted: var(--muted);
+  --color-muted-light: var(--muted-light);
+  --font-sans: var(--font-inter);
+  --font-headline: var(--font-manrope);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scrollbar-gutter: stable;
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+/* ── Smooth transitions for interactive elements ────────── */
+button, a {
+  transition: all 0.2s ease-out;
+}
+
+/* ── Scrollbar styling ──────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-light);
+}
+
+/* ── Loading skeleton animation ─────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-container) 25%,
+    var(--surface-container-high) 50%,
+    var(--surface-container) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.375rem;
+}
+
+/* ── Luminous card ──────────────────────────────────────── */
+.luminous-card {
+  background: linear-gradient(145deg, rgba(31, 31, 34, 0.8), rgba(20, 20, 22, 0.9));
+  border: 1px solid rgba(129, 140, 248, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(129, 140, 248, 0.02);
+  transition: all 0.2s ease-out;
+}
+.luminous-card:hover {
+  border-color: rgba(129, 140, 248, 0.25);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(129, 140, 248, 0.04);
+}
+
+/* ── Glass effect ───────────────────────────────────────── */
+.glass-effect {
+  backdrop-filter: blur(24px);
+  background: rgba(26, 26, 30, 0.6);
+  border: 1px solid rgba(129, 140, 248, 0.1);
+}
+
+/* ── Atmospheric glow (background ambiance) ─────────────── */
+.atmospheric-glow {
+  position: relative;
+}
+.atmospheric-glow::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140%;
+  height: 140%;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.06) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── Section accent bar (replaces section borders) ──────── */
+.section-accent {
+  position: relative;
+}
+.section-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(129, 140, 248, 0.25), transparent);
+}
+
+/* ── Ghost border utility ───────────────────────────────── */
+.ghost-border {
+  border: 1px solid rgba(50, 49, 61, 0.15);
+}
+
+/* ── Glimmer pulse (AI processing state) ────────────────── */
+@keyframes glimmer-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.glimmer-pulse {
+  animation: glimmer-pulse 2s ease-in-out infinite;
+}
+
+/* ── Primary glow for buttons ───────────────────────────── */
+.primary-glow {
+  box-shadow: 0 0 20px rgba(129, 140, 248, 0.3);
+}
+.primary-glow:hover {
+  box-shadow: 0 0 30px rgba(129, 140, 248, 0.5);
+}
+
+/* ── Selection style ────────────────────────────────────── */
+::selection {
+  background: var(--primary);
+  color: var(--on-primary);
 }

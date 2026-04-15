@@ -3,6 +3,7 @@
 ARCH:TriageGraph
 ARCH:TriageGraphReviewGate
 ARCH:OrchestrationPrinciple.LowConfidenceReview
+PLAN:WorkstreamI.PackageI8.OrchestrationWiring
 
 These services implement the core triage logic:
 - Project classification with confidence scoring
@@ -10,13 +11,16 @@ These services implement the core triage logic:
 - Action/decision/deadline extraction
 - Review-gate enforcement for ambiguous outcomes
 
-Services are designed to be testable without LLM calls by
-accepting explicit inputs and producing deterministic outputs.
-The LLM integration layer will sit above these services.
+When the LLM inference provider is available and per-task toggles are
+enabled, classification and extraction use LLM-first with deterministic
+fallback.  When LLM is disabled or unavailable, the deterministic
+baseline is used directly.
 """
 
 from __future__ import annotations
 
+import asyncio
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
@@ -32,6 +36,8 @@ from app.models.interpretation import (
     ExtractedDecision,
     ExtractedDeadlineSignal,
 )
+
+logger = logging.getLogger(__name__)
 
 
 # ── Classification ───────────────────────────────────────────────────
@@ -409,4 +415,114 @@ def persist_classification(
     return classification.id
 
 
+# ── LLM-Enhanced Entry Points ────────────────────────────────────────
 
+
+def classify_project_enhanced(
+    session: Session,
+    sender_identity: Optional[str],
+    subject: Optional[str],
+    body_text: Optional[str],
+    source_account_label: Optional[str] = None,
+) -> ClassificationResult:
+    """Classify a message using LLM when available, deterministic otherwise.
+
+    PLAN:WorkstreamI.PackageI8.OrchestrationWiring
+    TEST:LLM.Orchestration.TriagePipelineUsesLLMWhenAvailable
+
+    Checks the per-task LLM toggle.  When enabled, calls the async
+    smart orchestration function via asyncio.run() which tries LLM
+    first and falls back to deterministic on failure.
+    """
+    from app.inference.config import InferenceSettings
+
+    settings = InferenceSettings()
+    if not settings.llm_classification_enabled:
+        return classify_project(
+            session, sender_identity, subject, body_text, source_account_label
+        )
+
+    try:
+        from app.inference.orchestration import classify_project_smart
+
+        smart_result = asyncio.run(classify_project_smart(
+            session,
+            sender_identity,
+            subject,
+            body_text,
+            source_account_label,
+        ))
+
+        logger.info(
+            "Classification via %s path — confidence=%.2f, needs_review=%s",
+            "LLM" if smart_result.used_llm else "deterministic-fallback",
+            smart_result.confidence,
+            smart_result.needs_review,
+        )
+
+        return ClassificationResult(
+            project_id=smart_result.project_id,
+            confidence=smart_result.confidence,
+            rationale=smart_result.rationale,
+            candidates=smart_result.candidates,
+            needs_review=smart_result.needs_review,
+            review_reason=smart_result.review_reason,
+        )
+    except Exception as exc:
+        logger.warning(
+            "LLM-enhanced classification failed, using deterministic: %s", exc
+        )
+        return classify_project(
+            session, sender_identity, subject, body_text, source_account_label
+        )
+
+
+def extract_with_llm(
+    sender: Optional[str],
+    subject: Optional[str],
+    body: Optional[str],
+    project_name: Optional[str] = None,
+    project_objective: Optional[str] = None,
+) -> dict:
+    """Extract actions/decisions/deadlines using LLM when available.
+
+    PLAN:WorkstreamI.PackageI8.OrchestrationWiring
+    TEST:LLM.Extraction.ProducesValidStructuredActions
+
+    Returns a dict with keys 'actions', 'decisions', 'deadlines' suitable
+    for passing to extract_and_persist().  When LLM is unavailable or
+    disabled, returns empty lists (caller may supply manual extractions).
+    """
+    from app.inference.config import InferenceSettings
+
+    settings = InferenceSettings()
+    if not settings.llm_extraction_enabled:
+        return {"actions": [], "decisions": [], "deadlines": []}
+
+    try:
+        from app.inference.orchestration import extract_from_message_smart
+
+        result = asyncio.run(extract_from_message_smart(
+            sender=sender,
+            subject=subject,
+            body=body,
+            project_name=project_name,
+            project_objective=project_objective,
+        ))
+
+        logger.info(
+            "Extraction via %s path — %d items",
+            "LLM" if result.used_llm else "empty-fallback",
+            result.total_items,
+        )
+
+        return {
+            "actions": result.actions,
+            "decisions": result.decisions,
+            "deadlines": result.deadlines,
+        }
+    except Exception as exc:
+        logger.warning(
+            "LLM-enhanced extraction failed, returning empty: %s", exc
+        )
+        return {"actions": [], "decisions": [], "deadlines": []}

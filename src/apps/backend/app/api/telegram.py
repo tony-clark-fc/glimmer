@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.db import get_session
+from app.db import get_db
 from app.models.channel import TelegramConversationState
 from app.services.telegram import (
     bootstrap_telegram_session,
@@ -83,7 +83,7 @@ class TelegramSummaryResponse(BaseModel):
 @router.post("/sessions")
 def create_telegram_session(
     req: TelegramSessionCreateRequest,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> TelegramSessionResponse:
     """Create or resume a Telegram companion session.
 
@@ -112,7 +112,7 @@ def create_telegram_session(
 @router.get("/sessions/{session_id}")
 def get_telegram_session(
     session_id: str,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> TelegramSessionResponse:
     """Get the current state of a Telegram session."""
     import uuid
@@ -134,7 +134,7 @@ def get_telegram_session(
 def process_telegram_message(
     session_id: str,
     req: TelegramMessageRequest,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> TelegramMessageResponse:
     """Process an incoming Telegram message.
 
@@ -202,7 +202,7 @@ def process_telegram_message(
 @router.post("/sessions/{session_id}/what-matters-now")
 def what_matters_now(
     session_id: str,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> TelegramSummaryResponse:
     """Get a bounded 'what matters now' summary for Telegram.
 
@@ -230,7 +230,7 @@ def what_matters_now(
 @router.post("/sessions/{session_id}/handoff")
 def create_telegram_handoff(
     session_id: str,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> dict:
     """Create a workspace-visible handoff from a Telegram session.
 
@@ -260,7 +260,7 @@ def create_telegram_handoff(
 
 @router.get("/handoffs/pending")
 def list_pending_handoffs(
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> list[dict]:
     """List all pending handoffs from companion channels.
 

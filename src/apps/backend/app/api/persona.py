@@ -19,7 +19,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.db import get_session
+from app.db import get_db
 from app.models.persona import PersonaAsset, PersonaClassification
 
 router = APIRouter(prefix="/persona", tags=["persona"])
@@ -149,7 +149,7 @@ def _asset_to_response(asset: PersonaAsset) -> PersonaAssetResponse:
 @router.get("/select")
 def select_persona(
     context: Optional[str] = None,
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> PersonaSelectionResponse:
     """Select a persona asset for a given interaction context.
 
@@ -167,7 +167,7 @@ def select_persona(
 
 @router.get("/assets")
 def list_persona_assets(
-    db: Session = Depends(get_session),
+    db: Session = Depends(get_db),
 ) -> list[PersonaAssetResponse]:
     """List all active persona assets."""
     stmt = (

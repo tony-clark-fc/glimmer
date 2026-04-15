@@ -7,6 +7,8 @@ the engine is created lazily on first use.
 
 from __future__ import annotations
 
+from collections.abc import Generator
+
 from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -34,6 +36,27 @@ def get_session_factory() -> sessionmaker[Session]:
 
 
 def get_session() -> Session:
-    """Convenience: open a new session from the default factory."""
+    """Convenience: open a new session from the default factory.
+
+    Callers are responsible for closing the session.
+    For FastAPI dependency injection, use ``get_db`` instead.
+    """
     return get_session_factory()()
+
+
+def get_db() -> Generator[Session, None, None]:
+    """FastAPI-compatible dependency that yields a session and closes it after the request.
+
+    Usage in routes::
+
+        @router.get("/example")
+        def example(db: Session = Depends(get_db)):
+            ...
+    """
+    session = get_session_factory()()
+    try:
+        yield session
+    finally:
+        session.close()
+
 

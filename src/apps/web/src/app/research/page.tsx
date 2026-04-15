@@ -8,6 +8,16 @@ import {
   reviewResearchSummary,
   reviewExchange,
 } from "@/lib/api-client";
+import {
+  PageHeader,
+  SectionCard,
+  CardSkeleton,
+  EmptyState,
+  ErrorState,
+  Badge,
+  ActionButton,
+  ItemCard,
+} from "@/components/ui";
 import type {
   ResearchRunSummary,
   ResearchRunDetail,
@@ -76,7 +86,6 @@ export default function ResearchPage() {
   const handleReviewSummary = async (runId: string, action: "accepted" | "rejected") => {
     try {
       await reviewResearchSummary(runId, action);
-      // Refresh detail and list
       const updated = await fetchResearchRun(runId);
       setDetail({ type: "run", data: updated });
       loadRuns();
@@ -97,15 +106,13 @@ export default function ResearchPage() {
 
   return (
     <div data-testid="page-research">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-        Research &amp; Expert Advice
-      </h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-        Deep research runs, expert advice consultations, and their review status.
-      </p>
+      <PageHeader
+        title="Research & Expert Advice"
+        description="Deep research runs, expert advice consultations, and their review status."
+      />
 
-      {/* Tab bar */}
-      <div className="mt-6 flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
+      {/* Tab bar — pill-shaped segmented control */}
+      <div className="flex gap-1 mb-8 bg-[#121215] rounded-full p-1 w-fit border border-outline-variant/30">
         <TabButton
           label="Research Runs"
           active={tab === "runs"}
@@ -121,33 +128,27 @@ export default function ResearchPage() {
       </div>
 
       {state === "loading" && (
-        <div data-testid="research-loading" className="mt-6 text-sm text-zinc-500">
-          Loading…
-        </div>
+        <CardSkeleton testId="research-loading" count={3} />
       )}
 
       {state === "error" && (
-        <div
-          data-testid="research-error"
-          className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
-        >
-          {error}
-        </div>
+        <ErrorState testId="research-error" message={error ?? "Failed to load"} />
       )}
 
       {state === "empty" && (
-        <div
-          data-testid="research-empty"
-          className="mt-6 rounded-lg border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700"
-        >
-          {tab === "runs"
-            ? "No research runs yet. Research runs appear when Glimmer escalates a task to Gemini Deep Research."
-            : "No expert advice exchanges yet. Exchanges appear when Glimmer consults Gemini for expert advice."}
-        </div>
+        <EmptyState
+          testId="research-empty"
+          icon="🔍"
+          message={
+            tab === "runs"
+              ? "No research runs yet. Research runs appear when Glimmer escalates a task to Gemini Deep Research."
+              : "No expert advice exchanges yet. Exchanges appear when Glimmer consults Gemini for expert advice."
+          }
+        />
       )}
 
       {state === "loaded" && !detail && tab === "runs" && (
-        <ul data-testid="research-runs-list" className="mt-4 space-y-3">
+        <ul data-testid="research-runs-list" className="space-y-3">
           {runs.map((r) => (
             <ResearchRunCard key={r.id} run={r} onSelect={openRunDetail} />
           ))}
@@ -155,7 +156,7 @@ export default function ResearchPage() {
       )}
 
       {state === "loaded" && !detail && tab === "exchanges" && (
-        <ul data-testid="exchanges-list" className="mt-4 space-y-3">
+        <ul data-testid="exchanges-list" className="space-y-3">
           {exchanges.map((e) => (
             <ExchangeCard key={e.id} exchange={e} onSelect={openExchangeDetail} />
           ))}
@@ -199,10 +200,10 @@ function TabButton({
     <button
       data-testid={testId}
       onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+      className={`px-5 py-2 text-sm font-semibold rounded-full transition-all duration-200 ${
         active
-          ? "border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100"
-          : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+          ? "bg-primary/20 text-primary"
+          : "text-on-surface-variant hover:bg-white/5"
       }`}
     >
       {label}
@@ -220,31 +221,33 @@ function ResearchRunCard({
   onSelect: (id: string) => void;
 }) {
   return (
-    <li
-      data-testid={`run-${run.id}`}
-      className="cursor-pointer rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-500"
-      onClick={() => onSelect(run.id)}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <StatusBadge status={run.status} />
-            <ReviewStateBadge state={run.summary_review_state} />
+    <li>
+      <ItemCard
+        testId={`run-${run.id}`}
+        onClick={() => onSelect(run.id)}
+        hoverable
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <StatusBadge status={run.status} />
+              <ReviewStateBadge state={run.summary_review_state} />
+            </div>
+            <p className="mt-2 text-sm text-foreground line-clamp-2 leading-relaxed">
+              {run.research_query}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-light">
+              <span>{run.invocation_origin.replace(/_/g, " ")}</span>
+              <span>{run.findings_count} findings</span>
+              <span>{run.sources_count} sources</span>
+              {run.document_name && <span>📄 {run.document_name}</span>}
+            </div>
           </div>
-          <p className="mt-2 text-sm text-zinc-800 dark:text-zinc-200 line-clamp-2">
-            {run.research_query}
-          </p>
-          <div className="mt-2 flex gap-3 text-xs text-zinc-500">
-            <span>{run.invocation_origin.replace(/_/g, " ")}</span>
-            <span>{run.findings_count} findings</span>
-            <span>{run.sources_count} sources</span>
-            {run.document_name && <span>📄 {run.document_name}</span>}
-          </div>
+          <time className="text-xs text-muted-light whitespace-nowrap">
+            {new Date(run.created_at).toLocaleDateString()}
+          </time>
         </div>
-        <time className="text-xs text-zinc-400 whitespace-nowrap">
-          {new Date(run.created_at).toLocaleDateString()}
-        </time>
-      </div>
+      </ItemCard>
     </li>
   );
 }
@@ -259,32 +262,34 @@ function ExchangeCard({
   onSelect: (e: ExpertAdviceExchange) => void;
 }) {
   return (
-    <li
-      data-testid={`exchange-${exchange.id}`}
-      className="cursor-pointer rounded-lg border border-zinc-200 bg-white p-4 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-500"
-      onClick={() => onSelect(exchange)}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <StatusBadge status={exchange.status} />
-            <ReviewStateBadge state={exchange.review_state} />
-            <span className="text-xs font-mono text-zinc-400">{exchange.gemini_mode}</span>
+    <li>
+      <ItemCard
+        testId={`exchange-${exchange.id}`}
+        onClick={() => onSelect(exchange)}
+        hoverable
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <StatusBadge status={exchange.status} />
+              <ReviewStateBadge state={exchange.review_state} />
+              <Badge variant="neutral">{exchange.gemini_mode}</Badge>
+            </div>
+            <p className="mt-2 text-sm text-foreground line-clamp-2 leading-relaxed">
+              {exchange.prompt}
+            </p>
+            <div className="mt-2 flex gap-3 text-xs text-muted-light">
+              <span>{exchange.invocation_origin.replace(/_/g, " ")}</span>
+              {exchange.duration_ms !== null && (
+                <span>{(exchange.duration_ms / 1000).toFixed(1)}s</span>
+              )}
+            </div>
           </div>
-          <p className="mt-2 text-sm text-zinc-800 dark:text-zinc-200 line-clamp-2">
-            {exchange.prompt}
-          </p>
-          <div className="mt-2 flex gap-3 text-xs text-zinc-500">
-            <span>{exchange.invocation_origin.replace(/_/g, " ")}</span>
-            {exchange.duration_ms !== null && (
-              <span>{(exchange.duration_ms / 1000).toFixed(1)}s</span>
-            )}
-          </div>
+          <time className="text-xs text-muted-light whitespace-nowrap">
+            {new Date(exchange.created_at).toLocaleDateString()}
+          </time>
         </div>
-        <time className="text-xs text-zinc-400 whitespace-nowrap">
-          {new Date(exchange.created_at).toLocaleDateString()}
-        </time>
-      </div>
+      </ItemCard>
     </li>
   );
 }
@@ -301,168 +306,156 @@ function RunDetailPanel({
   onReview: (runId: string, action: "accepted" | "rejected") => void;
 }) {
   return (
-    <div data-testid="run-detail" className="mt-4">
-      <button
+    <div data-testid="run-detail" className="space-y-6">
+      <ActionButton
+        variant="ghost"
+        testId="detail-back"
         onClick={onBack}
-        data-testid="detail-back"
-        className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
       >
         ← Back to list
-      </button>
+      </ActionButton>
 
-      <div className="mt-4 space-y-4">
-        {/* Header */}
-        <div className="flex items-center gap-2">
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
           <StatusBadge status={run.status} />
           <ReviewStateBadge state={run.summary_review_state} />
         </div>
+        <h2 className="text-xl font-bold text-foreground font-headline">Research Run</h2>
+      </div>
 
-        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-          Research Run
-        </h2>
-
-        {/* Provenance */}
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <dt className="text-zinc-500">Origin</dt>
-          <dd className="text-zinc-800 dark:text-zinc-200">{run.invocation_origin.replace(/_/g, " ")}</dd>
-          <dt className="text-zinc-500">Query</dt>
-          <dd className="text-zinc-800 dark:text-zinc-200">{run.research_query}</dd>
+      {/* Provenance */}
+      <div className="luminous-card rounded-2xl p-5">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
+          <dt className="text-muted-light font-medium">Origin</dt>
+          <dd className="text-foreground">{run.invocation_origin.replace(/_/g, " ")}</dd>
+          <dt className="text-muted-light font-medium">Query</dt>
+          <dd className="text-foreground">{run.research_query}</dd>
           {run.document_name && (
             <>
-              <dt className="text-zinc-500">Document</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{run.document_name}</dd>
+              <dt className="text-muted-light font-medium">Document</dt>
+              <dd className="text-foreground">{run.document_name}</dd>
             </>
           )}
           {run.document_url && (
             <>
-              <dt className="text-zinc-500">Google Doc</dt>
+              <dt className="text-muted-light font-medium">Google Doc</dt>
               <dd>
                 <a
                   href={run.document_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 underline dark:text-blue-400"
+                  className="text-primary hover:text-accent-text hover:underline"
                 >
-                  Open Document
+                  Open Document ↗
                 </a>
               </dd>
             </>
           )}
           {run.error_message && (
             <>
-              <dt className="text-zinc-500">Error</dt>
-              <dd className="text-red-600 dark:text-red-400">{run.error_message}</dd>
+              <dt className="text-muted-light font-medium">Error</dt>
+              <dd className="text-error">{run.error_message}</dd>
             </>
           )}
         </dl>
-
-        {/* Summary + review controls */}
-        {run.summary && (
-          <section data-testid="run-summary" className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Summary</h3>
-              <ReviewStateBadge state={run.summary.review_state} />
-            </div>
-            <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
-              {run.summary.summary_text}
-            </p>
-            {run.summary.review_state === "pending_review" && (
-              <div className="mt-3 flex gap-2">
-                <button
-                  data-testid="review-btn-accept"
-                  onClick={() => onReview(run.id, "accepted")}
-                  className="rounded-md bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-300"
-                >
-                  Accept
-                </button>
-                <button
-                  data-testid="review-btn-reject"
-                  onClick={() => onReview(run.id, "rejected")}
-                  className="rounded-md bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-300"
-                >
-                  Reject
-                </button>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Findings */}
-        {run.findings.length > 0 && (
-          <section data-testid="run-findings">
-            <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Findings ({run.findings.length})
-            </h3>
-            <ul className="mt-2 space-y-2">
-              {run.findings.map((f) => (
-                <li
-                  key={f.id}
-                  className="rounded-md border border-zinc-200 bg-white p-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-                >
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
-                    <span className="font-mono">{f.finding_type}</span>
-                    {f.confidence_signal && <span>confidence: {f.confidence_signal}</span>}
-                  </div>
-                  <p className="mt-1 text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap">
-                    {f.content}
-                  </p>
-                  {f.source_url && (
-                    <a
-                      href={f.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 block text-xs text-blue-600 dark:text-blue-400"
-                    >
-                      {f.source_url}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Sources */}
-        {run.sources.length > 0 && (
-          <section data-testid="run-sources">
-            <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Sources ({run.sources.length})
-            </h3>
-            <ul className="mt-2 space-y-2">
-              {run.sources.map((s) => (
-                <li
-                  key={s.id}
-                  className="rounded-md border border-zinc-200 bg-white p-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-                >
-                  {s.source_title && (
-                    <p className="font-medium text-zinc-800 dark:text-zinc-200">
-                      {s.source_title}
-                    </p>
-                  )}
-                  {s.source_description && (
-                    <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-                      {s.source_description}
-                    </p>
-                  )}
-                  {s.source_url && (
-                    <a
-                      href={s.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 block text-xs text-blue-600 dark:text-blue-400"
-                    >
-                      {s.source_url}
-                    </a>
-                  )}
-                  {s.relevance_notes && (
-                    <p className="mt-1 text-xs text-zinc-500">{s.relevance_notes}</p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </div>
+
+      {/* Summary + review controls */}
+      {run.summary && (
+        <SectionCard testId="run-summary" title="Summary" variant="accent">
+          <div className="flex items-center justify-between mb-3">
+            <ReviewStateBadge state={run.summary.review_state} />
+          </div>
+          <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+            {run.summary.summary_text}
+          </p>
+          {run.summary.review_state === "pending_review" && (
+            <div className="mt-4 flex gap-1 bg-[#121215] p-1 rounded-full border border-outline-variant/30 w-fit">
+              <ActionButton
+                variant="success"
+                testId="review-btn-accept"
+                onClick={() => onReview(run.id, "accepted")}
+              >
+                Accept
+              </ActionButton>
+              <ActionButton
+                variant="danger"
+                testId="review-btn-reject"
+                onClick={() => onReview(run.id, "rejected")}
+              >
+                Reject
+              </ActionButton>
+            </div>
+          )}
+        </SectionCard>
+      )}
+
+      {/* Findings */}
+      {run.findings.length > 0 && (
+        <SectionCard testId="run-findings" title="Findings" count={run.findings.length}>
+          <ul className="space-y-3">
+            {run.findings.map((f) => (
+              <li
+                key={f.id}
+                className="rounded-2xl bg-surface-container-lowest p-4 ghost-border text-sm"
+              >
+                <div className="flex items-center gap-2 text-xs text-muted-light mb-2">
+                  <Badge variant="neutral">{f.finding_type}</Badge>
+                  {f.confidence_signal && <span>confidence: {f.confidence_signal}</span>}
+                </div>
+                <p className="text-foreground whitespace-pre-wrap leading-relaxed">
+                  {f.content}
+                </p>
+                {f.source_url && (
+                  <a
+                    href={f.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 block text-xs text-primary hover:underline"
+                  >
+                    {f.source_url}
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </SectionCard>
+      )}
+
+      {/* Sources */}
+      {run.sources.length > 0 && (
+        <SectionCard testId="run-sources" title="Sources" count={run.sources.length}>
+          <ul className="space-y-3">
+            {run.sources.map((s) => (
+              <li
+                key={s.id}
+                className="rounded-2xl bg-surface-container-lowest p-4 ghost-border text-sm"
+              >
+                {s.source_title && (
+                  <p className="font-medium text-foreground">{s.source_title}</p>
+                )}
+                {s.source_description && (
+                  <p className="mt-1 text-on-surface-variant">{s.source_description}</p>
+                )}
+                {s.source_url && (
+                  <a
+                    href={s.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 block text-xs text-primary hover:underline"
+                  >
+                    {s.source_url}
+                  </a>
+                )}
+                {s.relevance_notes && (
+                  <p className="mt-1 text-xs text-muted-light">{s.relevance_notes}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </SectionCard>
+      )}
     </div>
   );
 }
@@ -479,81 +472,81 @@ function ExchangeDetailPanel({
   onReview: (id: string, action: "accepted" | "rejected") => void;
 }) {
   return (
-    <div data-testid="exchange-detail" className="mt-4">
-      <button
+    <div data-testid="exchange-detail" className="space-y-6">
+      <ActionButton
+        variant="ghost"
+        testId="detail-back"
         onClick={onBack}
-        data-testid="detail-back"
-        className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
       >
         ← Back to list
-      </button>
+      </ActionButton>
 
-      <div className="mt-4 space-y-4">
-        <div className="flex items-center gap-2">
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-2 mb-2">
           <StatusBadge status={exchange.status} />
           <ReviewStateBadge state={exchange.review_state} />
-          <span className="text-xs font-mono text-zinc-400">{exchange.gemini_mode}</span>
+          <Badge variant="neutral">{exchange.gemini_mode}</Badge>
         </div>
-
-        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+        <h2 className="text-xl font-bold text-foreground font-headline">
           Expert Advice Exchange
         </h2>
+      </div>
 
-        {/* Provenance */}
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <dt className="text-zinc-500">Origin</dt>
-          <dd className="text-zinc-800 dark:text-zinc-200">{exchange.invocation_origin.replace(/_/g, " ")}</dd>
+      {/* Provenance */}
+      <div className="luminous-card rounded-2xl p-5">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
+          <dt className="text-muted-light font-medium">Origin</dt>
+          <dd className="text-foreground">{exchange.invocation_origin.replace(/_/g, " ")}</dd>
           {exchange.duration_ms !== null && (
             <>
-              <dt className="text-zinc-500">Duration</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{(exchange.duration_ms / 1000).toFixed(1)}s</dd>
+              <dt className="text-muted-light font-medium">Duration</dt>
+              <dd className="text-foreground">{(exchange.duration_ms / 1000).toFixed(1)}s</dd>
             </>
           )}
           {exchange.error_message && (
             <>
-              <dt className="text-zinc-500">Error</dt>
-              <dd className="text-red-600 dark:text-red-400">{exchange.error_message}</dd>
+              <dt className="text-muted-light font-medium">Error</dt>
+              <dd className="text-error">{exchange.error_message}</dd>
             </>
           )}
         </dl>
-
-        {/* Prompt */}
-        <section>
-          <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Prompt</h3>
-          <div className="mt-1 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 whitespace-pre-wrap">
-            {exchange.prompt}
-          </div>
-        </section>
-
-        {/* Response + review controls */}
-        {exchange.response_text && (
-          <section data-testid="exchange-response">
-            <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Response</h3>
-            <div className="mt-1 rounded-md border border-zinc-200 bg-white p-3 text-sm text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 whitespace-pre-wrap">
-              {exchange.response_text}
-            </div>
-          </section>
-        )}
-
-        {exchange.review_state === "pending_review" && (
-          <div className="flex gap-2">
-            <button
-              data-testid="review-btn-accept"
-              onClick={() => onReview(exchange.id, "accepted")}
-              className="rounded-md bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-300"
-            >
-              Accept
-            </button>
-            <button
-              data-testid="review-btn-reject"
-              onClick={() => onReview(exchange.id, "rejected")}
-              className="rounded-md bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-300"
-            >
-              Reject
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* Prompt */}
+      <SectionCard title="Prompt">
+        <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed bg-surface-container-lowest rounded-2xl p-4 ghost-border">
+          {exchange.prompt}
+        </div>
+      </SectionCard>
+
+      {/* Response + review controls */}
+      {exchange.response_text && (
+        <SectionCard testId="exchange-response" title="Response" variant="accent">
+          <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed bg-surface-container-lowest rounded-2xl p-4 ghost-border">
+            {exchange.response_text}
+          </div>
+        </SectionCard>
+      )}
+
+      {exchange.review_state === "pending_review" && (
+        <div className="flex gap-1 bg-[#121215] p-1 rounded-full border border-outline-variant/30 w-fit">
+          <ActionButton
+            variant="success"
+            testId="review-btn-accept"
+            onClick={() => onReview(exchange.id, "accepted")}
+          >
+            Accept
+          </ActionButton>
+          <ActionButton
+            variant="danger"
+            testId="review-btn-reject"
+            onClick={() => onReview(exchange.id, "rejected")}
+          >
+            Reject
+          </ActionButton>
+        </div>
+      )}
     </div>
   );
 }
@@ -561,39 +554,28 @@ function ExchangeDetailPanel({
 // ── Shared UI helpers ───────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    completed: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-    in_progress: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-    pending: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-    failed: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-    degraded: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
-  };
-  const cls = colors[status] ?? colors.pending;
+  const variant =
+    status === "completed" ? "success"
+    : status === "in_progress" ? "info"
+    : status === "failed" ? "danger"
+    : status === "degraded" ? "warning"
+    : "neutral";
   return (
-    <span
-      data-testid="status-badge"
-      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}
-    >
+    <Badge testId="status-badge" variant={variant}>
       {status.replace(/_/g, " ")}
-    </span>
+    </Badge>
   );
 }
 
 function ReviewStateBadge({ state }: { state: string | null }) {
   if (!state) return null;
-  const colors: Record<string, string> = {
-    pending_review: "bg-amber-200 text-amber-800 dark:bg-amber-800 dark:text-amber-200",
-    accepted: "bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200",
-    rejected: "bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200",
-  };
-  const cls = colors[state] ?? colors.pending_review;
+  const variant =
+    state === "accepted" ? "success"
+    : state === "rejected" ? "danger"
+    : "warning";
   return (
-    <span
-      data-testid="review-state-badge"
-      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}
-    >
+    <Badge testId="review-state-badge" variant={variant}>
       {state.replace(/_/g, " ")}
-    </span>
+    </Badge>
   );
 }
-

@@ -19,33 +19,21 @@ test.describe("Persona rendering — WE8", () => {
     // The persona component should render — either a real avatar image
     // or the fallback initial "G". Both are acceptable proof that
     // persona rendering is wired and fallback works.
-    const hasAvatar = await page
-      .getByTestId("persona-avatar")
-      .isVisible()
-      .catch(() => false);
-    const hasFallback = await page
-      .getByTestId("persona-fallback")
-      .isVisible()
-      .catch(() => false);
-
-    // At least one must appear — persona rendering is active
-    expect(hasAvatar || hasFallback).toBeTruthy();
+    // Wait for the async persona fetch to resolve before checking.
+    const persona = page.locator(
+      '[data-testid="persona-avatar"], [data-testid="persona-fallback"]'
+    );
+    await expect(persona.first()).toBeVisible({ timeout: 5_000 });
   });
 
   test("Drafts view shows persona avatar or fallback", async ({ page }) => {
     await page.goto("/drafts");
     await expect(page.getByTestId("page-drafts")).toBeVisible();
 
-    const hasAvatar = await page
-      .getByTestId("persona-avatar")
-      .isVisible()
-      .catch(() => false);
-    const hasFallback = await page
-      .getByTestId("persona-fallback")
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasAvatar || hasFallback).toBeTruthy();
+    const persona = page.locator(
+      '[data-testid="persona-avatar"], [data-testid="persona-fallback"]'
+    );
+    await expect(persona.first()).toBeVisible({ timeout: 5_000 });
   });
 
   test("Persona fallback renders accessible label", async ({ page }) => {

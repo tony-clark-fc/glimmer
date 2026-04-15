@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.db import get_session
+from app.db import get_db
 from app.models.portfolio import Project
 from app.models.execution import WorkItem, BlockerRecord, WaitingOnRecord
 from app.models.interpretation import ExtractedAction
@@ -63,22 +63,12 @@ class ProjectDetailResponse(BaseModel):
     pending_actions: list[dict] = []
 
 
-# ── Dependency ───────────────────────────────────────────────────
-
-
-def _get_db():
-    session = get_session()
-    try:
-        yield session
-    finally:
-        session.close()
-
 
 # ── Routes ───────────────────────────────────────────────────────
 
 
 @router.get("", response_model=list[ProjectSummaryResponse])
-def list_projects(db: Session = Depends(_get_db)) -> list[ProjectSummaryResponse]:
+def list_projects(db: Session = Depends(get_db)) -> list[ProjectSummaryResponse]:
     """List all projects with attention-demand signals.
 
     ARCH:PortfolioViewArchitecture
@@ -128,7 +118,7 @@ def list_projects(db: Session = Depends(_get_db)) -> list[ProjectSummaryResponse
 @router.get("/{project_id}", response_model=ProjectDetailResponse)
 def get_project(
     project_id: uuid.UUID,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> ProjectDetailResponse:
     """Get detailed project context for project workspace.
 

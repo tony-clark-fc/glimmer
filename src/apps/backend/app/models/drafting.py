@@ -174,6 +174,9 @@ class FocusPack(Base):
     calendar_pressure_summary: Mapped[Optional[str]] = mapped_column(
         Text, nullable=True
     )
+    narrative_summary: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
     )

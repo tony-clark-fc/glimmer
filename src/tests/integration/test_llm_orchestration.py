@@ -12,8 +12,7 @@ TEST:LLM.Safety.NoAutoSendNotWeakened
 from __future__ import annotations
 
 import json
-import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -322,4 +321,5 @@ class TestSafetyInvariants:
     def test_fallback_result_tracks_reason(self) -> None:
         result = FallbackResult(used_llm=False, fallback_reason="Connection refused")
         assert result.fallback_reason == "Connection refused"
+
 

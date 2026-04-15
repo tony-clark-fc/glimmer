@@ -32,14 +32,14 @@ def _clean_operators(db_session: Session):
 def api_client(db_session: Session):
     """TestClient wired to the test database via dependency override."""
     from app.main import create_app
-    from app.api.operator import _get_db
+    from app.db import get_db
 
     app = create_app()
 
     def _override_db():
         yield db_session
 
-    app.dependency_overrides[_get_db] = _override_db
+    app.dependency_overrides[get_db] = _override_db
 
     with TestClient(app) as c:
         yield c

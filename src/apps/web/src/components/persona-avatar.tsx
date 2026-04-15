@@ -38,7 +38,7 @@ function FallbackAvatar({
   return (
     <div
       data-testid="persona-fallback"
-      className={`inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-semibold dark:bg-indigo-900 dark:text-indigo-300 ${sizeClass} ${className ?? ""}`}
+      className={`inline-flex items-center justify-center rounded-full bg-primary/10 text-primary font-bold border border-primary/20 ring-1 ring-primary/10 ${sizeClass} ${className ?? ""}`}
       role="img"
       aria-label="Glimmer assistant"
     >
@@ -92,7 +92,7 @@ export function PersonaAvatar({
       data-testid="persona-avatar"
       src={asset.asset_path}
       alt={`Glimmer — ${asset.label}`}
-      className={`rounded-full object-cover ${sizeClass} ${className ?? ""}`}
+      className={`rounded-full object-cover ring-1 ring-primary/20 ${sizeClass} ${className ?? ""}`}
       onError={() => setImgError(true)}
     />
   );

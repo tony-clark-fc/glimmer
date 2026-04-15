@@ -264,6 +264,23 @@ This pack composes representative high-value anchors from across the canonical T
 
 **Stable verification anchor:** `TESTPACK:Release.IncludedTests`
 
+### 6.4 LLM integration release-scope anchors (when LLM layer is in scope)
+
+#### `TEST:LLM.Orchestration.TriagePipelineUsesLLMWhenAvailable`
+- **Scenario name:** Triage pipeline uses LLM classification/extraction when provider is available
+- **Layers:** `integration`, `graph`
+- **Role in this pack:** Proves the LLM integration is wired end-to-end, not dead code.
+
+#### `TEST:LLM.Safety.NoAutoSendNotWeakened`
+- **Scenario name:** No-auto-send boundary is preserved through the LLM integration layer
+- **Layers:** `integration`, `graph`
+- **Role in this pack:** Cross-cutting safety proof that LLM drafting doesn't weaken send boundary.
+
+#### `TEST:LLM.Safety.ReviewGatesNotWeakened`
+- **Scenario name:** Review gates are preserved through the LLM integration layer
+- **Layers:** `integration`, `graph`
+- **Role in this pack:** Proves LLM confidence → review gate behavior remains intact.
+
 ---
 
 ## 7. Release Pack Entry Table
@@ -297,6 +314,14 @@ This pack composes representative high-value anchors from across the canonical T
 | `TEST:Telegram.Companion.HandoffToWorkspaceOccursWhenNeeded` | Telegram interaction hands off to workspace when richer review is required | `graph`, `browser`, `contract` | ✅ Passing | Conditional | test_cross_surface_handoff.py |
 | `TEST:Voice.Session.ReviewGatePreservedForMeaningfulActions` | Voice-derived meaningful actions still require review where appropriate | `graph`, `integration` | ✅ Passing | Conditional | test_voice_routing.py |
 | `TEST:VoiceAndTelegram.SharedCoreFlowParityPreserved` | Voice and Telegram both route into the same shared core review and planning model | `graph`, `integration` | ✅ Passing | Conditional | test_cross_surface_handoff.py |
+| `TEST:LLM.Orchestration.TriagePipelineUsesLLMWhenAvailable` | Triage pipeline uses LLM when provider is available | `integration`, `graph` | ✅ Passing | High | test_llm_orchestration.py + test_llm_wiring.py |
+| `TEST:LLM.Safety.NoAutoSendNotWeakened` | No-auto-send preserved through LLM layer | `integration`, `graph` | ✅ Passing | Critical | test_llm_orchestration.py + test_llm_wiring.py |
+| `TEST:LLM.Safety.ReviewGatesNotWeakened` | Review gates preserved through LLM layer | `integration`, `graph` | ✅ Passing | Critical | test_llm_orchestration.py + test_llm_wiring.py |
+| `TEST:Triage.Pipeline.EndToEndClassificationAndExtraction` | Intake pipeline classifies and extracts from real source records | `integration`, `service` | ✅ Passing | High | test_triage_pipeline.py |
+| `TEST:Triage.Pipeline.APIEndpointReturnsCorrectShape` | Manual triage API returns correct response shape | `api`, `integration` | ✅ Passing | Medium | test_triage_pipeline.py |
+| `TEST:Connector.IntakeDispatch.ReferencesInvokeIntakeGraph` | Connector references invoke intake graph for triage | `integration`, `graph` | ✅ Passing | High | test_connector_dispatch.py |
+| `TEST:Connector.IntakeDispatch.FullPipelineConnectorToTriage` | Full connector→persist→graph→triage chain works | `integration`, `service` | ✅ Passing | Critical | test_connector_dispatch.py |
+| `TEST:Connector.IntakeDispatch.GracefulDegradationOnError` | Dispatch handles graph errors gracefully | `integration` | ✅ Passing | High | test_connector_dispatch.py |
 
 **Stable verification anchor:** `TESTPACK:Release.EntryTable`
 
@@ -464,7 +489,94 @@ It should force clarity about whether the system is truly ready at the level tha
 
 ## 15. Execution Evidence
 
-### 15.1 Latest execution — 2026-04-14
+### 15.1 Latest execution — 2026-04-14 (refreshed — connector→intake dispatch wiring)
+
+- **Execution date:** 2026-04-14
+- **Milestone evaluated:** Phase 3A+ completion — all 9 workstreams verified, full connector→intake→triage chain wired
+- **Environment:** macOS development, PostgreSQL test/dev DBs, Next.js dev server for Playwright
+
+#### Backend release pack
+- **Command:** `python -m pytest tests/ -m release -q`
+- **Result:** 335 passed, 470 deselected, 0 failures
+
+#### Full backend suite
+- **Command:** `python -m pytest tests/ --tb=short -q`
+- **Result:** 805 passed, 0 failures
+
+#### Per-workstream breakdown
+| Workstream | Tests |
+|---|---|
+| smoke | 5 |
+| workstream_a | 7 |
+| workstream_b | 88 |
+| workstream_c | 111 |
+| workstream_d | 90 |
+| workstream_e | 58 |
+| workstream_f | 136 |
+| workstream_h | 124 |
+| workstream_i | 230 |
+| data_integrity | 58 |
+| **release** | **335** |
+
+#### Playwright browser suite
+- **Command:** `npx playwright test --reporter=list`
+- **Result:** 33 passed, 0 failures
+
+#### Release confidence judgment
+- **Smoke:** ✅ All 5 smoke tests pass — backend boots, DB connected, frontend renders
+- **Memory/Provenance:** ✅ Data integrity and provenance tests pass across 58 scenarios
+- **Connectors:** ✅ Google/Microsoft normalization, multi-account provenance preserved, connector→intake dispatch wired and proven (111 tests)
+- **Triage/Planner:** ✅ Classification, extraction, focus packs, project memory refresh, intake pipeline all tested (90 tests)
+- **Workspace UI:** ✅ 33 Playwright tests — Today, Portfolio, Triage, Drafts, Research, Review all reachable with correct content
+- **Safety:** ✅ No-auto-send boundary preserved across all surfaces, review gates enforced, whitelisted destinations locked
+- **Research:** ✅ Adapter, lifecycle, escalation, review endpoints all tested (124 tests)
+- **Voice/Companion:** ✅ Handoff, routing, safety parity all tested at contract level (136 tests)
+- **LLM Integration:** ✅ Inference abstraction, prompt framework, classification, extraction, prioritization, drafting, briefing — all with fallback chains and safety invariants (230 tests)
+- **LLM Wiring:** ✅ Graph/service layer wired to use LLM when available, per-task toggles, deterministic fallback on all paths (20 wiring tests)
+- **Intake Pipeline:** ✅ Messages routed through triage_handoff now actually get classified and extracted (17 pipeline tests)
+- **Draft Creation:** ✅ `POST /drafts` endpoint wired to `create_draft_enhanced()`, no-auto-send enforced, LLM context fields accepted (14 API tests)
+- **Connector→Intake Dispatch:** ✅ `persist_and_dispatch()` closes the final gap — connector persistence feeds into intake graph → triage pipeline (18 dispatch tests)
+
+#### Caveats
+- **ManualOnly:** Chrome debug-mode + live Gemini validation not yet executed (requires operator machine setup)
+- **ManualOnly:** End-to-end deep research run and expert advice exchange with live Gemini not yet validated
+- **ManualOnly:** Live LLM inference validation against running LM Studio (9 live tests exist but require LM Studio running)
+- **Voice/Companion:** Tested at contract/graph level, not live with real Telegram bot or audio model
+
+#### Confidence level
+**High** — all automated proof targets pass across all 9 workstreams. The system is architecturally complete through Phase 3A+ with strong verification coverage (805 backend + 33 Playwright = 838 total tests). The full connector → persist → intake graph → triage pipeline chain is now wired and proven end-to-end. No dead-code wiring gaps remain in the production pipeline. Remaining gaps are ManualOnly live-environment validations.
+
+**Stable verification anchor:** `TESTPACK:Release.ExecutionEvidence`
+
+### 15.2 Previous execution — 2026-04-14 (draft creation endpoint)
+
+- **Execution date:** 2026-04-14
+- **Milestone evaluated:** Phase 3A+ — all 9 workstreams verified including LLM wiring, intake pipeline, and draft creation API
+
+#### Backend release pack
+- **Result:** 317 passed, 470 deselected, 0 failures
+
+#### Full backend suite
+- **Result:** 787 passed, 0 failures
+
+#### Confidence level
+**High** — all automated proof targets passed at that time. Connector→intake chain was the final gap.
+
+### 15.3 Previous execution — 2026-04-14 (pre-draft creation)
+
+- **Execution date:** 2026-04-14
+- **Milestone evaluated:** Phase 3A+ — all 9 workstreams verified including LLM integration wiring and intake pipeline
+
+#### Backend release pack
+- **Result:** 303 passed, 470 deselected, 0 failures
+
+#### Full backend suite
+- **Result:** 773 passed, 0 failures
+
+#### Confidence level
+**High** — all automated proof targets passed at that time.
+
+### 15.4 Previous execution — 2026-04-14 (pre-Workstream I wiring)
 
 - **Execution date:** 2026-04-14
 - **Milestone evaluated:** Phase 3A completion — all 8 workstreams verified
@@ -485,23 +597,6 @@ It should force clarity about whether the system is truly ready at the level tha
 - **Result:** 33 passed, 0 failures
 - **Duration:** 6.3s
 
-#### Release confidence judgment
-- **Smoke:** ✅ All 5 smoke tests pass — backend boots, DB connected, frontend renders
-- **Memory/Provenance:** ✅ Data integrity and provenance tests pass across 10 scenarios
-- **Connectors:** ✅ Google/Microsoft normalization, multi-account provenance preserved
-- **Triage/Planner:** ✅ Classification, extraction, focus packs, project memory refresh all tested
-- **Workspace UI:** ✅ 33 Playwright tests — Today, Portfolio, Triage, Drafts, Research, Review all reachable with correct content
-- **Safety:** ✅ No-auto-send boundary preserved across all surfaces, review gates enforced, whitelisted destinations locked
-- **Research:** ✅ Adapter, lifecycle, escalation, review endpoints all tested
-- **Voice/Companion:** ✅ Handoff, routing, safety parity all tested at contract level
-
-#### Caveats
-- **ManualOnly:** Chrome debug-mode + live Gemini validation not yet executed (requires operator machine setup)
-- **ManualOnly:** End-to-end deep research run and expert advice exchange with live Gemini not yet validated
-- **Voice/Companion:** Tested at contract/graph level, not live with real Telegram bot or audio model
-
 #### Confidence level
-**High** — all automated proof targets pass across all 8 workstreams. The system is architecturally complete through Phase 3A with strong verification coverage. Remaining gaps are ManualOnly live-environment validations.
-
-**Stable verification anchor:** `TESTPACK:Release.ExecutionEvidence`
+**High** — all automated proof targets passed across all 8 workstreams at that time.
 

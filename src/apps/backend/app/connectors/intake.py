@@ -15,7 +15,9 @@ persisted records, not raw provider payloads.
 
 from __future__ import annotations
 
+import logging
 import uuid
+from dataclasses import dataclass, field
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -36,6 +38,141 @@ from app.models.source import (
     MessageThread,
 )
 
+logger = logging.getLogger(__name__)
+
+
+# ── Dispatch Result ──────────────────────────────────────────────────
+
+
+@dataclass
+class IntakeDispatchOutcome:
+    """Result of dispatching a single IntakeReference to the intake graph."""
+
+    reference: IntakeReference
+    success: bool = False
+    triage_classification_ids: list[uuid.UUID] = field(default_factory=list)
+    triage_extraction_ids: list[uuid.UUID] = field(default_factory=list)
+    triage_needs_review: bool = False
+    triage_review_reasons: list[str] = field(default_factory=list)
+    triage_records_processed: int = 0
+    error: Optional[str] = None
+
+
+@dataclass
+class ConnectorDispatchResult:
+    """Aggregate result of persisting and dispatching through the intake graph.
+
+    ARCH:ConnectorToIntakeHandoff
+    """
+
+    references: list[IntakeReference] = field(default_factory=list)
+    outcomes: list[IntakeDispatchOutcome] = field(default_factory=list)
+    total_dispatched: int = 0
+    total_succeeded: int = 0
+    total_failed: int = 0
+    needs_review: bool = False
+    review_reasons: list[str] = field(default_factory=list)
+
+
+# ── Dispatch Function ────────────────────────────────────────────────
+
+
+def dispatch_to_intake_graph(
+    references: list[IntakeReference],
+) -> ConnectorDispatchResult:
+    """Dispatch IntakeReferences to the intake graph for triage.
+
+    ARCH:ConnectorToIntakeHandoff
+    ARCH:IntakeGraph
+    TEST:Connector.IntakeDispatch.ReferencesInvokeIntakeGraph
+
+    For each IntakeReference, builds an IntakeState and invokes the
+    compiled intake graph.  Errors on one reference do not block others.
+
+    The intake graph handles its own DB session for triage work
+    (triage_handoff creates a session internally), so this function
+    does not need a session parameter.
+    """
+    from app.graphs.intake import get_intake_graph
+
+    result = ConnectorDispatchResult(references=list(references))
+
+    if not references:
+        return result
+
+    graph = get_intake_graph()
+
+    for ref in references:
+        outcome = IntakeDispatchOutcome(reference=ref)
+        result.total_dispatched += 1
+
+        try:
+            # Build IntakeState from the reference
+            intake_state = _reference_to_intake_state(ref)
+
+            # Invoke the intake graph
+            graph_output = graph.invoke(intake_state)
+
+            # Extract triage results from graph output
+            outcome.success = True
+            outcome.triage_classification_ids = graph_output.get(
+                "triage_classification_ids", []
+            )
+            outcome.triage_extraction_ids = graph_output.get(
+                "triage_extraction_ids", []
+            )
+            outcome.triage_needs_review = graph_output.get(
+                "triage_needs_review", False
+            )
+            outcome.triage_review_reasons = graph_output.get(
+                "triage_review_reasons", []
+            )
+            outcome.triage_records_processed = graph_output.get(
+                "triage_records_processed", 0
+            )
+
+            if outcome.triage_needs_review:
+                result.needs_review = True
+                result.review_reasons.extend(outcome.triage_review_reasons)
+
+            result.total_succeeded += 1
+
+            logger.info(
+                "dispatch_to_intake_graph: ref=%s type=%s processed=%d review=%s",
+                ref.record_type,
+                ref.provider_type,
+                outcome.triage_records_processed,
+                outcome.triage_needs_review,
+            )
+
+        except Exception as exc:
+            outcome.error = str(exc)
+            result.total_failed += 1
+            logger.warning(
+                "dispatch_to_intake_graph: failed for ref type=%s — %s",
+                ref.record_type,
+                exc,
+            )
+
+        result.outcomes.append(outcome)
+
+    return result
+
+
+def _reference_to_intake_state(ref: IntakeReference) -> dict:
+    """Convert an IntakeReference to an IntakeState dict for graph invocation.
+
+    ARCH:HandoffPayloadPosture — references carry IDs, not payloads.
+    """
+    return {
+        "source_record_ids": ref.source_record_ids,
+        "record_type": ref.record_type,
+        "connected_account_id": ref.connected_account_id,
+        "provider_type": ref.provider_type,
+        "profile_id": ref.profile_id,
+        "channel": "api",
+    }
+
 
 class IntakeHandoffService:
     """Persists normalized records and creates bounded intake references.
@@ -44,6 +181,7 @@ class IntakeHandoffService:
     1. Connector fetches and normalizes → FetchResult
     2. IntakeHandoffService persists source records → DB entities
     3. IntakeHandoffService returns IntakeReference → bounded handoff
+    4. (Optional) dispatch_to_intake_graph() invokes the intake graph
 
     ARCH:NormalizationOutputBoundary
     ARCH:ConnectorToIntakeHandoff
@@ -124,6 +262,34 @@ class IntakeHandoffService:
 
         self._session.flush()
         return references
+
+    def persist_and_dispatch(
+        self,
+        context: ConnectorExecutionContext,
+        result: FetchResult,
+    ) -> ConnectorDispatchResult:
+        """Persist normalized records and dispatch through the intake graph.
+
+        ARCH:ConnectorToIntakeHandoff
+        ARCH:NormalizationOutputBoundary
+        TEST:Connector.IntakeDispatch.FullPipelineConnectorToTriage
+
+        Combines persist_and_handoff() with dispatch_to_intake_graph()
+        into a single convenience call.  The session is flushed (not
+        committed) after persistence — the caller controls the commit
+        boundary.
+
+        The intake graph's triage_handoff node opens its own DB session
+        so the triage work happens in a separate transaction.  This means
+        the caller MUST commit the persistence session before calling this
+        method if the triage pipeline needs to see the persisted records.
+        """
+        self._session.flush()
+        references = self.persist_and_handoff(context, result)
+        self._session.commit()  # Commit so triage_handoff can see persisted records
+
+        dispatch_result = dispatch_to_intake_graph(references)
+        return dispatch_result
 
     def _persist_threads(
         self,

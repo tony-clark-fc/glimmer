@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Glimmer Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#8083ff",
+                        "on-primary-container": "#0d0096",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#494bd6",
+                        "on-secondary": "#292a60",
+                        "secondary-fixed": "#e1e0ff",
+                        "secondary": "#c0c1ff",
+                        "surface-bright": "#39393c",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "surface-tint": "#c0c1ff",
+                        "on-primary-fixed": "#07006c",
+                        "on-secondary-fixed-variant": "#404178",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1f1f22",
+                        "outline-variant": "#464554",
+                        "on-background": "#e4e1e6",
+                        "inverse-surface": "#e4e1e6",
+                        "on-secondary-fixed": "#13144a",
+                        "surface-dim": "#131316",
+                        "surface-container-lowest": "#0e0e11",
+                        "surface-variant": "#353438",
+                        "primary": "#c0c1ff",
+                        "surface-container-low": "#1b1b1e",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "surface-container-high": "#2a2a2d",
+                        "surface": "#131316",
+                        "on-surface": "#e4e1e6",
+                        "on-surface-variant": "#c7c4d7",
+                        "on-tertiary-fixed": "#301400",
+                        "background": "#131316",
+                        "outline": "#908fa0",
+                        "surface-container-highest": "#353438",
+                        "on-tertiary-container": "#452000",
+                        "tertiary-container": "#d97721",
+                        "on-tertiary": "#4f2500",
+                        "tertiary-fixed": "#ffdcc5",
+                        "on-secondary-container": "#b2b3f2",
+                        "on-primary": "#1000a9",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#303033",
+                        "primary-fixed": "#e1e0ff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#ffb783",
+                        "secondary-container": "#42447b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- Shared Component: TopNavBar -->
+<nav class="fixed top-0 w-full h-[56px] z-50 bg-zinc-950/70 backdrop-blur-3xl border-b border-zinc-400/15 shadow-sm shadow-zinc-900/50">
+    <div class="flex justify-between items-center px-6 w-full max-w-screen-2xl mx-auto h-full">
+        <!-- Left: Brand -->
+        <div class="flex items-center gap-3">
+            <div class="text-indigo-500 font-black text-xl flex items-center justify-center bg-indigo-500 text-white w-8 h-8 rounded-lg">
+                G
+            </div>
+            <span class="text-indigo-400 font-extrabold tracking-tight text-xl font-headline">Glimmer</span>
+        </div>
+        <!-- Center: Navigation Links -->
+        <div class="hidden md:flex items-center gap-1">
+            <!-- Today (Active) -->
+            <a class="text-indigo-400 font-semibold relative after:absolute after:bottom-[-18px] after:left-0 after:w-full after:h-[2px] after:bg-indigo-500 bg-indigo-500/10 px-4 py-1.5 rounded-full flex items-center gap-2 group transition-all duration-200" href="#">
+                <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                <span class="text-xs font-medium tracking-wide font-label">Today</span>
+            </a>
+            <a class="text-zinc-400 px-4 py-1.5 hover:text-indigo-300 hover:bg-zinc-800/50 transition-all duration-200 rounded-full flex items-center gap-2 font-label text-xs font-medium tracking-wide" href="#">
+                <span class="material-symbols-outlined text-[18px]">folder_managed</span>
+                Portfolio
+            </a>
+            <a class="text-zinc-400 px-4 py-1.5 hover:text-indigo-300 hover:bg-zinc-800/50 transition-all duration-200 rounded-full flex items-center gap-2 font-label text-xs font-medium tracking-wide" href="#">
+                <span class="material-symbols-outlined text-[18px]">rule</span>
+                Triage
+            </a>
+            <a class="text-zinc-400 px-4 py-1.5 hover:text-indigo-300 hover:bg-zinc-800/50 transition-all duration-200 rounded-full flex items-center gap-2 font-label text-xs font-medium tracking-wide" href="#">
+                <span class="material-symbols-outlined text-[18px]">drafts</span>
+                Drafts
+            </a>
+            <a class="text-zinc-400 px-4 py-1.5 hover:text-indigo-300 hover:bg-zinc-800/50 transition-all duration-200 rounded-full flex items-center gap-2 font-label text-xs font-medium tracking-wide" href="#">
+                <span class="material-symbols-outlined text-[18px]">biotech</span>
+                Research
+            </a>
+            <a class="text-zinc-400 px-4 py-1.5 hover:text-indigo-300 hover:bg-zinc-800/50 transition-all duration-200 rounded-full flex items-center gap-2 font-label text-xs font-medium tracking-wide" href="#">
+                <span class="material-symbols-outlined text-[18px]">rate_review</span>
+                Review
+            </a>
+        </div>
+        <!-- Right: Persona Avatar -->
+        <div class="flex items-center gap-4">
+            <button class="text-zinc-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">search</span>
+            </button>
+            <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30 ring-2 ring-primary/10">
+                <img alt="Glimmer AI Persona Avatar" class="w-full h-full object-cover" data-alt="Close-up portrait of a professional young woman with dark hair and glasses, looking confident in a modern office setting with soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCt-Rn03C2KvQr4RVsiUeNRaOAD0GFul6HqZBnkihhlunIzDQgGkhpmVhbwGZCfd6WQC6_JHlmaHcbjLC-1Sf4VchZGSVpngamc6mUQjw1fg_jeBFKIZ1gcHdIUhxj3CG_kYi1se5uJwVovS_pjaUgpZu2EddMQPpr9_G8hF9_Fbv2bTltbR22E6-h6hk7zZvcy8YBICjC6cDhd3spr-xS3KA4r4asdHT71I1ba_7-AiA3ZPfsnn2wO6OqakHafmxDH1x_yDXl_9d4"/>
+            </div>
+        </div>
+    </div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-[56px] px-6 max-w-screen-2xl mx-auto w-full pb-12">
+    <!-- Header Section -->
+    <header class="py-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <h1 class="text-display-sm md:text-5xl font-black text-on-background tracking-tight mb-2">Good morning, Sarah.</h1>
+            <p class="text-on-surface-variant text-lg">You have 4 high-priority items needing triage today.</p>
+        </div>
+        <div class="flex gap-3">
+            <button class="bg-surface-container-high px-6 py-3 rounded-full text-sm font-semibold border border-outline-variant/10 hover:bg-surface-container-highest transition-all">
+                View History
+            </button>
+            <button class="bg-primary text-on-primary px-6 py-3 rounded-full text-sm font-semibold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                Start New Project
+            </button>
+        </div>
+    </header>
+    <!-- Bento Grid Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <!-- Main Featured Card (Asymmetric) -->
+        <div class="md:col-span-8 group relative overflow-hidden bg-surface-container-low rounded-lg p-8 border border-outline-variant/5">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-20 -mt-20"></div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-2 mb-6">
+                    <span class="bg-primary-container/20 text-primary-fixed-dim text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full">Active Sprint</span>
+                    <span class="text-on-surface-variant text-sm">• 2 days remaining</span>
+                </div>
+                <h2 class="text-3xl font-bold mb-4 max-w-md">Quantum Interface Refinement</h2>
+                <p class="text-on-surface-variant mb-8 max-w-lg leading-relaxed">The AI has analyzed 142 feedback loops. Recommendations are ready for your review in the 'Research' tab.</p>
+                <div class="flex -space-x-3">
+                    <img class="w-10 h-10 rounded-full border-2 border-surface-container-low object-cover" data-alt="portrait of a woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5dPedB6CDloj_l1YKlp7cIpMqbtmp1cao4P9teDrNQtoiA5WMTAY__b3WySDqW4wJ_bKWxjnuUb3yqvXI2WtzplhUpJBxB50QryZWmlUGQSfEVrm_rryyFJJZ8WuuJAMevSiJHqTo8vWrQ-U6DP6txPyBbsttku2Q410a92SiSXqRXcgPZXqAH_ecJS2WLTUX-OtsxcaSCSKr14w3r6UcMYlvxQE7EHv2PcAz4PrUTMZYJGAq-zvH7-0TodRKeyQOzc_YBfXG2jA"/>
+                    <img class="w-10 h-10 rounded-full border-2 border-surface-container-low object-cover" data-alt="portrait of a man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA7ZNVnGWv2TY2BBXg3ZSBpjEjKXBXZLmqb4g3CXeV937D7VxGPjqOJ7vUVoueuShbZRxVzIm6MplgFPUTSq3BZ9dj2j_Tz3GImz6Ih2SgrxP5yOOgTWuu4HFiYAieo-HNFm2AXKMs4Ex6sQLBW8GXJLWZnhLSsEdcJtKaLhgmf17UynxMiDAshIuYSEDhf9PE49LqGUXxImZrKAU-7UPwe97edW21aCV_x2hkizS4shf5GRtwzdtDH7zWl9pzewHY449TJyoBAck"/>
+                    <img class="w-10 h-10 rounded-full border-2 border-surface-container-low object-cover" data-alt="portrait of a woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP2yhMrQm6D1kTLv-ULqxB_AVlX7pSzEZa73uZswUmODPuytvtZlvuHkLW8hRhLe5X-AdfchO3DkvbjU9f6UoJ2AkzP_LPv4U8OhjUp0bddr_ZY51bsPIzztNTOTc-EVGU0wM6ljcU8i5gRC4Ih6X94ptsXzVBoTQ-frHuMtCfmFYzXyOw6FGHeR6xdWzwimwn3IvwEP5xL8F7vfPtt8dwDSC_YbgysUnc2QC8KinZmyg5bObYy9bXCzW0yEJ0-Q1CtDZN4JMqz3g"/>
+                    <div class="w-10 h-10 rounded-full border-2 border-surface-container-low bg-surface-container-highest flex items-center justify-center text-[10px] font-bold text-primary">+12</div>
+                </div>
+            </div>
+        </div>
+        <!-- AI Insight Card (Glimmer Style) -->
+        <div class="md:col-span-4 bg-primary-container/5 backdrop-blur-xl rounded-lg p-8 border border-primary/10 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-6">
+                    <span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    <span class="text-primary-fixed-dim font-bold text-xs">AI SUGGESTION</span>
+                </div>
+                <h3 class="text-xl font-bold mb-4">Optimization Opportunity</h3>
+                <p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Based on your recent drafts, we can automate the documentation for the 'Triage' workflow.</p>
+                <button class="w-full py-3 bg-primary-container text-on-primary-container rounded-full font-bold text-sm hover:brightness-110 transition-all">
+                    Apply Automation
+                </button>
+            </div>
+        </div>
+        <!-- Small Utility Cards -->
+        <div class="md:col-span-3 bg-surface-container rounded-lg p-6 hover:bg-surface-container-high transition-colors group">
+            <div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-secondary">pending_actions</span>
+            </div>
+            <div class="text-2xl font-bold mb-1">18</div>
+            <div class="text-on-surface-variant text-sm font-medium">Pending Reviews</div>
+        </div>
+        <div class="md:col-span-3 bg-surface-container rounded-lg p-6 hover:bg-surface-container-high transition-colors group">
+            <div class="w-10 h-10 rounded-full bg-tertiary-container/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-tertiary">bolt</span>
+            </div>
+            <div class="text-2xl font-bold mb-1">94%</div>
+            <div class="text-on-surface-variant text-sm font-medium">System Velocity</div>
+        </div>
+        <div class="md:col-span-6 bg-surface-container-lowest rounded-lg p-6 border border-outline-variant/10">
+            <h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-6">Recent Activity</h3>
+            <div class="space-y-4">
+                <div class="flex items-center gap-4 py-2 border-b border-outline-variant/5">
+                    <div class="w-2 h-2 rounded-full bg-primary"></div>
+                    <span class="flex-grow text-sm">Portfolio updated with <span class="font-semibold">Project Nebula</span> assets</span>
+                    <span class="text-xs text-on-surface-variant">2m ago</span>
+                </div>
+                <div class="flex items-center gap-4 py-2 border-b border-outline-variant/5">
+                    <div class="w-2 h-2 rounded-full bg-tertiary"></div>
+                    <span class="flex-grow text-sm">Drafts: <span class="font-semibold">Review-v2.pdf</span> auto-saved</span>
+                    <span class="text-xs text-on-surface-variant">14m ago</span>
+                </div>
+                <div class="flex items-center gap-4 py-2">
+                    <div class="w-2 h-2 rounded-full bg-zinc-600"></div>
+                    <span class="flex-grow text-sm">Research sync complete (4 files)</span>
+                    <span class="text-xs text-on-surface-variant">1h ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<!-- Contextual Floating Action Button -->
+<div class="fixed bottom-8 right-8 z-40">
+    <button class="bg-primary text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+    </button>
+</div>
+</body></html>

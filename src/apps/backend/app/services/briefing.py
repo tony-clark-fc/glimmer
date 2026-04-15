@@ -5,16 +5,23 @@ ARCH:VoiceLayeringStrategy
 ARCH:BriefingSurfaceArchitecture
 REQ:PreparedBriefings
 REQ:Explainability
+PLAN:WorkstreamI.PackageI8.OrchestrationWiring
 
 Formats focus-pack, priority, and project-context data into concise
 spoken briefings suitable for voice delivery. Spoken output is shorter,
 more structured, and more direct than screen text.
+
+When the LLM is available and enabled, generates a natural-language
+spoken briefing via LLM inference.  Falls back to the template-based
+formatter when LLM is disabled or unavailable.
 
 WF5 — Spoken briefing and bounded response behavior.
 """
 
 from __future__ import annotations
 
+import asyncio
+import logging
 import uuid
 from datetime import datetime, timezone
 
@@ -22,6 +29,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.drafting import BriefingArtifact, FocusPack
+
+logger = logging.getLogger(__name__)
 
 
 # ── Constants ────────────────────────────────────────────────────────
@@ -195,33 +204,43 @@ def generate_spoken_briefing(
         )
 
     # Build spoken sections from focus pack data
-    sections: list[str] = []
-
-    actions_text = _format_top_actions(focus_pack.top_actions)
-    if actions_text:
-        sections.append(actions_text)
-
-    risks_text = _format_risks(focus_pack.high_risk_items)
-    if risks_text:
-        sections.append(risks_text)
-
-    waiting_text = _format_waiting(focus_pack.waiting_on_items)
-    if waiting_text:
-        sections.append(waiting_text)
-
-    pressure_text = _format_pressure(
-        focus_pack.reply_debt_summary,
-        focus_pack.calendar_pressure_summary,
-    )
-    if pressure_text:
-        sections.append(pressure_text)
-
-    if not sections:
-        briefing_text = "Everything looks clear right now. No urgent actions, risks, or waiting items."
-        is_empty = True
-    else:
-        briefing_text = " ".join(sections)
+    # Try LLM-generated natural briefing first
+    llm_text = _try_llm_briefing(focus_pack, project_ids)
+    if llm_text:
+        briefing_text = llm_text
         is_empty = False
+        section_count = 1  # LLM produces a single coherent text
+    else:
+        # Fall back to template-based formatting
+        sections: list[str] = []
+
+        actions_text = _format_top_actions(focus_pack.top_actions)
+        if actions_text:
+            sections.append(actions_text)
+
+        risks_text = _format_risks(focus_pack.high_risk_items)
+        if risks_text:
+            sections.append(risks_text)
+
+        waiting_text = _format_waiting(focus_pack.waiting_on_items)
+        if waiting_text:
+            sections.append(waiting_text)
+
+        pressure_text = _format_pressure(
+            focus_pack.reply_debt_summary,
+            focus_pack.calendar_pressure_summary,
+        )
+        if pressure_text:
+            sections.append(pressure_text)
+
+        if not sections:
+            briefing_text = "Everything looks clear right now. No urgent actions, risks, or waiting items."
+            is_empty = True
+        else:
+            briefing_text = " ".join(sections)
+            is_empty = False
+
+        section_count = len(sections)
 
     # Enforce length bound
     if len(briefing_text) > MAX_BRIEFING_LENGTH:
@@ -235,7 +254,7 @@ def generate_spoken_briefing(
             "source_focus_pack_id": str(focus_pack.id),
             "channel_session_id": str(channel_session_id) if channel_session_id else None,
             "project_ids": [str(p) for p in (project_ids or [])],
-            "section_count": len(sections),
+            "section_count": section_count,
         },
     )
     db.add(artifact)
@@ -244,7 +263,7 @@ def generate_spoken_briefing(
     return SpokenBriefingResult(
         briefing_text=briefing_text,
         briefing_artifact_id=artifact.id,
-        section_count=len(sections),
+        section_count=section_count,
         is_empty=is_empty,
         source_focus_pack_id=focus_pack.id,
     )
@@ -263,6 +282,75 @@ def _resolve_focus_pack(
         select(FocusPack).order_by(FocusPack.generated_at.desc()).limit(1)
     ).scalar_one_or_none()
     return result
+
+
+# ── LLM Briefing Helper ─────────────────────────────────────────────
+
+
+def _try_llm_briefing(
+    focus_pack: FocusPack,
+    project_ids: list[uuid.UUID] | None,
+) -> str | None:
+    """Attempt LLM-powered briefing generation.
+
+    PLAN:WorkstreamI.PackageI8.OrchestrationWiring
+
+    Returns natural-language briefing text, or None to fall back to
+    template formatting.  Length bound is enforced here too.
+    """
+    from app.inference.config import InferenceSettings
+
+    settings = InferenceSettings()
+    if not settings.llm_briefing_enabled:
+        return None
+
+    try:
+        from app.inference.orchestration import generate_briefing_smart
+
+        top_actions = None
+        if focus_pack.top_actions and focus_pack.top_actions.get("items"):
+            top_actions = [
+                {"title": a.get("title", ""), "rationale": a.get("rationale", "")}
+                for a in focus_pack.top_actions["items"]
+            ]
+
+        high_risk = None
+        if focus_pack.high_risk_items and focus_pack.high_risk_items.get("items"):
+            high_risk = [
+                {"summary": r.get("summary", ""), "severity": r.get("severity", "")}
+                for r in focus_pack.high_risk_items["items"]
+            ]
+
+        waiting = None
+        if focus_pack.waiting_on_items and focus_pack.waiting_on_items.get("items"):
+            waiting = [
+                {"waiting_on": w.get("waiting_on", ""), "description": w.get("description", "")}
+                for w in focus_pack.waiting_on_items["items"]
+            ]
+
+        result = asyncio.run(generate_briefing_smart(
+            top_actions=top_actions,
+            high_risk_items=high_risk,
+            waiting_on_items=waiting,
+            reply_debt_summary=focus_pack.reply_debt_summary,
+            calendar_pressure_summary=focus_pack.calendar_pressure_summary,
+        ))
+
+        if result.used_llm and result.briefing_text:
+            text = result.briefing_text
+            # Enforce the same length bound as template path
+            if len(text) > MAX_BRIEFING_LENGTH:
+                text = text[: MAX_BRIEFING_LENGTH - 3] + "..."
+            logger.info(
+                "Spoken briefing generated by LLM (%d chars)", len(text)
+            )
+            return text
+
+        return None
+
+    except Exception as exc:
+        logger.info("LLM briefing generation skipped: %s", exc)
+        return None
 
 
 # ── Session-Context Spoken Response ──────────────────────────────────

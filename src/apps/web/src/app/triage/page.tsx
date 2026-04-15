@@ -6,6 +6,15 @@ import {
   reviewClassification,
   reviewAction,
 } from "@/lib/api-client";
+import {
+  PageHeader,
+  SectionCard,
+  CardSkeleton,
+  EmptyState,
+  ErrorState,
+  Badge,
+  ActionButton,
+} from "@/components/ui";
 import type { ReviewQueue, ClassificationItem, ExtractedActionItem } from "@/lib/types";
 
 type LoadState = "loading" | "loaded" | "empty" | "error";
@@ -40,7 +49,6 @@ export default function TriagePage() {
       await reviewClassification(id, action);
       load();
     } catch {
-      // Reload to show current state
       load();
     }
   };
@@ -59,47 +67,37 @@ export default function TriagePage() {
 
   return (
     <div data-testid="page-triage">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-        Triage
-      </h1>
-      <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-        Incoming signals, proposed classifications, and items awaiting review.
-      </p>
+      <PageHeader
+        title="Triage"
+        description="Incoming signals, proposed classifications, and items awaiting review."
+      />
 
       {state === "loading" && (
-        <div data-testid="triage-loading" className="mt-8 text-sm text-zinc-500">
-          Loading triage queue…
-        </div>
+        <CardSkeleton testId="triage-loading" count={3} />
       )}
 
       {state === "error" && (
-        <div
-          data-testid="triage-error"
-          className="mt-8 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
-        >
-          {error}
-        </div>
+        <ErrorState testId="triage-error" message={error ?? "Failed to load triage queue"} />
       )}
 
       {state === "empty" && (
-        <div
-          data-testid="triage-empty-state"
-          className="mt-8 rounded-lg border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-500"
-        >
-          No triage items yet. Signals will appear here once connectors are
-          active.
-        </div>
+        <EmptyState
+          testId="triage-empty-state"
+          icon="⚡"
+          message="No triage items yet. Signals will appear here once connectors are active."
+        />
       )}
 
       {state === "loaded" && queue && (
-        <div className="mt-6 space-y-8">
+        <div className="space-y-8">
           {/* Pending classifications */}
           {queue.classifications.length > 0 && (
-            <section data-testid="triage-classifications">
-              <h2 className="text-lg font-medium text-zinc-800 dark:text-zinc-200">
-                Classifications Pending Review ({queue.classifications.length})
-              </h2>
-              <ul className="mt-3 space-y-3">
+            <SectionCard
+              testId="triage-classifications"
+              title="Classifications Pending Review"
+              count={queue.classifications.length}
+            >
+              <ul className="space-y-3">
                 {queue.classifications.map((c) => (
                   <ClassificationCard
                     key={c.id}
@@ -108,16 +106,17 @@ export default function TriagePage() {
                   />
                 ))}
               </ul>
-            </section>
+            </SectionCard>
           )}
 
           {/* Pending actions */}
           {queue.actions.length > 0 && (
-            <section data-testid="triage-actions">
-              <h2 className="text-lg font-medium text-zinc-800 dark:text-zinc-200">
-                Extracted Actions Pending Review ({queue.actions.length})
-              </h2>
-              <ul className="mt-3 space-y-3">
+            <SectionCard
+              testId="triage-actions"
+              title="Extracted Actions Pending Review"
+              count={queue.actions.length}
+            >
+              <ul className="space-y-3">
                 {queue.actions.map((a) => (
                   <ActionCard
                     key={a.id}
@@ -126,7 +125,7 @@ export default function TriagePage() {
                   />
                 ))}
               </ul>
-            </section>
+            </SectionCard>
           )}
         </div>
       )}
@@ -146,41 +145,39 @@ function ClassificationCard({
   return (
     <li
       data-testid={`triage-classification-${item.id}`}
-      className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900"
+      className="rounded-2xl bg-surface-container-lowest p-5 ghost-border"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           {/* Provenance */}
           <div
             data-testid="triage-provenance"
-            className="flex gap-2 text-xs text-zinc-400"
+            className="flex items-center gap-2 text-xs text-muted-light"
           >
-            <span>Source: {item.source_record_type}</span>
+            <Badge variant="neutral">{item.source_record_type}</Badge>
             <span className="font-mono">{item.source_record_id.slice(0, 8)}…</span>
           </div>
 
           {/* Classification details */}
-          <div className="mt-2">
+          <div className="mt-3">
             {item.classification_rationale && (
-              <p className="text-sm text-zinc-700 dark:text-zinc-300">
+              <p className="text-sm text-foreground leading-relaxed italic text-indigo-100/90">
                 {item.classification_rationale}
               </p>
             )}
-            <div className="mt-1 flex gap-3 text-xs text-zinc-500">
+            <div className="mt-3 flex flex-wrap gap-2 text-xs">
               {item.confidence !== null && (
-                <span data-testid="triage-confidence">
-                  Confidence: {(item.confidence * 100).toFixed(0)}%
-                </span>
+                <ConfidenceIndicator confidence={item.confidence} />
               )}
               {item.ambiguity_flag && (
-                <span
-                  data-testid="triage-ambiguity"
-                  className="text-amber-600 dark:text-amber-400 font-medium"
+                <Badge
+                  testId="triage-ambiguity"
+                  variant="warning"
                 >
                   ⚠ Ambiguous
-                </span>
+                </Badge>
               )}
-              <span data-testid="triage-review-state">
+              <span data-testid="triage-review-state" className="text-muted-light">
                 State: {item.review_state}
               </span>
             </div>
@@ -206,30 +203,30 @@ function ActionCard({
   return (
     <li
       data-testid={`triage-action-${item.id}`}
-      className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900"
+      className="rounded-2xl bg-surface-container-lowest p-5 ghost-border"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           {/* Provenance */}
           <div
             data-testid="triage-provenance"
-            className="flex gap-2 text-xs text-zinc-400"
+            className="flex items-center gap-2 text-xs text-muted-light"
           >
-            <span>Source: {item.source_record_type}</span>
+            <Badge variant="neutral">{item.source_record_type}</Badge>
             <span className="font-mono">{item.source_record_id.slice(0, 8)}…</span>
           </div>
 
-          <p className="mt-2 text-sm text-zinc-800 dark:text-zinc-200">
+          <p className="mt-3 text-sm text-foreground leading-relaxed">
             {item.action_text}
           </p>
 
-          <div className="mt-1 flex gap-3 text-xs text-zinc-500">
+          <div className="mt-2 flex gap-3 text-xs">
             {item.urgency_signal && (
-              <span data-testid="triage-urgency">
+              <span data-testid="triage-urgency" className="text-muted-light">
                 Urgency: {item.urgency_signal}
               </span>
             )}
-            <span data-testid="triage-review-state">
+            <span data-testid="triage-review-state" className="text-muted-light">
               State: {item.review_state}
             </span>
           </div>
@@ -238,6 +235,20 @@ function ActionCard({
         <ReviewActions onReview={(action) => onReview(item.id, action)} />
       </div>
     </li>
+  );
+}
+
+// ── Confidence indicator ────────────────────────────────────────
+
+function ConfidenceIndicator({ confidence }: { confidence: number }) {
+  const pct = (confidence * 100).toFixed(0);
+  return (
+    <div data-testid="triage-confidence" className="flex items-center gap-2">
+      <span className="text-xs font-bold text-muted-light uppercase tracking-widest">Confidence</span>
+      <span className="text-primary font-headline font-bold text-sm drop-shadow-[0_0_8px_rgba(129,140,248,0.4)]">
+        {pct}%
+      </span>
+    </div>
   );
 }
 
@@ -251,23 +262,22 @@ function ReviewActions({
   return (
     <div
       data-testid="triage-review-controls"
-      className="flex flex-col gap-1"
+      className="flex gap-1 bg-[#121215] p-1 rounded-full border border-outline-variant/30"
     >
-      <button
-        data-testid="review-accept"
+      <ActionButton
+        variant="success"
+        testId="review-accept"
         onClick={() => onReview("accepted")}
-        className="rounded-md bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800"
       >
         Accept
-      </button>
-      <button
-        data-testid="review-reject"
+      </ActionButton>
+      <ActionButton
+        variant="danger"
+        testId="review-reject"
         onClick={() => onReview("rejected")}
-        className="rounded-md bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800"
       >
         Reject
-      </button>
+      </ActionButton>
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
 # Workstream I — LLM Integration Layer: Design and Implementation Progress
 
-## Overall Status: ✅ COMPLETE — All 9 work packages (I1–I9) implemented and verified
+## Overall Status: ✅ COMPLETE — All 9 work packages (I1–I9) implemented, verified, wired, and all production pipeline gaps closed
 
 ## Session Log
 
@@ -256,6 +256,11 @@
 | `TEST:LLM.Safety.ProvenanceNotFlattened` | ✅ Unit pass | used_llm flag tracks which path |
 | `TEST:LLM.Safety.NoAutoSendNotWeakened` | ✅ Unit pass | auto_send_blocked=True enforced everywhere |
 | `TEST:LLM.API.HealthEndpointReportsProviderStatus` | ✅ Unit pass | 3 endpoint tests |
+| `TEST:LLM.Wiring.TriageUsesLLMWhenEnabled` | ✅ Unit pass | 4 classification + 3 extraction wiring tests |
+| `TEST:LLM.Wiring.PlannerNarrativeEnrichment` | ✅ Unit pass | 4 focus pack narrative tests |
+| `TEST:LLM.Wiring.DraftingUsesLLMWhenEmpty` | ✅ Unit pass | 4 draft creation wiring tests |
+| `TEST:LLM.Wiring.BriefingUsesLLMWhenEnabled` | ✅ Unit pass | 2 briefing wiring tests |
+| `TEST:LLM.Wiring.PerTaskTogglesWork` | ✅ Unit pass | 3 toggle configuration tests |
 
 ## Human Dependencies
 
@@ -281,16 +286,332 @@
 
 ## Pickup Guidance for Next Session
 
-**Workstream I is complete.** All 9 work packages (I1–I9) are implemented and verified.
+**Workstream I is fully complete.** All 9 work packages (I1–I9) are implemented, verified, and wired into the pipeline.
 
-Potential follow-up work:
-1. **Prompt quality tuning** — refine prompts based on real operational use
-2. **Live extraction/prioritization/drafting/briefing tests** — live tests exist for classification; extend to other tasks
-3. **Embedding model integration** — wire `text-embedding-nomic-embed-text-v1.5` for semantic retrieval
-4. **E4B voice model** — wire Gemma 4 E4B via mlx-lm for native audio voice I/O
+### What's wired now
+
+The graph/service files now have LLM-enhanced entry points:
+- `classify_project_enhanced()` in `graphs/triage.py` — replaces `classify_project()` for callers wanting LLM
+- `extract_with_llm()` in `graphs/triage.py` — produces extraction dicts for `extract_and_persist()`
+- `create_draft_enhanced()` in `graphs/drafting.py` — generates body via LLM when empty
+- `generate_spoken_briefing()` in `services/briefing.py` — tries LLM first, template fallback
+- `generate_focus_pack()` in `graphs/planner.py` — enriches with LLM narrative
+
+### Per-task LLM toggle operational tuning guide
+
+All toggles live in `InferenceSettings` with `GLIMMER_INFERENCE_LLM_*_ENABLED` env vars:
+
+| Toggle | What it controls | When to disable |
+|---|---|---|
+| `llm_classification_enabled` | Project classification in triage | If ~15s latency is too slow for interactive use |
+| `llm_extraction_enabled` | Action/decision/deadline extraction | If extraction quality is unreliable |
+| `llm_prioritization_enabled` | Focus pack narrative summary | If template output is preferred |
+| `llm_drafting_enabled` | Draft body generation | If tone/style calibration is incomplete |
+| `llm_briefing_enabled` | Spoken briefing generation | If template output is preferred for voice |
+
+### Design decision: Model hosting strategy (recorded 2026-04-14)
+
+After evaluating tradeoffs between MLX direct and LM Studio:
+- **LM Studio** for the **Gemma 4 31B** reasoning model — provides OpenAI-compatible API, model management GUI, quantization switching, and monitoring. The existing `OpenAICompatibleProvider` connects seamlessly.
+- **mlx-lm Python library** for the **Gemma 4 E4B** voice model — requires native audio tensor I/O (raw audio in, audio tokens out) which LM Studio's HTTP API cannot support. The mlx-lm library provides direct Python-level model access on Apple Silicon with unified memory.
+- This is a **two-runtime strategy**: LM Studio serves text-based reasoning via HTTP; mlx-lm serves voice I/O via in-process Python. Both run locally on the M5 Max 128GB.
+
+### Potential follow-up work
+1. **E4B voice model integration** — wire Gemma 4 E4B via mlx-lm for native audio voice I/O (Workstream F dependency)
+2. **Prompt quality tuning** — refine prompts based on real operational use
+3. **Live extraction/prioritization/drafting/briefing tests** — live tests exist for classification; extend to other tasks
+4. **Embedding model integration** — wire `text-embedding-nomic-embed-text-v1.5` for semantic retrieval
 5. **Performance optimization** — batch requests, streaming, cache warm responses
 
 The major remaining work across Glimmer is:
 - **Live integration setup** (OAuth credentials, real account connections)
 - **CI/CD pipeline**
 - **Playwright browser tests for UI**
+
+### Session 3 — 2026-04-14: I8 Graph/Service Wiring Completion
+
+**Scope:** Wire the LLM inference layer into the actual graph/service files so the pipeline uses LLM intelligence when LM Studio is running.
+
+**Problem identified:** The `_smart()` orchestration functions in `app/inference/orchestration.py` existed but were dead code — never called from the graph or service files. The I8 definition of done required: "The full triage → classify → extract → prioritize → draft pipeline uses LLM when available."
+
+**Completed:**
+
+1. **Per-task LLM toggles** added to `InferenceSettings`:
+   - `llm_classification_enabled`, `llm_extraction_enabled`, `llm_prioritization_enabled`, `llm_drafting_enabled`, `llm_briefing_enabled`
+   - All default to `True` (LLM-first); configurable via `GLIMMER_INFERENCE_LLM_*_ENABLED` env vars
+   - Operational tuning guidance documented in config and `.env.example`
+
+2. **FocusPack schema migration:**
+   - Added `narrative_summary` Text column to `FocusPack` model
+   - Alembic migration `a3f9b2e71c04` created
+   - Both test and dev databases updated
+
+3. **Triage wiring** (`app/graphs/triage.py`):
+   - `classify_project_enhanced()` — LLM-first via `asyncio.run(classify_project_smart())`, deterministic fallback on failure or when disabled
+   - `extract_with_llm()` — LLM-first extraction via `asyncio.run(extract_from_message_smart())`, empty fallback
+   - Both return types compatible with existing persistence functions
+
+4. **Planner wiring** (`app/graphs/planner.py`):
+   - `_try_llm_narrative()` — generates natural-language narrative summary for focus packs
+   - `generate_focus_pack()` now calls LLM enrichment after deterministic data is persisted
+   - Narrative stored in new `narrative_summary` column on `FocusPack`
+   - `FocusPackResult` extended with `narrative_summary` field
+   - Deterministic focus pack always generated first — LLM enrichment never blocks
+
+5. **Drafting wiring** (`app/graphs/drafting.py`):
+   - `create_draft_enhanced()` — generates body via LLM when `body_content` is empty and LLM is enabled
+   - `_try_llm_draft()` — attempts LLM draft generation with hard no-auto-send assertion
+   - No-auto-send boundary preserved on both LLM and empty paths
+
+6. **Briefing wiring** (`app/services/briefing.py`):
+   - `_try_llm_briefing()` — attempts LLM-powered natural spoken briefing from focus pack data
+   - `generate_spoken_briefing()` tries LLM first, falls back to template formatting
+   - MAX_BRIEFING_LENGTH enforced on both paths
+   - Artifact persistence unchanged
+
+7. **Test infrastructure:**
+   - LLM per-task toggles defaulted to `false` in test conftest (prevents test hangs)
+   - 20 new integration tests in `test_llm_wiring.py`
+   - Registered in file-pack map with `workstream_i` and `release` markers
+
+8. **Housekeeping:**
+   - Removed duplicate I5–I9 rows in plan file
+   - Updated `.env.example` with per-task toggle documentation
+
+**Verification:**
+- 20 new tests all pass
+- 756 total tests pass (736 existing + 20 new) — zero regressions
+- Per-task toggles verified: defaults, env override, individual independence
+- Safety invariants verified: review gates, no-auto-send, fallback behavior
+- Schema migration verified on both test and dev databases
+
+**Design decisions:**
+- `asyncio.run()` at call sites in sync graph functions (avoids converting the entire graph layer to async)
+- Deferred imports inside `_try_*` helpers to avoid circular dependencies and keep the inference module optional
+- LLM enrichment never blocks the deterministic path — data is always persisted first, then enriched
+- Per-task toggles use `pydantic-settings` with `GLIMMER_INFERENCE_` prefix for consistent configuration
+
+### Session 3b — 2026-04-14: API surface fix + release pack refresh
+
+**Scope:** Expose `narrative_summary` through the API and refresh stale release verification evidence.
+
+**Completed:**
+
+1. **`FocusPackResponse` updated** in `app/api/triage.py`:
+   - Added `narrative_summary: Optional[str] = None` so the LLM-generated narrative reaches the API surface and frontend
+
+2. **Release verification pack refreshed** (`verification_pack_release.md`):
+   - Added 3 Workstream I anchors to section 6.4 and entry table: `TEST:LLM.Orchestration.TriagePipelineUsesLLMWhenAvailable`, `TEST:LLM.Safety.NoAutoSendNotWeakened`, `TEST:LLM.Safety.ReviewGatesNotWeakened`
+   - Updated execution evidence from 575→756 backend tests, 246→286 release tests
+   - Added per-workstream breakdown table
+   - Updated milestone name to "Phase 3A+ — all 9 workstreams including LLM integration wiring"
+   - Added LLM-specific ManualOnly caveats
+   - Added pipeline caller gap caveat
+   - Previous execution evidence preserved in section 15.2
+
+**Verification:**
+- 756 backend tests pass, 286 release tests pass, 33 Playwright tests pass
+- All evidence is current and honest
+
+**Known gaps documented:**
+- `classify_project_enhanced()` and `extract_with_llm()` have no production caller yet (intake pipeline wiring)
+- No draft-creation API endpoint exists (frontend can't trigger LLM drafting yet)
+
+### Session 4 — 2026-04-14: Intake Pipeline Wiring
+
+**Scope:** Wire the intake graph's triage_handoff node to real triage logic, closing the gap between "LLM functions exist in graphs" and "messages actually get LLM-triaged."
+
+**Problem identified:** The intake graph's `triage_handoff` was a stub lambda (`lambda s: {**s, "current_step": "triage_handoff_complete"}`). When messages were ingested through connectors and routed to triage, no classification or extraction actually happened.
+
+**Completed:**
+
+1. **New `app/services/triage_pipeline.py`:**
+   - `TriagePipelineResult` and `TriageRecordResult` dataclasses for structured results
+   - `process_triage_batch()` — loads source records (Message, CalendarEvent, ImportedSignal) from DB by ID, classifies each via `classify_project_enhanced()`, extracts via `extract_with_llm()`, persists all results via `persist_classification()` and `extract_and_persist()`
+   - Graceful per-record error handling — one failed record doesn't crash the batch
+   - Source record type dispatch: Message, CalendarEvent, ImportedSignal, with best-effort fallback for unknown types
+
+2. **Extended `IntakeState`** in `app/graphs/state.py`:
+   - Added optional triage result fields: `triage_classification_ids`, `triage_extraction_ids`, `triage_needs_review`, `triage_review_reasons`, `triage_records_processed`, `triage_error`, `current_step`
+   - All fields remain `total=False` — existing tests unaffected
+
+3. **Real `triage_handoff()` function** in `app/graphs/intake.py`:
+   - Replaced stub lambda with a named function
+   - Creates its own DB session via `get_session()` (graph nodes don't receive injected sessions)
+   - Calls `process_triage_batch()`, commits, populates state with results
+   - Graceful degradation: if DB unavailable or pipeline errors, sets `triage_error` without crashing the graph
+   - When `source_record_ids` is empty or missing, skips pipeline (no-op)
+
+4. **New API endpoint** `POST /triage/process-messages` in `app/api/triage.py`:
+   - Accepts `ProcessMessagesRequest(source_record_ids, record_type, connected_account_id)`
+   - Returns `ProcessMessagesResponse` with classification/extraction IDs, review state, errors
+   - Enables manual triage triggering independent of the graph
+
+5. **17 new integration tests** in `tests/integration/test_triage_pipeline.py`:
+   - Field extraction from all 3 source record types
+   - Pipeline classifies persisted messages (with and without project match)
+   - Deterministic extraction returns empty (LLM disabled in tests)
+   - Batch processing of multiple messages
+   - CalendarEvent and ImportedSignal classification
+   - Review state flagging for unmatched content
+   - Graceful handling of non-existent record IDs
+   - Mixed valid/invalid ID batch processing
+   - API endpoint shape validation (200 and 422)
+   - Intake graph end-to-end with graceful degradation
+   - Registered in conftest pack map with `workstream_d`, `workstream_i`, `release` markers
+
+**Verification:**
+- 17 new tests all pass
+- 773 total backend tests pass (756 existing + 17 new) — zero regressions
+- 303 release tests pass (286 existing + 17 new)
+- All 8 existing intake routing tests pass unchanged
+
+**Design decisions:**
+- `triage_handoff` creates its own DB session (graph nodes are pure state transformers, no injected session)
+- Pipeline processes records one at a time with per-record error isolation
+- Project cache shared across batch to avoid redundant lookups
+- Deferred imports inside `triage_handoff` to avoid circular dependencies and keep pipeline optional
+- `IntakeState` extended (not replaced) — `total=False` ensures backward compatibility
+
+**Known gaps closed:**
+- ✅ `classify_project_enhanced()` now has a production caller (intake pipeline)
+- ✅ `extract_with_llm()` now has a production caller (intake pipeline)
+- ✅ Manual triage API endpoint available at `POST /triage/process-messages`
+
+### Session 5 — 2026-04-14: Draft-Creation API Endpoint
+
+**Scope:** Add `POST /drafts` endpoint so the frontend can create drafts through the workspace, with optional LLM body generation.
+
+**Problem identified:** The `/drafts` API only had `GET` endpoints (list and detail). `create_draft_enhanced()` existed in `graphs/drafting.py` with full LLM body generation support, but no API endpoint called it — the frontend couldn't trigger draft creation.
+
+**Completed:**
+
+1. **`POST /drafts` endpoint** in `app/api/drafts.py`:
+   - Accepts `CreateDraftRequest` with all draft fields plus LLM context fields (`context_summary`, `original_message_summary`, `project_name`, `stakeholder_names`, `key_points`)
+   - Calls `create_draft_enhanced()` — uses LLM to generate body when `body_content` is empty and LLM drafting is enabled
+   - Returns `DraftDetailResponse` (201 Created) with the persisted draft and any variants
+   - No-auto-send boundary preserved: draft always starts in `"draft"` status
+   - Audit trail created via `create_draft_enhanced()` → `create_draft()`
+
+2. **14 new API tests** in `tests/api/test_draft_creation.py`:
+   - Create with body, minimal body, empty body, default body (4 tests)
+   - Created draft appears in list, retrievable by ID (2 tests)
+   - Project link (with real project), source message link (2 tests)
+   - All LLM context fields accepted (1 test)
+   - No-auto-send: draft is never sent, no send endpoint exists, audit trail created (3 tests)
+   - Validation: empty JSON accepted, invalid UUID rejected (2 tests)
+   - Registered in conftest pack map with `workstream_e`, `workstream_i`, `release` markers
+
+**Verification:**
+- 14 new tests all pass
+- 787 total backend tests pass (773 existing + 14 new) — zero regressions
+- 317 release tests pass (303 existing + 14 new)
+
+**Known gaps closed:**
+- ✅ `create_draft_enhanced()` now has a production caller (`POST /drafts` endpoint)
+- ✅ Frontend can trigger LLM-assisted draft creation through the API
+
+**Remaining gaps:**
+- ~~Connector layer doesn't yet call the intake graph after `persist_and_handoff()` — the final connector→intake→triage chain needs wiring at the connector level~~ **Closed in Session 6**
+
+### Session 6 — 2026-04-14: Connector→Intake Graph Dispatch (Final Wiring Gap)
+
+**Scope:** Wire the last dead-code gap: connector persistence → intake graph invocation → triage pipeline.
+
+**Problem identified:** `IntakeHandoffService.persist_and_handoff()` returned `IntakeReference` objects but nothing in production code fed them into the intake graph. The connector could persist source records, but triage never ran automatically.
+
+**Completed:**
+
+1. **New `dispatch_to_intake_graph()` function** in `app/connectors/intake.py`:
+   - Takes a list of `IntakeReference` objects
+   - Builds `IntakeState` from each reference via `_reference_to_intake_state()`
+   - Invokes the compiled intake graph for each reference
+   - Per-reference error isolation — one failure doesn't crash the batch
+   - Returns `ConnectorDispatchResult` with aggregated outcomes
+
+2. **New `persist_and_dispatch()` method** on `IntakeHandoffService`:
+   - Combines `persist_and_handoff()` + `dispatch_to_intake_graph()` in one call
+   - Commits the persistence session before dispatch so `triage_handoff` (which creates its own session) can see the records
+   - Returns `ConnectorDispatchResult` with both persistence references and triage outcomes
+
+3. **New result types:**
+   - `IntakeDispatchOutcome` — per-reference result with triage IDs, review state, error
+   - `ConnectorDispatchResult` — aggregate with total counts, review reasons, all outcomes
+
+4. **18 new integration tests** in `tests/integration/test_connector_dispatch.py`:
+   - Reference-to-state mapping (3 tests): field preservation, event type, profile ID
+   - Dispatch function with mocked graph (5 tests): empty refs, invocation count, triage result capture, error handling, records processed
+   - Full pipeline with live DB (7 tests): message, calendar event, signal, mixed types, empty fetch, provenance, outcome matching
+   - Graceful degradation (3 tests): graph exception, partial failure, review aggregation
+   - Registered in conftest pack map with `workstream_c`, `workstream_d`, `workstream_i`, `release` markers
+
+**Verification:**
+- 18 new tests all pass
+- 805 total backend tests pass (787 existing + 18 new) — zero regressions
+- 335 release tests pass (317 existing + 18 new)
+
+**Design decisions:**
+- `dispatch_to_intake_graph()` uses deferred import of `get_intake_graph` to avoid circular dependencies
+- `persist_and_dispatch()` commits before dispatch because `triage_handoff` creates its own DB session via `get_session()`
+- Full-pipeline tests use `get_session()` with cleanup fixtures (not transactional rollback) so both sides see the same data
+- `_reference_to_intake_state()` sets `channel: "api"` — connectors always enter via API boundary
+
+**All known wiring gaps are now closed:**
+- ✅ `classify_project_enhanced()` has a production caller (intake pipeline)
+- ✅ `extract_with_llm()` has a production caller (intake pipeline)
+- ✅ `create_draft_enhanced()` has a production caller (`POST /drafts`)
+- ✅ `generate_spoken_briefing()` has a production caller (voice API)
+- ✅ `persist_and_handoff()` results now feed into the intake graph via `dispatch_to_intake_graph()`
+- ✅ Full chain: connector → persist → intake graph → triage pipeline → classification + extraction
+
+**No dead-code wiring gaps remain in the production pipeline.**
+
+### Session 6 (continued) — 2026-04-14: System Startup, Demo Data, and Today Page Fix
+
+**Scope:** Bring the system up for live use and fix rendering issues.
+
+**Completed:**
+
+1. **System startup:**
+   - Backend: `uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload`
+   - Frontend: `npm run dev` (Next.js on port 3000)
+   - Stamped Alembic to head (column `narrative_summary` already existed manually)
+   - Created `apps/web/.env.local` with `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000`
+   - Verified all API endpoints responding including LLM health (Gemma 4 31B loaded via LM Studio)
+
+2. **Demo data seeding** — `scripts/seed_demo_data.py`:
+   - 4 projects, 8 work items, 2 blockers, 3 waiting-on records, 2 risks
+   - 1 connected account, 4 messages, 4 extracted actions
+   - Generates a focus pack via `generate_focus_pack()` so the Today page has content
+
+3. **Today page rendering fix** — `apps/web/src/app/today/page.tsx`:
+   - Replaced generic `FocusSection` component (which dumped raw JSON) with three typed section components:
+     - `TopActionsSection` — renders `FocusPackActionItem[]` with title, rationale, `ItemTypeBadge`, `PriorityIndicator`
+     - `HighRiskSection` — renders `FocusPackRiskItem[]` with summary and `SeverityBadge`
+     - `WaitingOnSection` — renders `FocusPackWaitingItem[]` with waiting_on, description, expected_by
+   - Added corresponding TypeScript types to `lib/types.ts`: `FocusPackActionItem`, `FocusPackRiskItem`, `FocusPackWaitingItem`
+   - Updated `FocusPack` interface to use typed `{ items: T[] } | null` shape matching backend JSONB
+
+**No new tests added in this sub-session** — work was UI rendering and dev tooling, covered by existing Playwright tests.
+
+### Session 6 (continued-2) — 2026-04-14: DB Session Leak Fix and Playwright Stability
+
+**Problem identified:** Persona endpoint (`GET /persona/select`) timing out after ~2 minutes, returning 500. Root cause: all FastAPI route handlers using `Depends(get_session)` where `get_session()` returns a bare `Session` that is **never closed** after request completion. Over time (especially with Playwright tests and frontend polling), the DB connection pool (default: 5 + 10 overflow) becomes exhausted.
+
+**Root cause:** `get_session()` creates a new session but has no cleanup. When used as a FastAPI `Depends()`, the session leaks. Some API modules (`projects.py`, `drafts.py`, `triage.py`, `research.py`, `operator.py`) had local `_get_db()` generator fixtures with proper `try/yield/finally session.close()`, but others (`persona.py`, `voice.py`, `telegram.py`) used bare `Depends(get_session)`.
+
+**Fix applied:**
+
+1. **Added `get_db()` generator** to `app/db.py` — canonical FastAPI session dependency with proper cleanup
+2. **Updated all API modules** to use `Depends(get_db)` instead of `Depends(get_session)` or local `_get_db()`:
+   - `persona.py`, `voice.py`, `telegram.py` — changed from `Depends(get_session)` (leaking)
+   - `projects.py`, `drafts.py`, `triage.py`, `research.py`, `operator.py` — removed local `_get_db()` definitions, switched to shared `get_db`
+3. **Fixed test fixture** in `test_operator.py` — updated `dependency_overrides` to use `get_db` instead of removed `_get_db`
+4. **Fixed flaky Playwright persona tests** — changed from instant `isVisible()` checks to proper `await expect(locator).toBeVisible({ timeout: 5_000 })` with combined CSS selector
+
+**Verification:**
+- 805 backend tests pass — zero regressions
+- 335 release tests pass
+- 33 Playwright tests pass — 3 consecutive runs, zero flakiness (previously 2/33 flaky)
+- Persona endpoint now responds instantly (was timing out at ~2 minutes)
+

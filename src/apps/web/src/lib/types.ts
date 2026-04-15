@@ -81,14 +81,39 @@ export interface ReviewQueue {
 
 // ── Focus Pack ──────────────────────────────────────────────────
 
+export interface FocusPackActionItem {
+  item_id: string;
+  item_type: "work_item" | "pending_action";
+  project_id: string | null;
+  priority_score: number;
+  rationale: string;
+  title: string;
+}
+
+export interface FocusPackRiskItem {
+  risk_id: string;
+  project_id: string;
+  summary: string;
+  severity: string;
+}
+
+export interface FocusPackWaitingItem {
+  waiting_id: string;
+  project_id: string;
+  waiting_on: string;
+  description: string;
+  expected_by: string | null;
+}
+
 export interface FocusPack {
   id: string;
   generated_at: string;
-  top_actions: Record<string, unknown> | null;
-  high_risk_items: Record<string, unknown> | null;
-  waiting_on_items: Record<string, unknown> | null;
+  top_actions: { items: FocusPackActionItem[] } | null;
+  high_risk_items: { items: FocusPackRiskItem[] } | null;
+  waiting_on_items: { items: FocusPackWaitingItem[] } | null;
   reply_debt_summary: string | null;
   calendar_pressure_summary: string | null;
+  narrative_summary: string | null;
 }
 
 // ── Drafts ──────────────────────────────────────────────────────

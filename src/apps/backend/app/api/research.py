@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.db import get_session
+from app.db import get_db
 from app.models.research import (
     ExpertAdviceExchange,
     ResearchFinding,
@@ -155,16 +155,6 @@ class ExpertAdviceExchangeResponse(BaseModel):
     completed_at: Optional[datetime] = None
 
 
-# ── Dependency ───────────────────────────────────────────────────
-
-
-def _get_db():
-    """Yield a database session for request lifecycle."""
-    session = get_session()
-    try:
-        yield session
-    finally:
-        session.close()
 
 
 # ── Routing Preview ──────────────────────────────────────────────
@@ -189,7 +179,7 @@ def preview_routing(body: EscalationRequest) -> RoutingPreviewResponse:
 @router.get("/runs", response_model=list[ResearchRunResponse])
 def list_research_runs(
     limit: int = 20,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> list[ResearchRunResponse]:
     """List recent research runs with summary counts."""
     runs = db.execute(
@@ -237,7 +227,7 @@ def list_research_runs(
 @router.get("/runs/{run_id}", response_model=ResearchRunDetailResponse)
 def get_research_run(
     run_id: uuid.UUID,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> ResearchRunDetailResponse:
     """Get a specific research run with full detail: findings, sources, summary."""
     run = db.get(ResearchRun, run_id)
@@ -290,7 +280,7 @@ def get_research_run(
 def review_research_summary(
     run_id: uuid.UUID,
     body: ReviewActionRequest,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> dict:
     """Accept or reject a research run's summary artifact.
 
@@ -319,7 +309,7 @@ def review_research_summary(
 @router.get("/exchanges", response_model=list[ExpertAdviceExchangeResponse])
 def list_exchanges(
     limit: int = 20,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> list[ExpertAdviceExchangeResponse]:
     """List recent expert advice exchanges."""
     exchanges = db.execute(
@@ -336,7 +326,7 @@ def list_exchanges(
 )
 def get_exchange(
     exchange_id: uuid.UUID,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> ExpertAdviceExchangeResponse:
     """Get a specific expert advice exchange."""
     exchange = db.get(ExpertAdviceExchange, exchange_id)
@@ -352,7 +342,7 @@ def get_exchange(
 def review_exchange(
     exchange_id: uuid.UUID,
     body: ReviewActionRequest,
-    db: Session = Depends(_get_db),
+    db: Session = Depends(get_db),
 ) -> dict:
     """Accept or reject an expert advice exchange response.
 

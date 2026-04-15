@@ -5,15 +5,19 @@ ARCH:PlannerGraphExplainability
 ARCH:PlannerGraphReviewGate
 ARCH:FocusPackModel
 ARCH:TodayViewArchitecture
+PLAN:WorkstreamI.PackageI8.OrchestrationWiring
 
 These services produce explainable priority outputs and durable
 focus-pack artifacts from the current operational state.
 
-The planner is deterministic for now — LLM augmentation will sit above.
+When the LLM is available and enabled, the planner enriches focus
+packs with a natural-language narrative summary.
 """
 
 from __future__ import annotations
 
+import asyncio
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
@@ -26,6 +30,8 @@ from app.models.execution import WorkItem, BlockerRecord, WaitingOnRecord, RiskR
 from app.models.interpretation import ExtractedAction, ExtractedDeadlineSignal
 from app.models.drafting import FocusPack
 from app.models.audit import AuditRecord
+
+logger = logging.getLogger(__name__)
 
 
 # ── Priority Item ────────────────────────────────────────────────────
@@ -76,6 +82,7 @@ class FocusPackResult:
         waiting_on_items: list[dict],
         reply_debt_summary: Optional[str],
         calendar_pressure_summary: Optional[str],
+        narrative_summary: Optional[str] = None,
     ):
         self.focus_pack_id = focus_pack_id
         self.priority_items = priority_items
@@ -84,6 +91,7 @@ class FocusPackResult:
         self.waiting_on_items = waiting_on_items
         self.reply_debt_summary = reply_debt_summary
         self.calendar_pressure_summary = calendar_pressure_summary
+        self.narrative_summary = narrative_summary
 
 
 # ── Priority Scoring ─────────────────────────────────────────────────
@@ -282,6 +290,15 @@ def generate_focus_pack(
     session.add(focus_pack)
     session.flush()
 
+    # Attempt LLM narrative enrichment
+    narrative = _try_llm_narrative(
+        top_actions_data, high_risk_data, waiting_on_data,
+        reply_debt, blocker_pressure, project_ids, session,
+    )
+    if narrative:
+        focus_pack.narrative_summary = narrative
+        session.flush()
+
     return FocusPackResult(
         focus_pack_id=focus_pack.id,
         priority_items=priority_items,
@@ -290,6 +307,7 @@ def generate_focus_pack(
         waiting_on_items=waiting_on_data,
         reply_debt_summary=reply_debt,
         calendar_pressure_summary=blocker_pressure,
+        narrative_summary=narrative,
     )
 
 
@@ -428,4 +446,77 @@ def suggest_next_steps(
             ))
 
     return suggestions
+
+
+# ── LLM Narrative Enrichment ─────────────────────────────────────────
+
+
+def _try_llm_narrative(
+    top_actions: list[dict],
+    high_risk_items: list[dict],
+    waiting_on_items: list[dict],
+    reply_debt: Optional[str],
+    calendar_pressure: Optional[str],
+    project_ids: Optional[list[uuid.UUID]],
+    session: Session,
+) -> Optional[str]:
+    """Attempt LLM-powered narrative enrichment for a focus pack.
+
+    PLAN:WorkstreamI.PackageI8.OrchestrationWiring
+    ARCH:PlannerGraphExplainability
+
+    Returns a natural-language narrative summary, or None if LLM is
+    disabled or unavailable.  Never blocks focus pack generation —
+    the deterministic data is always persisted first.
+    """
+    from app.inference.config import InferenceSettings
+
+    settings = InferenceSettings()
+    if not settings.llm_prioritization_enabled:
+        return None
+
+    try:
+        from app.inference.orchestration import generate_briefing_smart
+
+        # Gather project names for context
+        project_names: list[str] = []
+        if project_ids:
+            from app.models.portfolio import Project as _Project
+
+            for pid in project_ids:
+                p = session.get(_Project, pid)
+                if p and p.name:
+                    project_names.append(p.name)
+
+        result = asyncio.run(generate_briefing_smart(
+            top_actions=[
+                {"title": a.get("title", ""), "rationale": a.get("rationale", "")}
+                for a in top_actions
+            ] if top_actions else None,
+            high_risk_items=[
+                {"summary": r.get("summary", ""), "severity": r.get("severity", "")}
+                for r in high_risk_items
+            ] if high_risk_items else None,
+            waiting_on_items=[
+                {"waiting_on": w.get("waiting_on", ""), "description": w.get("description", "")}
+                for w in waiting_on_items
+            ] if waiting_on_items else None,
+            reply_debt_summary=reply_debt,
+            calendar_pressure_summary=calendar_pressure,
+            project_names=project_names if project_names else None,
+        ))
+
+        if result.used_llm and result.briefing_text:
+            logger.info(
+                "Focus pack enriched with LLM narrative (%d chars)",
+                len(result.briefing_text),
+            )
+            return result.briefing_text
+
+        return None
+
+    except Exception as exc:
+        logger.info("LLM narrative enrichment skipped: %s", exc)
+        return None
+
 

@@ -96,6 +96,7 @@ def health_research(request: Request) -> ResearchHealthResponse:
     return ResearchHealthResponse(**status_dict)
 
 
+
 @router.get("/health/inference", response_model=InferenceHealthResponse)
 async def health_inference() -> InferenceHealthResponse:
     """LLM inference provider health — LM Studio availability and model status.

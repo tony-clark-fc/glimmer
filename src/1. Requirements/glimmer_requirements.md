@@ -87,6 +87,12 @@ Glimmer shall support the following high-level capabilities:
 11. **Expert advice (synchronous external consultation)**
     - Consult a more powerful external LLM synchronously when the local model is insufficient for a specific question, decision, or reasoning task.
 
+12. **Glimmer persona page with conversational project mapping**
+    - Provide a dedicated conversational workspace where the operator can chat with Glimmer, and Glimmer dynamically constructs visual mind-map structures representing her understanding of projects, stakeholders, milestones, and risks.
+
+13. **Contextual "Ask Glimmer" interaction across all surfaces**
+    - Allow the operator to invoke Glimmer's intelligence contextually on any visible data element across all workspace pages, enabling inline questions and instructions without navigating away.
+
 **Stable requirements anchor:** `REQ:InScopeCapabilities`
 
 ### 3.2 Out-of-scope capabilities for MVP
@@ -511,6 +517,101 @@ Telegram is the selected MVP mobile chat channel. Other chat channels such as Sl
 
 **Stable requirements anchor:** `REQ:TelegramMobilePresence`
 
+### 6.14A Glimmer persona page — conversational workspace with visual project mapping
+
+Glimmer shall provide a dedicated persona page that serves as the primary conversational interface between the operator and Glimmer.
+
+The persona page shall support:
+
+- a prominent display of the Glimmer visual persona (character image) as a persistent identity anchor,
+- a real-time conversational chat interface where the operator can discuss priorities, explain new projects, request updates, or give Glimmer instructions,
+- dynamic visual project mapping, where Glimmer constructs and displays an interactive mind-map-style visualization as the conversation progresses,
+- automatic creation of visual nodes ("bubbles") representing Glimmer's evolving understanding of projects, stakeholders, milestones, risks, dependencies, and work items,
+- radial or hierarchical layout of connected nodes that fan outward from a central project node, showing relational structure,
+- interactive nodes that can be clicked for detail, hovered for contextual "Ask Glimmer" interaction, and optionally rearranged,
+- a zoomable and pannable canvas for the visual map,
+- suggested conversation starters for common operator intents (e.g., "What should I focus on today?", "Tell me about a new project", "What's at risk this week?"),
+- and voice input support within the chat interface.
+
+#### Staged persistence model
+
+The mind-map constructed during a conversation shall follow a staged persistence model:
+
+- All nodes, connections, and extracted entities shall initially be held in a **temporary working state** (client-side or lightweight session store) and shall not be committed to the operational database until the operator explicitly confirms.
+- The operator shall be able to review the entire mind-map, edit or remove individual nodes, and request corrections from Glimmer before confirming.
+- A clear **"Confirm & Save"** (or equivalent) action shall commit the accepted mind-map structure — including any new projects, stakeholders, milestones, work items, risks, blockers, and relationships — into the persistent database in a single coordinated operation.
+- Until confirmed, the working mind-map shall be visually distinguished from persisted data (e.g., through a "draft" indicator, dashed borders, or a muted overlay).
+- If the operator navigates away without confirming, the system shall either preserve the working state for later resumption or warn the operator that unconfirmed data will be lost.
+
+This staged model ensures that Glimmer's interpretive output does not silently enter accepted operational state. The operator remains the gatekeeper for all database-persisted project data.
+
+#### Paste-in data ingestion
+
+The persona page shall support operator-initiated paste-in of unstructured content at any point during a conversation. The operator may paste:
+
+- project briefs,
+- email snippets,
+- meeting notes,
+- message threads,
+- requirements documents,
+- or any other text-based content relevant to the current conversation.
+
+When content is pasted, Glimmer shall:
+
+- review and analyze the pasted content,
+- extract relevant data entities including stakeholders, milestones, objectives, deadlines, risks, blockers, dependencies, and work items,
+- present the extracted entities as new candidate nodes on the mind-map in the temporary working state,
+- explain what was extracted and why,
+- and allow the operator to accept, edit, or discard individual extracted entities before any confirmation.
+
+Pasted content shall be treated as source material with provenance. The system shall record:
+
+- that the data originated from operator-pasted content,
+- the timestamp of the paste,
+- and the raw pasted text (or a reference to it) as the source artifact.
+
+Paste-in ingestion shall not bypass the staged persistence model. All extracted entities enter the temporary working state and require explicit operator confirmation before database persistence.
+
+#### Integration and safety rules
+
+The persona page shall integrate with the same orchestration, memory, and review-gate infrastructure as all other Glimmer surfaces. Conversations on this page shall:
+
+- persist in structured memory,
+- produce reviewable artifacts when Glimmer proposes material changes (e.g., new project creation, stakeholder records, memory updates),
+- respect the no-auto-send rule for any external communications discussed,
+- and preserve provenance for conversation-originated project data.
+
+The visual mind-map shall use semantically meaningful visual encoding:
+
+- distinct colors or shapes for projects, stakeholders, milestones, risks, blockers, and work items,
+- connection lines showing relational links between nodes,
+- and animation or progressive disclosure as new nodes are created during conversation.
+
+The persona page is the most personal and immersive Glimmer surface, but it shall not bypass the review, approval, or safety model that governs the rest of the system.
+
+**Stable requirements anchor:** `REQ:GlimmerPersonaPage`
+**Stable requirements anchor:** `REQ:PersonaPageStagedPersistence`
+**Stable requirements anchor:** `REQ:PersonaPagePasteInIngestion`
+
+### 6.14B Contextual "Ask Glimmer" interaction across all workspace surfaces
+
+Glimmer shall support a contextual interaction affordance on data elements across all workspace pages.
+
+Each significant data element (project card, action item, draft, classification, risk, blocker, waiting-on record, etc.) shall provide a lightweight mechanism for the operator to invoke Glimmer's intelligence directly on that element.
+
+The contextual interaction shall support:
+
+- a hover-triggered or click-triggered affordance (icon, button, or pill) on the element,
+- opening a compact popover or panel anchored to the element,
+- a text input allowing the operator to ask Glimmer a question or give an instruction related to that specific element,
+- and contextual routing of the operator's request to the appropriate orchestration flow with the element's data as input context.
+
+This pattern ensures that every visible piece of operational data is directly actionable through Glimmer's assistance, without requiring the operator to navigate away from their current view.
+
+Responses from Glimmer through the contextual interaction shall follow the same review-gate and approval rules as any other Glimmer output.
+
+**Stable requirements anchor:** `REQ:ContextualAskGlimmer`
+
 ### 6.15 Daily and weekly operating views
 
 Glimmer shall support recurring operating views including:
@@ -829,6 +930,10 @@ For MVP acceptance, the product does not need to be fully autonomous. It does ne
 | `REQ:PreparedBriefings` | Briefings must be richer than simple reminders |
 | `REQ:ContextAwareVisualPresentation` | The UI must support context-aware persona image selection |
 | `REQ:TelegramMobilePresence` | Glimmer must support a Telegram-based mobile chat presence for the operator |
+| `REQ:GlimmerPersonaPage` | Glimmer must provide a dedicated persona page with conversational chat and dynamic visual project mind-mapping |
+| `REQ:PersonaPageStagedPersistence` | Mind-map data must be held in temporary working state until the operator explicitly confirms, then persisted to the database in one coordinated commit |
+| `REQ:PersonaPagePasteInIngestion` | The operator must be able to paste unstructured content (briefs, emails, notes) for Glimmer to review, extract entities from, and integrate into the working mind-map |
+| `REQ:ContextualAskGlimmer` | All workspace surfaces must support contextual "Ask Glimmer" interaction on data elements |
 | `REQ:OperatingViews` | Daily and weekly operating views must be supported |
 | `REQ:HumanApprovalBoundaries` | Human review must remain in the loop for key decisions and outputs |
 | `REQ:DeepResearchCapability` | Glimmer must support bounded deep-research for tasks exceeding local model capability |
