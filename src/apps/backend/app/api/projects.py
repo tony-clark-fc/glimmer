@@ -3,8 +3,9 @@
 ARCH:ProjectStateModel
 ARCH:PortfolioViewArchitecture
 ARCH:ProjectWorkspaceArchitecture
+REQ:ProjectPortfolioManagement
 
-Thin API surface for project listing and detail retrieval.
+Thin API surface for project listing, detail, creation, and update.
 """
 
 from __future__ import annotations
@@ -62,6 +63,26 @@ class ProjectDetailResponse(BaseModel):
     waiting_on: list[dict] = []
     pending_actions: list[dict] = []
 
+
+class CreateProjectRequest(BaseModel):
+    """Request to create a new project."""
+    name: str
+    objective: Optional[str] = None
+    short_summary: Optional[str] = None
+    status: str = "active"
+    phase: Optional[str] = None
+    priority_band: Optional[str] = None
+
+
+class UpdateProjectRequest(BaseModel):
+    """Request to update an existing project. All fields optional — partial update."""
+    name: Optional[str] = None
+    objective: Optional[str] = None
+    short_summary: Optional[str] = None
+    status: Optional[str] = None
+    phase: Optional[str] = None
+    priority_band: Optional[str] = None
+    archived: Optional[bool] = None
 
 
 # ── Routes ───────────────────────────────────────────────────────
@@ -186,4 +207,64 @@ def get_project(
     )
 
 
+@router.post("", response_model=ProjectDetailResponse, status_code=201)
+def create_project(
+    body: CreateProjectRequest,
+    db: Session = Depends(get_db),
+) -> ProjectDetailResponse:
+    """Create a new project.
 
+    REQ:ProjectPortfolioManagement
+    """
+    project = Project(
+        name=body.name,
+        objective=body.objective,
+        short_summary=body.short_summary,
+        status=body.status,
+        phase=body.phase,
+        priority_band=body.priority_band,
+    )
+    db.add(project)
+    db.commit()
+    db.refresh(project)
+
+    return ProjectDetailResponse(
+        id=project.id,
+        name=project.name,
+        status=project.status,
+        objective=project.objective,
+        short_summary=project.short_summary,
+        phase=project.phase,
+        priority_band=project.priority_band,
+        created_at=project.created_at,
+        updated_at=project.updated_at,
+        open_items=[],
+        blockers=[],
+        waiting_on=[],
+        pending_actions=[],
+    )
+
+
+@router.patch("/{project_id}", response_model=ProjectDetailResponse)
+def update_project(
+    project_id: uuid.UUID,
+    body: UpdateProjectRequest,
+    db: Session = Depends(get_db),
+) -> ProjectDetailResponse:
+    """Update an existing project. Partial update — only provided fields are changed.
+
+    REQ:ProjectPortfolioManagement
+    """
+    project = db.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    update_data = body.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(project, field, value)
+
+    db.commit()
+    db.refresh(project)
+
+    # Re-use get_project logic for full response
+    return get_project(project_id, db)

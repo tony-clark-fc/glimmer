@@ -223,8 +223,91 @@ button, a {
   box-shadow: 0 0 30px rgba(129, 140, 248, 0.5);
 }
 
-/* ── Selection style ────────────────────────────────────── */
+/* ── Selection style ────────────────────────────────────────────── */
 ::selection {
   background: var(--primary);
   color: var(--on-primary);
+}
+
+/* ── Obsidian background — persona page ─────────────────────────
+ * Cycles through deep obsidian tones inspired by the stone texture:
+ * dark purple, deep blue-black, warm charcoal, midnight indigo.
+ */
+@keyframes obsidian-cycle {
+  0%   { background-color: #0a0a0c; }
+  20%  { background-color: #0d0a14; }
+  40%  { background-color: #0a0d16; }
+  60%  { background-color: #10080e; }
+  80%  { background-color: #080b12; }
+  100% { background-color: #0a0a0c; }
+}
+
+@keyframes obsidian-glow-1 {
+  0%, 100% { opacity: 0.08; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.15; transform: translate(-50%, -50%) scale(1.2); }
+}
+@keyframes obsidian-glow-2 {
+  0%, 100% { opacity: 0.06; transform: translate(-50%, -50%) scale(1.1); }
+  50%      { opacity: 0.12; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+.obsidian-bg {
+  animation: obsidian-cycle 30s ease-in-out infinite;
+  position: relative;
+}
+.obsidian-bg::before,
+.obsidian-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.obsidian-bg::before {
+  top: 20%;
+  left: 30%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.12), transparent 70%);
+  animation: obsidian-glow-1 20s ease-in-out infinite;
+}
+.obsidian-bg::after {
+  top: 60%;
+  left: 60%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.08), transparent 70%);
+  animation: obsidian-glow-2 25s ease-in-out infinite;
+}
+
+/* ── Avatar mood transitions ────────────────────────────────────── */
+@keyframes avatar-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.avatar-mood-enter {
+  animation: avatar-fade-in 0.6s ease-out forwards;
+}
+.avatar-mood-exit {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.4s ease-in;
+}
+
+/* ── Chat message animations ────────────────────────────────────── */
+@keyframes chat-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.chat-message-enter {
+  animation: chat-slide-up 0.3s ease-out forwards;
+}
+
+/* ── Workspace mode indicator pulse ─────────────────────────────── */
+@keyframes mode-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(129, 140, 248, 0.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(129, 140, 248, 0); }
+}
+.mode-active-pulse {
+  animation: mode-pulse 2s ease-in-out infinite;
 }

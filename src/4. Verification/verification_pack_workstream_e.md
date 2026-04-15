@@ -102,9 +102,17 @@ This pack covers proof for the following Drafting UI concerns:
 - Project workspace synthesis and context display,
 - Triage view provenance and review controls,
 - Draft workspace context, variant handling, and copy/edit posture,
-- Review queue interaction and pending-vs-accepted distinction,
+- Review queue visibility and control,
+- stakeholder context panels and briefing support surface reachability,
 - persona rendering selection and fallback behavior,
-- and browser-testable operator journeys across the main workspace.
+- project CRUD API and direct project management,
+- persona page conversation chat rendering and session lifecycle,
+- persona page mind-map visualization with React Flow,
+- persona page staged persistence (confirm/save and discard flows),
+- persona page paste-in ingestion with provenance preservation,
+- persona page review-gate and safety boundary compliance,
+- cross-surface "Ask Glimmer" contextual interaction affordance and review-gate compliance,
+- and browser-testable operator workflows across the main workspace.
 
 ### 5.2 Out of scope
 
@@ -126,6 +134,11 @@ Those belong to other workstream packs and cross-cutting packs.
 The Workstream E pack is built primarily from the web-workspace, drafting-and-review, and security scenario groups in the canonical Test Catalog, with a small number of workspace-specific extensions where needed.
 
 ### 6.1 Canonical web workspace anchors already defined in the Test Catalog
+
+#### `TEST:UI.Navigation.WorkspaceRoutesRemainReachable`
+- **Scenario name:** All workspace routes remain reachable after changes
+- **Layers:** `browser`
+- **Role in this pack:** Proves the workspace route structure is coherent and reachable.
 
 #### `TEST:UI.TodayView.ShowsPrioritiesAndPressureClearly`
 - **Scenario name:** Today view presents priorities, pressure, and rationale clearly
@@ -152,6 +165,11 @@ The Workstream E pack is built primarily from the web-workspace, drafting-and-re
 - **Layers:** `browser`
 - **Role in this pack:** Proves the draft workspace is a real operator tool.
 
+#### `TEST:UI.DraftWorkspace.CopyEditFlowRemainsReviewOnly`
+- **Scenario name:** Draft workspace copy/edit flow remains review-only with no send capability
+- **Layers:** `browser`
+- **Role in this pack:** Proves copy/edit flows do not blur into autonomous send behavior.
+
 #### `TEST:UI.ReviewQueue.PendingVsAcceptedIsObvious`
 - **Scenario name:** Review queue makes pending vs accepted state obvious
 - **Layers:** `browser`
@@ -161,6 +179,11 @@ The Workstream E pack is built primarily from the web-workspace, drafting-and-re
 - **Scenario name:** Persona rendering supports context-aware selection and fallback
 - **Layers:** `browser`, `unit`
 - **Role in this pack:** Proves persona support is bounded and asset-driven.
+
+#### `TEST:UI.Persona.RenderingRemainsSubordinateToOperationalContent`
+- **Scenario name:** Persona rendering remains subordinate to operational content
+- **Layers:** `browser`, `api`
+- **Role in this pack:** Proves persona presentation supports the workspace without overpowering it.
 
 ### 6.2 Canonical drafting/review and security anchors already defined in the Test Catalog
 
@@ -191,13 +214,6 @@ The Workstream E pack is built primarily from the web-workspace, drafting-and-re
 
 ### 6.3 Additional Workstream E-specific anchors introduced by this pack
 
-#### `TEST:UI.Navigation.WorkspaceRoutesRemainReachable`
-- **Scenario name:** Main workspace routes remain reachable through stable navigation paths
-- **Primary layers:** `browser`
-- **Primary drivers:** `REQ:ProjectPortfolioManagement`, `ARCH:UiSurfaceMap`, `ARCH:PlaywrightTestBoundary`
-- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
-- **Intent:** Prove the main control-room route structure is coherent and reachable.
-
 #### `TEST:UI.TodayView.FocusArtifactsMapCleanlyToRenderedState`
 - **Scenario name:** Today view maps focus artifacts and pressure signals cleanly into rendered state
 - **Primary layers:** `browser`, `api`
@@ -219,13 +235,6 @@ The Workstream E pack is built primarily from the web-workspace, drafting-and-re
 - **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
 - **Intent:** Prove the UI does not flatten source identity just to look cleaner.
 
-#### `TEST:UI.DraftWorkspace.CopyEditFlowRemainsReviewOnly`
-- **Scenario name:** Draft workspace copy/edit flows remain explicitly review-only
-- **Primary layers:** `browser`, `api`
-- **Primary drivers:** `REQ:DraftResponseWorkspace`, `REQ:SafeBehaviorDefaults`, `ARCH:DraftWorkspaceArchitecture`, `ARCH:NoAutoSendPolicy`
-- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
-- **Intent:** Prove copy/edit flows do not blur into autonomous send behavior.
-
 #### `TEST:UI.ReviewQueue.ActionsReflectRealBackendState`
 - **Scenario name:** Review queue actions update visible state in line with persisted backend review outcomes
 - **Primary layers:** `browser`, `api`, `integration`
@@ -233,12 +242,93 @@ The Workstream E pack is built primarily from the web-workspace, drafting-and-re
 - **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
 - **Intent:** Prove the review queue is not just a facade over stale or disconnected state.
 
-#### `TEST:UI.Persona.RenderingRemainsSubordinateToOperationalContent`
-- **Scenario name:** Persona rendering remains supportive and does not obscure operational content
-- **Primary layers:** `browser`, `manual_only`
-- **Primary drivers:** `REQ:VisualPersonaSupport`, `REQ:ContextAwareVisualPresentation`, `ARCH:VisualPersonaSelection`, `ARCH:UiSurfaceMap`
-- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
-- **Intent:** Prove persona presentation supports the workspace without overpowering it.
+#### `TEST:UI.SupportingSurfaces.StakeholderAndBriefingContextReachable`
+- **Scenario name:** Stakeholder and briefing support surfaces are reachable and display meaningful context
+- **Primary layers:** `browser`
+- **Primary drivers:** `REQ:StakeholderMemory`, `REQ:PreparedBriefings`, `ARCH:StakeholderSurfaceArchitecture`, `ARCH:BriefingSurfaceArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE9.SupportingContextSurfaces`
+- **Intent:** Prove the supporting context surfaces for stakeholders and briefings are reachable and useful from the main workspace flows.
+
+#### `TEST:UI.AskGlimmer.AffordanceVisibleOnDataElements`
+- **Scenario name:** "Ask Glimmer" contextual affordance is visible and functional on data elements across workspace surfaces
+- **Primary layers:** `browser`
+- **Primary drivers:** `REQ:ContextualAskGlimmer`, `ARCH:ContextualAskGlimmerInteraction`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE16.ContextualAskGlimmer`
+- **Intent:** Prove the cross-surface contextual interaction affordance is consistently present and interactive on significant data elements.
+
+#### `TEST:UI.AskGlimmer.ResponseRespectsReviewGates`
+- **Scenario name:** "Ask Glimmer" contextual responses respect review-gate discipline
+- **Primary layers:** `browser`, `api`
+- **Primary drivers:** `REQ:ContextualAskGlimmer`, `REQ:HumanApprovalBoundaries`, `ARCH:ContextualAskGlimmerInteraction`, `ARCH:ReviewGateArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE16.ContextualAskGlimmer`
+- **Intent:** Prove that contextual "Ask Glimmer" responses do not bypass review gates when the operator's request implies externally meaningful actions.
+
+### 6.4 Persona page and project CRUD anchors introduced by this pack
+
+#### `TEST:PersonaPage.Conversation.ChatRendersAndAcceptsInput`
+- **Scenario name:** Persona page chat interface renders and accepts operator input
+- **Layers:** `browser`
+- **Role in this pack:** Proves the persona page conversation surface is functional and reachable.
+
+#### `TEST:PersonaPage.Conversation.SessionLifecycleManaged`
+- **Scenario name:** Persona page conversation session lifecycle is managed correctly
+- **Layers:** `api`, `integration`
+- **Role in this pack:** Proves session state management for persona-page conversations.
+
+#### `TEST:PersonaPage.MindMap.NodesRenderWithSemanticTypes`
+- **Scenario name:** Mind-map renders nodes with distinct semantic types and visual encoding
+- **Layers:** `browser`
+- **Role in this pack:** Proves the React Flow mind-map renders meaningful project structure.
+
+#### `TEST:PersonaPage.MindMap.CanvasSupportsZoomPanInteraction`
+- **Scenario name:** Mind-map canvas supports zoom, pan, and node interaction
+- **Layers:** `browser`
+- **Role in this pack:** Proves the mind-map canvas is interactive and usable.
+
+#### `TEST:PersonaPage.MindMap.WorkingStateVisuallyDistinct`
+- **Scenario name:** Working (unconfirmed) mind-map nodes are visually distinct from persisted data
+- **Layers:** `browser`
+- **Role in this pack:** Proves the staged persistence model is visually communicated.
+
+#### `TEST:PersonaPage.StagedPersistence.ConfirmSaveCommitsAllEntities`
+- **Scenario name:** Confirm & Save commits all accepted working-state entities to the database in one batch
+- **Layers:** `api`, `integration`
+- **Role in this pack:** Proves the staged persistence commit path is coordinated and real.
+
+#### `TEST:PersonaPage.StagedPersistence.DiscardDoesNotPersist`
+- **Scenario name:** Discarding working state does not persist any candidate entities
+- **Layers:** `api`, `integration`
+- **Role in this pack:** Proves the discard/abandon path is clean.
+
+#### `TEST:PersonaPage.PasteIn.CapturePreservesRawArtifact`
+- **Scenario name:** Paste-in capture preserves raw pasted content as a source artifact before interpretation
+- **Layers:** `api`, `integration`
+- **Role in this pack:** Proves paste-in provenance is durable.
+
+#### `TEST:PersonaPage.PasteIn.ExtractedEntitiesAppearAsCandidateNodes`
+- **Scenario name:** Entities extracted from pasted content appear as candidate nodes in the working mind-map
+- **Layers:** `browser`, `api`
+- **Role in this pack:** Proves paste-in extraction integrates into the mind-map.
+
+#### `TEST:PersonaPage.PasteIn.DoesNotBypassStagedPersistence`
+- **Scenario name:** Paste-in ingestion does not bypass the staged persistence model
+- **Layers:** `api`, `integration`
+- **Role in this pack:** Proves paste-in entities require explicit confirmation.
+
+#### `TEST:PersonaPage.Safety.DoesNotBypassReviewGates`
+- **Scenario name:** Persona page does not bypass review gates or safety model
+- **Layers:** `api`, `integration`, `browser`
+- **Role in this pack:** Proves the persona page respects the same safety boundaries as all other surfaces.
+
+#### `TEST:ProjectCRUD.Api.CreateReadUpdateArchive`
+- **Scenario name:** Project CRUD API supports create, read, update, and archive operations
+- **Layers:** `api`
+- **Role in this pack:** Proves direct project management works outside of conversation.
+
+#### `TEST:ProjectCRUD.Api.ListIncludesAttentionDemandSignals`
+- **Scenario name:** Project list API includes attention-demand signals
+- **Layers:** `api`
+- **Role in this pack:** Proves the portfolio view has sufficient data for operational comparison.
 
 **Stable verification anchor:** `TESTPACK:WorkstreamE.IncludedTests`
 
@@ -257,7 +347,7 @@ The Workstream E pack is built primarily from the web-workspace, drafting-and-re
 | `TEST:UI.TriageView.ShowsProvenanceAndReviewControls` | Triage view shows provenance, ambiguity, and review controls | `browser` | Planned | Critical | Triage reviewability baseline |
 | `TEST:UI.TriageView.MultiAccountProvenanceIsVisible` | Triage view visibly preserves multi-account and source provenance where relevant | `browser` | Planned | High | Protects source meaning |
 | `TEST:UI.DraftWorkspace.ShowsContextAndVariants` | Draft workspace shows linked context and draft variants clearly | `browser` | Planned | Critical | Draft surface baseline |
-| `TEST:UI.DraftWorkspace.CopyEditFlowRemainsReviewOnly` | Draft workspace copy/edit flows remain explicitly review-only | `browser`, `api` | Planned | Critical | No-auto-send UI protection |
+| `TEST:UI.DraftWorkspace.CopyEditFlowRemainsReviewOnly` | Draft workspace copy/edit flow remains review-only with no send capability | `browser` | Planned | Critical | No-auto-send UI protection |
 | `TEST:UI.ReviewQueue.PendingVsAcceptedIsObvious` | Review queue makes pending vs accepted state obvious | `browser` | Planned | Critical | Candidate-vs-accepted clarity |
 | `TEST:UI.ReviewQueue.ActionsReflectRealBackendState` | Review queue actions update visible state in line with persisted backend review outcomes | `browser`, `api`, `integration` | Planned | High | Review control fidelity |
 | `TEST:Review.AcceptAmendRejectDefer.ChangesPersistCorrectly` | Review actions persist correctly across accept/amend/reject/defer flows | `api`, `integration`, `browser` | Planned | Critical | Review-system baseline |
@@ -266,7 +356,23 @@ The Workstream E pack is built primarily from the web-workspace, drafting-and-re
 | `TEST:Drafting.NoAutoSend.BoundaryPreserved` | Draft workflow does not create outbound send behavior | `graph`, `api`, `integration` | Planned | Critical | Cross-layer safety boundary |
 | `TEST:Security.ReviewGate.ExternalImpactRequiresApproval` | Externally meaningful actions require structured approval | `graph`, `api`, `browser` | Planned | Critical | Approval discipline remains visible |
 | `TEST:UI.Persona.FallbackAndContextSelectionWorks` | Persona rendering supports context-aware selection and fallback | `browser`, `unit` | Planned | Medium | Managed asset behavior |
-| `TEST:UI.Persona.RenderingRemainsSubordinateToOperationalContent` | Persona rendering remains supportive and does not obscure operational content | `browser`, `manual_only` | Planned | Medium | Human-eyeball UX guardrail |
+| `TEST:UI.Persona.RenderingRemainsSubordinateToOperationalContent` | Persona rendering remains supportive and does not obscure operational content | `browser`, `api` | Planned | Medium | Human-eyeball UX guardrail |
+| `TEST:UI.SupportingSurfaces.StakeholderAndBriefingContextReachable` | Stakeholder and briefing support surfaces are reachable and display meaningful context | `browser` | Planned | High | E9 supporting-context coverage |
+| `TEST:PersonaPage.Conversation.ChatRendersAndAcceptsInput` | Persona page chat renders and accepts operator input | `browser` | Planned | Critical | Persona page baseline |
+| `TEST:PersonaPage.Conversation.SessionLifecycleManaged` | Session lifecycle is managed correctly | `api`, `integration` | Planned | High | Session state correctness |
+| `TEST:PersonaPage.MindMap.NodesRenderWithSemanticTypes` | Mind-map renders nodes with semantic types | `browser` | Planned | Critical | Mind-map baseline |
+| `TEST:PersonaPage.MindMap.CanvasSupportsZoomPanInteraction` | Canvas supports zoom, pan, and interaction | `browser` | Planned | High | Canvas usability |
+| `TEST:PersonaPage.MindMap.WorkingStateVisuallyDistinct` | Working state is visually distinct from persisted | `browser` | Planned | Critical | Staged persistence UX |
+| `TEST:PersonaPage.StagedPersistence.ConfirmSaveCommitsAllEntities` | Confirm & Save commits all entities in batch | `api`, `integration` | Planned | Critical | Staged persistence core |
+| `TEST:PersonaPage.StagedPersistence.DiscardDoesNotPersist` | Discard does not persist entities | `api`, `integration` | Planned | Critical | Clean discard path |
+| `TEST:PersonaPage.PasteIn.CapturePreservesRawArtifact` | Paste-in preserves raw artifact | `api`, `integration` | Planned | High | Paste-in provenance |
+| `TEST:PersonaPage.PasteIn.ExtractedEntitiesAppearAsCandidateNodes` | Extracted entities appear as candidate nodes | `browser`, `api` | Planned | High | Extraction integration |
+| `TEST:PersonaPage.PasteIn.DoesNotBypassStagedPersistence` | Paste-in does not bypass staged persistence | `api`, `integration` | Planned | Critical | Safety boundary |
+| `TEST:PersonaPage.Safety.DoesNotBypassReviewGates` | Persona page respects review gates | `api`, `integration`, `browser` | Planned | Critical | Safety boundary |
+| `TEST:ProjectCRUD.Api.CreateReadUpdateArchive` | Project CRUD API full lifecycle | `api` | Planned | Critical | Project management baseline |
+| `TEST:ProjectCRUD.Api.ListIncludesAttentionDemandSignals` | Project list includes attention-demand signals | `api` | Planned | High | Portfolio data fidelity |
+| `TEST:UI.AskGlimmer.AffordanceVisibleOnDataElements` | "Ask Glimmer" affordance is visible and functional on data elements | `browser` | Planned | High | Cross-surface interaction baseline |
+| `TEST:UI.AskGlimmer.ResponseRespectsReviewGates` | "Ask Glimmer" responses respect review-gate discipline | `browser`, `api` | Planned | Critical | Cross-surface safety boundary |
 
 **Stable verification anchor:** `TESTPACK:WorkstreamE.EntryTable`
 

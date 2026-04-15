@@ -10,10 +10,12 @@ import {
   Search,
   CheckCircle,
   Settings,
+  Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/glimmer", label: "Glimmer", icon: Sparkles },
   { href: "/today", label: "Today", icon: Sun },
   { href: "/portfolio", label: "Portfolio", icon: LayoutGrid },
   { href: "/triage", label: "Triage", icon: Zap },
@@ -42,7 +44,7 @@ export function WorkspaceNav() {
               G
             </span>
             <Link
-              href="/today"
+              href="/glimmer"
               className="text-lg font-extrabold tracking-tight text-primary font-headline hover:text-accent-text transition-colors"
               data-testid="nav-home"
             >

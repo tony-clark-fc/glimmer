@@ -121,6 +121,7 @@ The Glimmer test catalog is organized into the following scenario groups:
 5. Planning and prioritization behavior
 6. Drafting and review behavior
 7. Web workspace behavior
+7A. Persona page and project CRUD behavior
 8. Voice and companion behavior
 9. Security and approval boundaries
 10. Cross-cutting regression and release confidence
@@ -638,7 +639,153 @@ The Glimmer test catalog is organized into the following scenario groups:
 - **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
 - **Intent:** Prove persona assets enhance but do not dominate the workspace.
 
+### `TEST:UI.TodayView.FocusArtifactsMapCleanlyToRenderedState`
+- **Scenario name:** Today view maps focus artifacts and pressure signals cleanly into rendered state
+- **Primary layers:** `browser`, `api`
+- **Primary requirement/architecture drivers:** `REQ:PrioritizationEngine`, `ARCH:TodayViewArchitecture`, `ARCH:FocusPackModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
+- **Intent:** Prove the Today view is a faithful rendering of planner outputs, not decorative interpretation.
+
+### `TEST:UI.ProjectWorkspace.ContextPanelsSupportFastOrientation`
+- **Scenario name:** Project workspace context panels support fast operator orientation
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `REQ:ProjectMemory`, `REQ:PreparedBriefings`, `ARCH:ProjectWorkspaceArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
+- **Intent:** Prove the project view helps the operator orient quickly around current context.
+
+### `TEST:UI.TriageView.MultiAccountProvenanceIsVisible`
+- **Scenario name:** Triage view visibly preserves multi-account and source provenance where relevant
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `REQ:MultiAccountProfileSupport`, `ARCH:AccountProvenanceModel`, `ARCH:UiSurfaceMap`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
+- **Intent:** Prove the UI does not flatten source identity just to look cleaner.
+
+### `TEST:UI.ReviewQueue.ActionsReflectRealBackendState`
+- **Scenario name:** Review queue actions update visible state in line with persisted backend review outcomes
+- **Primary layers:** `browser`, `api`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:HumanApprovalBoundaries`, `ARCH:ReviewGateArchitecture`, `ARCH:ReviewQueueArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.DraftingUi`
+- **Intent:** Prove the review queue is not just a facade over stale or disconnected state.
+
+### `TEST:UI.SupportingSurfaces.StakeholderAndBriefingContextReachable`
+- **Scenario name:** Stakeholder and briefing support surfaces are reachable and display meaningful context
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `REQ:StakeholderMemory`, `REQ:PreparedBriefings`, `ARCH:StakeholderSurfaceArchitecture`, `ARCH:BriefingSurfaceArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE9.SupportingContextSurfaces`
+- **Intent:** Prove the supporting context surfaces for stakeholders and briefings are reachable and useful from the main workspace flows.
+
+### `TEST:UI.AskGlimmer.AffordanceVisibleOnDataElements`
+- **Scenario name:** "Ask Glimmer" contextual affordance is visible and functional on data elements across workspace surfaces
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `REQ:ContextualAskGlimmer`, `ARCH:ContextualAskGlimmerInteraction`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE16.ContextualAskGlimmer`
+- **Intent:** Prove the cross-surface contextual interaction affordance is consistently present and interactive on significant data elements.
+
+### `TEST:UI.AskGlimmer.ResponseRespectsReviewGates`
+- **Scenario name:** "Ask Glimmer" contextual responses respect review-gate discipline
+- **Primary layers:** `browser`, `api`
+- **Primary requirement/architecture drivers:** `REQ:ContextualAskGlimmer`, `REQ:HumanApprovalBoundaries`, `ARCH:ContextualAskGlimmerInteraction`, `ARCH:ReviewGateArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE16.ContextualAskGlimmer`
+- **Intent:** Prove that contextual "Ask Glimmer" responses do not bypass review gates when the operator's request implies externally meaningful actions.
+
 **Stable verification anchor:** `TESTCATALOG:WebWorkspace`
+
+---
+
+## 7.7A Persona page scenarios
+
+### `TEST:PersonaPage.Conversation.ChatRendersAndAcceptsInput`
+- **Scenario name:** Persona page chat interface renders and accepts operator input
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `REQ:GlimmerPersonaPage`, `ARCH:UxSurface.PersonaPage`, `ARCH:PersonaPage.ConversationModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE12.PersonaPageConversationUi`
+- **Intent:** Prove the persona page renders a functional chat interface with persona avatar, message history, and input controls.
+
+### `TEST:PersonaPage.Conversation.SessionLifecycleManaged`
+- **Scenario name:** Persona page conversation session lifecycle is managed correctly
+- **Primary layers:** `api`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:GlimmerPersonaPage`, `ARCH:PersonaPageSessionModel`, `ARCH:PersonaPage.ConversationModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE12.PersonaPageConversationUi`
+- **Intent:** Prove session states (active, paused, confirmed, abandoned) persist and transition correctly.
+
+### `TEST:PersonaPage.MindMap.NodesRenderWithSemanticTypes`
+- **Scenario name:** Mind-map renders nodes with distinct semantic types and visual encoding
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `REQ:GlimmerPersonaPage`, `ARCH:PersonaPage.MindMapArchitecture`, `ARCH:MindMapCandidateNodeModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE13.PersonaPageMindMap`
+- **Intent:** Prove the mind-map renders distinct visual types for projects, stakeholders, milestones, risks, blockers, and work items.
+
+### `TEST:PersonaPage.MindMap.CanvasSupportsZoomPanInteraction`
+- **Scenario name:** Mind-map canvas supports zoom, pan, and node interaction
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `REQ:GlimmerPersonaPage`, `ARCH:PersonaPage.MindMapArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE13.PersonaPageMindMap`
+- **Intent:** Prove the React Flow canvas is interactive with zoom, pan, and click-to-inspect behavior.
+
+### `TEST:PersonaPage.MindMap.WorkingStateVisuallyDistinct`
+- **Scenario name:** Working (unconfirmed) mind-map nodes are visually distinct from persisted data
+- **Primary layers:** `browser`
+- **Primary requirement/architecture drivers:** `REQ:PersonaPageStagedPersistence`, `ARCH:PersonaPage.StagedPersistence`, `ARCH:PersonaPage.MindMapArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE14.PersonaPageStagedPersistence`
+- **Intent:** Prove the UI clearly distinguishes candidate/draft entities from confirmed/persisted entities.
+
+### `TEST:PersonaPage.StagedPersistence.ConfirmSaveCommitsAllEntities`
+- **Scenario name:** Confirm & Save commits all accepted working-state entities to the database in one batch
+- **Primary layers:** `api`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:PersonaPageStagedPersistence`, `ARCH:PersonaPage.StagedPersistence`, `ARCH:StateOwnershipBoundaries`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE14.PersonaPageStagedPersistence`
+- **Intent:** Prove the staged persistence model commits candidate entities as a coordinated batch and that no entities reach the database before confirmation.
+
+### `TEST:PersonaPage.StagedPersistence.DiscardDoesNotPersist`
+- **Scenario name:** Discarding working state does not persist any candidate entities
+- **Primary layers:** `api`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:PersonaPageStagedPersistence`, `ARCH:PersonaPage.StagedPersistence`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE14.PersonaPageStagedPersistence`
+- **Intent:** Prove abandoned or discarded sessions leave no orphan entities in the operational database.
+
+### `TEST:PersonaPage.PasteIn.CapturePreservesRawArtifact`
+- **Scenario name:** Paste-in capture preserves raw pasted content as a source artifact before interpretation
+- **Primary layers:** `api`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:PersonaPagePasteInIngestion`, `ARCH:PersonaPage.PasteInPipeline`, `ARCH:PasteInSourceArtifactModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE15.PersonaPagePasteIn`
+- **Intent:** Prove paste-in provenance is preserved — raw content is stored before any entity extraction begins.
+
+### `TEST:PersonaPage.PasteIn.ExtractedEntitiesAppearAsCandidateNodes`
+- **Scenario name:** Entities extracted from pasted content appear as candidate nodes in the working mind-map
+- **Primary layers:** `browser`, `api`
+- **Primary requirement/architecture drivers:** `REQ:PersonaPagePasteInIngestion`, `ARCH:PersonaPage.PasteInPipeline`, `ARCH:MindMapCandidateNodeModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE15.PersonaPagePasteIn`
+- **Intent:** Prove paste-in extraction results integrate into the mind-map as reviewable candidate entities, not silently accepted state.
+
+### `TEST:PersonaPage.PasteIn.DoesNotBypassStagedPersistence`
+- **Scenario name:** Paste-in ingestion does not bypass the staged persistence model
+- **Primary layers:** `api`, `integration`
+- **Primary requirement/architecture drivers:** `REQ:PersonaPagePasteInIngestion`, `REQ:PersonaPageStagedPersistence`, `ARCH:PersonaPage.StagedPersistence`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE15.PersonaPagePasteIn`
+- **Intent:** Prove pasted-content entities enter the working state and require explicit confirmation before database persistence.
+
+### `TEST:PersonaPage.Safety.DoesNotBypassReviewGates`
+- **Scenario name:** Persona page does not bypass review gates or safety model
+- **Primary layers:** `api`, `integration`, `browser`
+- **Primary requirement/architecture drivers:** `REQ:HumanApprovalBoundaries`, `REQ:GlimmerPersonaPage`, `ARCH:ReviewGateArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE12.PersonaPageConversationUi`
+- **Intent:** Prove the persona page respects the same review-gate and no-auto-send boundaries as all other surfaces.
+
+### `TEST:ProjectCRUD.Api.CreateReadUpdateArchive`
+- **Scenario name:** Project CRUD API supports create, read, update, and archive operations
+- **Primary layers:** `api`
+- **Primary requirement/architecture drivers:** `REQ:ProjectCRUD`, `REQ:ProjectPortfolioManagement`, `ARCH:ProjectStateModel`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE11.ProjectCrudApi`
+- **Intent:** Prove the project CRUD API provides a complete direct management path.
+
+### `TEST:ProjectCRUD.Api.ListIncludesAttentionDemandSignals`
+- **Scenario name:** Project list API includes attention-demand signals (open items, blockers, pending actions)
+- **Primary layers:** `api`
+- **Primary requirement/architecture drivers:** `REQ:ProjectCRUD`, `ARCH:PortfolioViewArchitecture`
+- **Primary workstream linkage:** `PLAN:WorkstreamE.PackageE11.ProjectCrudApi`
+- **Intent:** Prove the portfolio view has sufficient data contracts for operational comparison.
+
+**Stable verification anchor:** `TESTCATALOG:PersonaPageAndProjectCrud`
 
 ---
 

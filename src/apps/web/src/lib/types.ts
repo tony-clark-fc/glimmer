@@ -168,6 +168,30 @@ export interface PersonaSelection {
   fallback_used: boolean;
 }
 
+export interface GlimmerMood {
+  mood: "bau" | "happy" | "grumpy" | "thinking" | "worried";
+  reason: string;
+  portfolio_health: {
+    active_projects: number;
+    active_blockers: number;
+    overdue_items: number;
+    high_risks: number;
+  };
+}
+
+// ── Persona Page ────────────────────────────────────────────────
+
+export type InteractionMode = "voice" | "whisper" | "chat";
+export type WorkspaceMode = "idea" | "plan" | "report" | "debrief" | "update";
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "glimmer";
+  content: string;
+  timestamp: string;
+  mode?: WorkspaceMode;
+}
+
 // ── Research / Chrome Health ────────────────────────────────────
 
 export interface ResearchHealth {

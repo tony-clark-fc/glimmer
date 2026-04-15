@@ -14,6 +14,7 @@ import type {
   DraftSummary,
   DraftDetail,
   PersonaSelection,
+  GlimmerMood,
   ResearchHealth,
   ResearchRunSummary,
   ResearchRunDetail,
@@ -61,6 +62,38 @@ export async function fetchProjects(): Promise<ProjectSummary[]> {
 
 export async function fetchProject(id: string): Promise<ProjectDetail> {
   return apiFetch<ProjectDetail>(`/projects/${id}`);
+}
+
+export async function createProject(data: {
+  name: string;
+  objective?: string;
+  short_summary?: string;
+  status?: string;
+  phase?: string;
+  priority_band?: string;
+}): Promise<ProjectDetail> {
+  return apiFetch<ProjectDetail>("/projects", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateProject(
+  id: string,
+  data: Partial<{
+    name: string;
+    objective: string;
+    short_summary: string;
+    status: string;
+    phase: string;
+    priority_band: string;
+    archived: boolean;
+  }>,
+): Promise<ProjectDetail> {
+  return apiFetch<ProjectDetail>(`/projects/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 }
 
 // ── Triage / Review ─────────────────────────────────────────────
@@ -114,6 +147,10 @@ export async function fetchPersona(
 ): Promise<PersonaSelection> {
   const params = context ? `?context=${encodeURIComponent(context)}` : "";
   return apiFetch<PersonaSelection>(`/persona/select${params}`);
+}
+
+export async function fetchGlimmerMood(): Promise<GlimmerMood> {
+  return apiFetch<GlimmerMood>("/persona/mood");
 }
 
 // ── Research / Chrome Health ────────────────────────────────────
@@ -189,4 +226,3 @@ export async function triggerSync(accountId: string): Promise<SyncTriggerRespons
 export async function fetchConnectorStatus(): Promise<ConnectorStatusResponse> {
   return apiFetch<ConnectorStatusResponse>("/connectors/status");
 }
-

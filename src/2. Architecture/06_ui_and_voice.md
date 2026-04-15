@@ -174,6 +174,14 @@ This surface must support fast revision and decision-making without encouraging 
 
 **Stable architecture anchor:** `ARCH:DraftWorkspaceArchitecture`
 
+### 4.6 Persona page
+
+The Persona page is the primary conversational interface between the operator and Glimmer. It combines a real-time chat interface, a dynamic visual project mind-map, and a staged persistence model that protects the operational database from unreviewed mutation.
+
+Unlike the other primary surfaces, which are structured data views, the Persona page is a conversational workspace where the operator explains, discusses, and iteratively builds project understanding with Glimmer's help.
+
+**Stable architecture anchor:** `ARCH:UxSurface.PersonaPage`
+
 ---
 
 ## 5. Secondary UI Surfaces
@@ -355,6 +363,115 @@ The workspace should support:
 The drafting workspace should not feel like an opaque "AI answer box." It should behave like a review surface for communication decisions.
 
 **Stable architecture anchor:** `ARCH:DraftWorkspaceDesign`
+
+---
+
+## 9A. Persona Page Architecture
+
+The Persona page is the most immersive Glimmer interaction surface. It brings together conversational AI, visual project mapping, and staged persistence into a single coherent workspace.
+
+### 9A.1 Conversation model
+
+The Persona page hosts a real-time conversational chat interface where the operator can:
+
+- discuss priorities, explain new projects, give instructions, or request updates,
+- paste in unstructured content (briefs, emails, meeting notes) for entity extraction,
+- and iteratively refine Glimmer's understanding through natural dialogue.
+
+Conversations on the Persona page are operator-initiated sessions. Each session has a lifecycle:
+
+- **active** — the operator and Glimmer are interacting; the mind-map is being constructed,
+- **paused** — the operator has navigated away without confirming; session state is preserved for resumption,
+- **confirmed** — the operator has committed the working state to the database,
+- **abandoned** — the session expired or was explicitly discarded without confirmation.
+
+Persona-page conversations shall route through the same orchestration core used by all other Glimmer surfaces. The conversation model is a UX layer over the shared LangGraph orchestration, not a separate intelligence silo.
+
+**Stable architecture anchor:** `ARCH:PersonaPage.ConversationModel`
+
+### 9A.2 Mind-map visualization architecture
+
+The Persona page shall render a dynamic, interactive mind-map visualization that grows as the conversation progresses.
+
+#### Library choice
+
+The mind-map shall be implemented using **React Flow** as the primary visualization library. React Flow provides:
+
+- node and edge rendering with custom node types,
+- built-in zoom, pan, and minimap controls,
+- layout support via integration with layout algorithms (e.g., dagre, elkjs),
+- a composable React component model consistent with the Next.js frontend baseline,
+- and an active ecosystem with strong TypeScript support.
+
+#### Visual semantics
+
+The mind-map shall use semantically meaningful visual encoding:
+
+- **distinct node types** for projects, stakeholders, milestones, risks, blockers, work items, decisions, and dependencies,
+- **connection edges** showing relational links (e.g., stakeholder-to-project, risk-to-milestone),
+- **visual state indicators** distinguishing working (unconfirmed) nodes from persisted nodes (e.g., dashed borders for working state, solid borders for confirmed),
+- and **progressive disclosure** as new nodes are created during conversation (animated entry, radial fan-out from parent nodes).
+
+#### Canvas behavior
+
+The mind-map canvas shall support:
+
+- zoom and pan for large or complex project maps,
+- click-to-select for node detail inspection,
+- hover-triggered contextual "Ask Glimmer" interaction on any node,
+- optional operator-initiated node rearrangement,
+- and a minimap for orientation within large maps.
+
+**Stable architecture anchor:** `ARCH:PersonaPage.MindMapArchitecture`
+
+### 9A.3 Staged persistence model
+
+All entities extracted or created during a Persona page conversation shall follow a staged persistence model:
+
+1. **Working state** — candidate nodes, edges, and extracted entities are held in client-side or lightweight session state. They are not written to the operational database.
+2. **Operator review** — the operator can inspect, edit, remove, or request corrections for any working-state entity.
+3. **Confirm & Save** — a single explicit operator action commits the entire accepted working state to the operational database as a coordinated batch.
+4. **Discard / Abandon** — the operator may discard the working state entirely, or navigating away without confirming triggers a preservation-or-warning flow.
+
+This staged model is architecturally load-bearing. It enforces the separation between interpreted candidate state and accepted operational memory that the domain model requires (`ARCH:StateOwnershipBoundaries`).
+
+The working state shall be managed as follows:
+
+- **Client-side primary store:** the working mind-map state (candidate nodes, edges, entity metadata) lives in React component state or a lightweight client store during the session.
+- **Session backup:** if the operator pauses or navigates away, the working state may be serialized to a backend session store (keyed by persona-page session ID) to allow resumption.
+- **Batch persistence on confirm:** on "Confirm & Save," the frontend sends the full accepted working state to a backend staged-persistence endpoint, which persists all accepted entities (projects, stakeholders, milestones, work items, risks, blockers, relationships) in a single coordinated database transaction.
+
+**Stable architecture anchor:** `ARCH:PersonaPage.StagedPersistence`
+
+### 9A.4 Paste-in ingestion pipeline
+
+The Persona page shall support operator-initiated paste-in of unstructured content at any point during a conversation.
+
+The paste-in pipeline follows these stages:
+
+1. **Capture** — the operator pastes text into the chat interface or a dedicated paste area.
+2. **Raw artifact preservation** — the pasted content is preserved as a `PasteInSourceArtifact` domain record with timestamp and session linkage, before any interpretation begins.
+3. **Entity extraction** — Glimmer analyzes the pasted content through the orchestration core and extracts candidate entities (stakeholders, milestones, objectives, deadlines, risks, blockers, dependencies, work items).
+4. **Working-state integration** — extracted entities appear as new candidate nodes on the mind-map in the temporary working state.
+5. **Conversational explanation** — Glimmer explains what was extracted and why in the chat stream.
+6. **Operator review** — the operator can accept, edit, or discard individual extracted entities within the working state.
+
+Paste-in ingestion shall not bypass the staged persistence model. All extracted entities enter the working state and require explicit operator confirmation before database persistence.
+
+**Stable architecture anchor:** `ARCH:PersonaPage.PasteInPipeline`
+
+### 9A.5 Relationship to the orchestration core
+
+Persona-page conversations are a UX surface layered onto the shared orchestration core, not a separate reasoning system.
+
+- Chat messages from the operator enter the orchestration layer as conversational inputs with persona-page session context.
+- Entity extraction (from conversation or paste-in) uses the same extraction services available to triage and other workflows.
+- The orchestration core routes persona-page requests through the same LangGraph topology, with interrupt/resume support for review-gated outputs.
+- Persona-page sessions are linked to the `ChannelSession` model as a web-channel session subtype.
+
+This ensures that knowledge, context, and behavioral consistency are shared across all Glimmer surfaces rather than being siloed in the persona page.
+
+**Stable architecture anchor:** `ARCH:PersonaPage.OrchestrationRelationship`
 
 ---
 
@@ -570,6 +687,44 @@ Reviewable artifacts should be presented with:
 The UX should not make it easy to accidentally mistake a generated suggestion for an already accepted fact.
 
 **Stable architecture anchor:** `ARCH:ReviewArtifactPresentation`
+
+---
+
+## 14A. Contextual "Ask Glimmer" Interaction Architecture
+
+### 14A.1 Cross-surface interaction affordance
+
+Every significant data element across all workspace pages shall provide a lightweight mechanism for the operator to invoke Glimmer's intelligence directly on that element.
+
+This includes, but is not limited to:
+
+- project cards,
+- action items,
+- draft variants,
+- classifications,
+- risks, blockers, and waiting-on records,
+- stakeholder entries,
+- and briefing artifacts.
+
+The affordance shall appear as a hover-triggered or click-triggered icon (e.g., sparkle ✦) that opens a compact popover or panel anchored to the element. The popover shall include:
+
+- a Glimmer avatar for persona presence,
+- a single-line text input allowing the operator to ask a question or give an instruction related to the specific element,
+- and contextual routing of the request to the appropriate orchestration flow with the element's data as input context.
+
+### 14A.2 Routing and orchestration
+
+Contextual "Ask Glimmer" requests shall be routed through the same orchestration core used by all other Glimmer interaction surfaces. The element type and context shall be passed as input metadata so that the orchestration layer can provide relevant, context-aware responses.
+
+### 14A.3 Review-gate compliance
+
+Responses from the contextual interaction shall follow the same review-gate and approval rules as any other Glimmer output. If the operator's request implies an externally meaningful action (e.g., "draft a follow-up to this person"), the result must enter the standard review flow rather than being applied immediately.
+
+### 14A.4 Consistency
+
+The "Ask Glimmer" interaction pattern shall be visually and behaviorally consistent across all workspace pages. It is a shared UX component, not a per-page reimplementation.
+
+**Stable architecture anchor:** `ARCH:ContextualAskGlimmerInteraction`
 
 ---
 

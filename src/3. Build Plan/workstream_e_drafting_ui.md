@@ -67,6 +67,7 @@ This workstream directly supports the following requirements:
 - `REQ:DraftResponseWorkspace`
 - `REQ:CommunicationToneSupport`
 - `REQ:ProjectPortfolioManagement`
+- `REQ:ProjectCRUD`
 - `REQ:ProjectMemory`
 - `REQ:StakeholderMemory`
 - `REQ:PrioritizationEngine`
@@ -74,8 +75,12 @@ This workstream directly supports the following requirements:
 - `REQ:VisualPersonaSupport`
 - `REQ:ContextAwareVisualPresentation`
 - `REQ:HumanApprovalBoundaries`
+- `REQ:GlimmerPersonaPage`
+- `REQ:PersonaPageStagedPersistence`
+- `REQ:PersonaPagePasteInIngestion`
+- `REQ:ContextualAskGlimmer`
 
-These requirements define the user-facing side of Glimmer’s value: the operator must be able to see what matters, review what the system inferred, inspect context, and use generated drafts without losing control.
+These requirements define the user-facing side of Glimmer's value: the operator must be able to see what matters, review what the system inferred, inspect context, use generated drafts without losing control, create and manage projects, and interact conversationally with Glimmer through the persona page.
 
 **Stable plan anchor:** `PLAN:WorkstreamE.RequirementsAlignment`
 
@@ -95,8 +100,18 @@ This workstream is primarily implementing the architecture described by:
 - `ARCH:VisualPersonaSelection`
 - `ARCH:ReviewGateArchitecture`
 - `ARCH:PlaywrightTestBoundary`
+- `ARCH:UxSurface.PersonaPage`
+- `ARCH:PersonaPage.ConversationModel`
+- `ARCH:PersonaPage.MindMapArchitecture`
+- `ARCH:PersonaPage.StagedPersistence`
+- `ARCH:PersonaPage.PasteInPipeline`
+- `ARCH:PersonaPage.OrchestrationRelationship`
+- `ARCH:PersonaPageSessionModel`
+- `ARCH:MindMapWorkingStateModel`
+- `ARCH:PasteInSourceArtifactModel`
+- `ARCH:ContextualAskGlimmerInteraction`
 
-These anchors define the web workspace as the canonical control surface, require visible reviewable artifacts, and establish the drafting workspace, Today view, Triage view, and persona-aware interaction model that this workstream must make real.
+These anchors define the web workspace as the canonical control surface, require visible reviewable artifacts, and establish the drafting workspace, Today view, Triage view, persona-aware interaction model, and persona page conversational workspace that this workstream must make real.
 
 **Stable plan anchor:** `PLAN:WorkstreamE.ArchitectureAlignment`
 
@@ -114,6 +129,11 @@ This workstream includes:
 - draft-variant comparison and editing support,
 - visible provenance/context rendering,
 - persona-aware presentation support in relevant surfaces,
+- project CRUD API and direct project management UI,
+- persona page conversational chat interface with Glimmer avatar,
+- persona page dynamic mind-map visualization using React Flow,
+- persona page staged persistence model and confirm/save flow,
+- persona page paste-in ingestion pipeline,
 - and the browser-visible workflows needed for review-first assistant interaction.
 
 **Stable plan anchor:** `PLAN:WorkstreamE.InScope`
@@ -430,6 +450,197 @@ At that point, Glimmer’s core web control surface becomes operational rather t
 
 ---
 
+## 8.11 Work Package E11 — Project CRUD API and direct project management UI
+
+**Objective:** Provide a direct, form-based path for project creation and management independent of the persona page conversation.
+
+### In scope
+- backend project CRUD API endpoints (list, get, create, update/archive)
+- thin Pydantic request/response contracts with attention-demand signals
+- portfolio-integrated project creation form or modal
+- project field editing in the project workspace
+- archive/reactivate controls
+
+### Expected outputs
+- `/api/projects` endpoint set with full CRUD behavior
+- frontend project creation and editing UI components
+- tests for API CRUD operations and UI creation flow
+
+### Related anchors
+- `REQ:ProjectCRUD`
+- `REQ:ProjectPortfolioManagement`
+- `ARCH:ProjectStateModel`
+- `ARCH:PortfolioViewArchitecture`
+
+### Definition of done
+- the operator can create, update, and archive projects through a direct interface without needing a conversational interaction
+
+**Stable plan anchor:** `PLAN:WorkstreamE.PackageE11.ProjectCrudApi`
+
+---
+
+## 8.12 Work Package E12 — Persona page conversation UI
+
+**Objective:** Implement the conversational chat interface and Glimmer persona display on the dedicated Persona page.
+
+### In scope
+- persona page route and layout
+- prominent Glimmer avatar display with mood-aware selection
+- real-time chat interface with operator input and Glimmer responses
+- conversation session lifecycle management (active, paused, confirmed, abandoned)
+- suggested conversation starters
+- voice input support within the chat interface (deferred to Workstream F integration if needed)
+- routing conversation messages through the orchestration core
+
+### Expected outputs
+- `/glimmer` persona page implementation
+- chat message rendering and input components
+- session state management
+- API contract for conversation session create/message/complete
+- tests for conversation rendering, session lifecycle, and persona avatar display
+
+### Related anchors
+- `REQ:GlimmerPersonaPage`
+- `ARCH:UxSurface.PersonaPage`
+- `ARCH:PersonaPage.ConversationModel`
+- `ARCH:PersonaPage.OrchestrationRelationship`
+- `ARCH:PersonaPageSessionModel`
+- `ARCH:VisualPersonaSelection`
+
+### Definition of done
+- the operator can have a conversational interaction with Glimmer on the persona page, with a visible persona avatar and session management
+
+**Stable plan anchor:** `PLAN:WorkstreamE.PackageE12.PersonaPageConversationUi`
+
+---
+
+## 8.13 Work Package E13 — Persona page mind-map visualization
+
+**Objective:** Implement the dynamic, interactive mind-map that grows as the persona-page conversation progresses.
+
+### In scope
+- React Flow integration for node/edge rendering
+- custom node types for projects, stakeholders, milestones, risks, blockers, work items, decisions, dependencies
+- edge types for relational links
+- radial or hierarchical layout with automatic positioning
+- zoom, pan, and minimap controls
+- animated node entry and progressive disclosure
+- visual distinction between working (unconfirmed) and persisted nodes
+- node click-to-inspect and hover "Ask Glimmer" affordance
+- optional operator node rearrangement
+
+### Expected outputs
+- React Flow canvas component with custom node/edge types
+- layout algorithm integration (dagre or elkjs)
+- mind-map state management synchronized with conversation flow
+- tests for node rendering, visual state indicators, and canvas interaction
+
+### Related anchors
+- `REQ:GlimmerPersonaPage`
+- `ARCH:PersonaPage.MindMapArchitecture`
+- `ARCH:MindMapWorkingStateModel`
+- `ARCH:MindMapCandidateNodeModel`
+- `ARCH:MindMapCandidateEdgeModel`
+
+### Definition of done
+- the mind-map renders dynamically during conversation with semantically meaningful node types, visual state indicators, and interactive canvas controls
+
+**Stable plan anchor:** `PLAN:WorkstreamE.PackageE13.PersonaPageMindMap`
+
+---
+
+## 8.14 Work Package E14 — Persona page staged persistence and confirm flow
+
+**Objective:** Implement the staged persistence model that holds candidate entities in working state until the operator explicitly confirms.
+
+### In scope
+- client-side working state management for candidate nodes and edges
+- visual "draft" indicators for unconfirmed entities
+- "Confirm & Save" action that commits accepted working state to the database
+- backend staged-persistence endpoint for coordinated batch commit
+- discard/abandon handling with preservation-or-warning flow
+- session backup for pause/resume across navigation
+
+### Expected outputs
+- working state store (React state or lightweight client store)
+- confirm & save API endpoint and handler
+- batch persistence service that creates all accepted entities in one transaction
+- tests for staged persistence lifecycle, confirm/discard flows, and working-vs-persisted visual distinction
+
+### Related anchors
+- `REQ:PersonaPageStagedPersistence`
+- `ARCH:PersonaPage.StagedPersistence`
+- `ARCH:StateOwnershipBoundaries`
+- `ARCH:MindMapWorkingStateModel`
+
+### Definition of done
+- candidate entities remain in working state until explicit confirmation; "Confirm & Save" persists all accepted entities in one coordinated commit; the visual distinction between working and persisted state is clear
+
+**Stable plan anchor:** `PLAN:WorkstreamE.PackageE14.PersonaPageStagedPersistence`
+
+---
+
+## 8.15 Work Package E15 — Persona page paste-in ingestion
+
+**Objective:** Implement operator-initiated paste-in of unstructured content with entity extraction and mind-map integration.
+
+### In scope
+- paste-in capture in the chat interface or dedicated paste area
+- raw artifact preservation (PasteInSourceArtifact) before interpretation
+- entity extraction through the orchestration core
+- integration of extracted entities as candidate nodes in the working mind-map
+- conversational explanation of what was extracted and why
+- operator review of individual extracted entities (accept, edit, discard)
+- provenance linkage from extracted nodes back to paste-in artifact
+
+### Expected outputs
+- paste-in UI component
+- backend paste-in artifact persistence endpoint
+- entity extraction service integration
+- mind-map node creation from extraction results
+- tests for paste-in capture, artifact persistence, extraction integration, and provenance linkage
+
+### Related anchors
+- `REQ:PersonaPagePasteInIngestion`
+- `ARCH:PersonaPage.PasteInPipeline`
+- `ARCH:PasteInSourceArtifactModel`
+
+### Definition of done
+- the operator can paste unstructured content; Glimmer extracts entities; extracted entities appear as candidate nodes on the mind-map; paste-in provenance is preserved
+
+**Stable plan anchor:** `PLAN:WorkstreamE.PackageE15.PersonaPagePasteIn`
+
+---
+
+## 8.16 Work Package E16 — Cross-surface "Ask Glimmer" contextual interaction
+
+**Objective:** Implement the shared contextual interaction affordance that lets the operator invoke Glimmer's intelligence on any visible data element across all workspace pages.
+
+### In scope
+- hover-triggered or click-triggered affordance (sparkle ✦ icon) on significant data elements
+- compact popover or panel anchored to the element with Glimmer avatar and text input
+- contextual routing of operator request to the orchestration core with element data as input
+- consistent component behavior across Today, Portfolio, Project, Triage, Draft, Review, and supporting surfaces
+- review-gate compliance for any responses implying externally meaningful actions
+
+### Expected outputs
+- shared `AskGlimmerPopover` (or equivalent) React component
+- element-type context metadata contract for orchestration routing
+- integration on at least the primary workspace surfaces
+- tests for affordance visibility, popover interaction, and review-gate compliance
+
+### Related anchors
+- `REQ:ContextualAskGlimmer`
+- `ARCH:ContextualAskGlimmerInteraction`
+- `ARCH:ReviewGateArchitecture`
+
+### Definition of done
+- every significant data element across the main workspace surfaces has a consistent, functional "Ask Glimmer" interaction affordance that routes through the orchestration core and respects review-gate discipline
+
+**Stable plan anchor:** `PLAN:WorkstreamE.PackageE16.ContextualAskGlimmer`
+
+---
+
 ## 9. Sequencing Inside the Workstream
 
 The recommended internal order for Workstream E is:
@@ -444,8 +655,16 @@ The recommended internal order for Workstream E is:
 8. E8 — Persona-aware presentation layer
 9. E9 — Stakeholder and briefing support surfaces
 10. E10 — Browser-verification-ready UX patterns
+11. E11 — Project CRUD API and direct project management UI
+12. E12 — Persona page conversation UI
+13. E13 — Persona page mind-map visualization
+14. E14 — Persona page staged persistence and confirm flow
+15. E15 — Persona page paste-in ingestion
+16. E16 — Cross-surface "Ask Glimmer" contextual interaction
 
-This order keeps the workspace hierarchy coherent: the operator gets the main control surfaces first, then review-heavy workflows, then drafting refinement, then persona/context support, with browser-testability treated as an explicit implementation concern throughout.
+E11 may be implemented earlier (after E3/E4) since it provides basic project creation that other surfaces depend on. E12–E15 form a natural vertical progression for the full persona page feature. E16 can be implemented at any point after the primary surfaces (E1–E7) exist, but is listed last because it is a cross-cutting enhancement that benefits from all surfaces being in place first.
+
+This order keeps the workspace hierarchy coherent: the operator gets the main control surfaces first, then review-heavy workflows, then drafting refinement, then persona/context support, then the full conversational persona page, then the cross-cutting interaction layer, with browser-testability treated as an explicit implementation concern throughout.
 
 **Stable plan anchor:** `PLAN:WorkstreamE.InternalSequence`
 
@@ -517,7 +736,11 @@ Workstream E should be considered complete when all of the following are true:
 5. review-required workflows are actionable through the UI,
 6. provenance and multi-account context are visible where materially relevant,
 7. persona-aware presentation is implemented in a bounded, asset-driven way,
-8. and the required browser/API verification evidence has been executed and recorded.
+8. the project CRUD API and direct project management UI are operational,
+9. the persona page conversational chat, mind-map visualization, staged persistence, and paste-in ingestion are implemented,
+10. the persona page respects staged persistence — candidate entities do not enter the database without explicit confirmation,
+11. the cross-surface "Ask Glimmer" contextual interaction affordance is implemented consistently across all primary workspace surfaces,
+12. and the required browser/API verification evidence has been executed and recorded.
 
 If these are not true, Glimmer still lacks the primary operator control surface needed to turn backend intelligence into usable daily execution support.
 

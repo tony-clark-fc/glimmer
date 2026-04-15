@@ -68,7 +68,7 @@ This reduces drift and improves auditability.
 
 ## 3. Core Domain Entity Groups
 
-At the highest level, the Glimmer domain is composed of nine major entity groups:
+At the highest level, the Glimmer domain is composed of ten major entity groups:
 
 1. **Operator context**
 2. **Project portfolio**
@@ -79,6 +79,7 @@ At the highest level, the Glimmer domain is composed of nine major entity groups
 7. **Drafts, briefings, and assistant-facing outputs**
 8. **Persona and channel interaction state**
 9. **Research runs and findings**
+10. **Persona page session and working state**
 
 **Stable architecture anchor:** `ARCH:DomainEntityGroups`
 
@@ -739,6 +740,107 @@ This supports:
 
 ---
 
+## 13B. Persona Page Session and Working State Model
+
+### 13B.1 PersonaPageSession
+
+A `PersonaPageSession` represents an active or completed conversational interaction on the Glimmer Persona page.
+
+This entity tracks the lifecycle of a single persona-page conversation, including the operator's chat history and the evolving mind-map working state.
+
+Typical conceptual properties include:
+
+- session identifier
+- operator identifier
+- session status (active, paused, confirmed, abandoned)
+- created timestamp
+- last interaction timestamp
+- confirmed timestamp (nullable — set when "Confirm & Save" is executed)
+- summary of conversation intent (derived or operator-labeled)
+- linked channel session identifier (ties to the `ChannelSession` model as a web-channel subtype)
+
+A `PersonaPageSession` should be able to link to:
+
+- its conversation message history,
+- the mind-map working state created during the session,
+- any paste-in source artifacts contributed during the session,
+- and the set of domain entities persisted when the session is confirmed.
+
+**Stable architecture anchor:** `ARCH:PersonaPageSessionModel`
+
+### 13B.2 MindMapWorkingState
+
+A `MindMapWorkingState` represents the temporary, unconfirmed set of candidate entities and relationships being constructed on the persona-page mind-map during a conversation.
+
+This is not a persisted operational record. It is a session-scoped working artifact that holds candidate domain entities (projects, stakeholders, milestones, risks, blockers, work items, relationships) until the operator explicitly confirms them.
+
+Typical conceptual properties include:
+
+- working state identifier
+- parent persona-page session identifier
+- candidate nodes (typed entity references with provisional metadata)
+- candidate edges (relationship links between candidate nodes)
+- state version or revision counter (tracks incremental changes during the conversation)
+- serialized snapshot (for session backup/resumption)
+- last updated timestamp
+
+The working state is architecturally important because it embodies the separation between interpreted candidate state and accepted operational memory (`ARCH:StateOwnershipBoundaries`). Nothing in the working state enters the operational database until the operator confirms.
+
+**Implementation note:** The working state may live primarily in client-side React state during an active session, with optional server-side serialization for session backup when the operator navigates away.
+
+**Stable architecture anchor:** `ARCH:MindMapWorkingStateModel`
+
+### 13B.3 MindMapCandidateNode
+
+A `MindMapCandidateNode` represents a single candidate entity within the mind-map working state.
+
+Typical conceptual properties include:
+
+- node identifier (session-scoped)
+- entity type (project, stakeholder, milestone, risk, blocker, work_item, decision, dependency)
+- provisional label / title
+- provisional metadata (type-specific fields such as objective, due date, severity, etc.)
+- source origin (conversation, paste_in, operator_created)
+- source artifact reference (linked paste-in artifact if applicable)
+- visual position hint (x, y coordinates for React Flow rendering)
+- confirmation status within working state (pending, accepted_by_operator, discarded_by_operator)
+
+**Stable architecture anchor:** `ARCH:MindMapCandidateNodeModel`
+
+### 13B.4 MindMapCandidateEdge
+
+A `MindMapCandidateEdge` represents a candidate relationship between two nodes in the mind-map working state.
+
+Typical conceptual properties include:
+
+- edge identifier (session-scoped)
+- source node identifier
+- target node identifier
+- relationship type (owns, depends_on, blocks, involves, linked_to)
+- provisional label
+
+**Stable architecture anchor:** `ARCH:MindMapCandidateEdgeModel`
+
+### 13B.5 PasteInSourceArtifact
+
+A `PasteInSourceArtifact` represents raw content pasted by the operator into the persona-page conversation for entity extraction.
+
+This entity preserves provenance for conversation-originated data. It is persisted immediately upon paste (before interpretation) so the raw source material is never lost.
+
+Typical conceptual properties include:
+
+- artifact identifier
+- parent persona-page session identifier
+- raw pasted text content
+- paste timestamp
+- content type hint (freeform, email_snippet, meeting_notes, requirements_excerpt, etc. — may be operator-labeled or inferred)
+- extraction status (pending, extracted, failed)
+- linked extracted candidate node identifiers (populated after extraction)
+
+**Stable architecture anchor:** `ARCH:PasteInSourceArtifactModel`
+
+---
+
 ## 13A. Research Run and Findings Model
 
 ### 13A.1 ResearchRun
@@ -856,6 +958,10 @@ The most important domain relationships are:
 - one `ResearchRun` to many `ResearchFinding`, `ResearchSourceReference`, and optionally one `ResearchSummaryArtifact`
 - one `ResearchRun` to one or more triggering context records (project, message, workflow)
 - one `ExpertAdviceExchange` to one triggering context record (project, message, workflow, or ad-hoc operator request)
+- one `PersonaPageSession` to one `MindMapWorkingState`
+- one `PersonaPageSession` to many `PasteInSourceArtifact` records
+- one `MindMapWorkingState` to many `MindMapCandidateNode` and `MindMapCandidateEdge` records
+- one `PasteInSourceArtifact` to many extracted `MindMapCandidateNode` records
 
 **Stable architecture anchor:** `ARCH:DomainRelationshipSummary`
 

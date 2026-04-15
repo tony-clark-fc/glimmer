@@ -593,6 +593,23 @@ The persona page is the most personal and immersive Glimmer surface, but it shal
 **Stable requirements anchor:** `REQ:PersonaPageStagedPersistence`
 **Stable requirements anchor:** `REQ:PersonaPagePasteInIngestion`
 
+### 6.14AA Project CRUD — standalone project creation and management
+
+Glimmer shall support direct project creation, update, and management through the portfolio and project workspace surfaces, independent of the persona page conversational flow.
+
+The operator shall be able to:
+
+- create a new project by providing a name and optional metadata (objective, summary, status, phase, priority band),
+- update any editable project field through a direct editing interface,
+- archive or reactivate projects,
+- and view the full project list with attention-demand signals (open items, active blockers, pending actions).
+
+This capability exists to ensure the operator can establish and maintain the project portfolio without requiring a conversational interaction. The persona page (REQ:GlimmerPersonaPage) provides a richer conversational path for project creation that includes entity extraction and mind-map visualization, but the operator must also have a direct, form-based path for simple project management tasks.
+
+Both paths shall persist projects through the same domain model and shall respect the same review-gate and provenance rules.
+
+**Stable requirements anchor:** `REQ:ProjectCRUD`
+
 ### 6.14B Contextual "Ask Glimmer" interaction across all workspace surfaces
 
 Glimmer shall support a contextual interaction affordance on data elements across all workspace pages.
@@ -933,6 +950,7 @@ For MVP acceptance, the product does not need to be fully autonomous. It does ne
 | `REQ:GlimmerPersonaPage` | Glimmer must provide a dedicated persona page with conversational chat and dynamic visual project mind-mapping |
 | `REQ:PersonaPageStagedPersistence` | Mind-map data must be held in temporary working state until the operator explicitly confirms, then persisted to the database in one coordinated commit |
 | `REQ:PersonaPagePasteInIngestion` | The operator must be able to paste unstructured content (briefs, emails, notes) for Glimmer to review, extract entities from, and integrate into the working mind-map |
+| `REQ:ProjectCRUD` | The operator must be able to create, update, and archive projects through a direct form-based interface independent of the persona page conversation |
 | `REQ:ContextualAskGlimmer` | All workspace surfaces must support contextual "Ask Glimmer" interaction on data elements |
 | `REQ:OperatingViews` | Daily and weekly operating views must be supported |
 | `REQ:HumanApprovalBoundaries` | Human review must remain in the loop for key decisions and outputs |

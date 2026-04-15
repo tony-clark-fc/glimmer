@@ -4,10 +4,12 @@ ARCH:VisualPersonaSelection
 ARCH:VisualPersonaRenderingRules
 REQ:VisualPersonaSupport
 REQ:ContextAwareVisualPresentation
+REQ:GlimmerPersonaPage
 
 Serves managed persona assets for frontend rendering.
 Selection is driven by classification labels and interaction context.
 Falls back to the default asset if no specific match exists.
+Mood endpoint derives Glimmer's emotional state from portfolio health.
 """
 
 from __future__ import annotations
@@ -16,11 +18,13 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session, selectinload
 
 from app.db import get_db
 from app.models.persona import PersonaAsset, PersonaClassification
+from app.models.portfolio import Project
+from app.models.execution import WorkItem, BlockerRecord, RiskRecord
 
 router = APIRouter(prefix="/persona", tags=["persona"])
 
@@ -46,6 +50,13 @@ class PersonaSelectionResponse(BaseModel):
     asset: PersonaAssetResponse | None
     selection_reason: str
     fallback_used: bool
+
+
+class GlimmerMoodResponse(BaseModel):
+    """Glimmer's current mood based on portfolio health."""
+    mood: str  # bau, happy, grumpy, thinking, worried
+    reason: str
+    portfolio_health: dict
 
 
 # ── Selection logic ───────────────────────────────────────────────
@@ -179,4 +190,90 @@ def list_persona_assets(
     assets = db.execute(stmt).scalars().all()
     return [_asset_to_response(a) for a in assets]
 
+
+# ── Mood determination ────────────────────────────────────────────
+
+MOOD_IMAGE_COUNTS: dict[str, int] = {
+    "bau": 9,       # 00-08
+    "grumpy": 3,     # 00-02
+    "happy": 3,      # 00-02
+    "thinking": 3,   # 00-02
+    "worried": 4,    # 00-03
+}
+
+
+def _determine_mood(db: Session) -> tuple[str, str, dict]:
+    """Derive Glimmer's mood from portfolio health signals.
+
+    Returns (mood, reason, health_dict).
+    """
+    project_count = db.execute(
+        select(func.count()).select_from(Project).where(
+            Project.archived == False,  # noqa: E712
+        )
+    ).scalar() or 0
+
+    blocker_count = db.execute(
+        select(func.count()).select_from(BlockerRecord).where(
+            BlockerRecord.status == "active",
+        )
+    ).scalar() or 0
+
+    overdue_count = 0
+    try:
+        from datetime import datetime, timezone
+        overdue_count = db.execute(
+            select(func.count()).select_from(WorkItem).where(
+                WorkItem.status.in_(["open", "in_progress"]),
+                WorkItem.due_date < datetime.now(timezone.utc),
+            )
+        ).scalar() or 0
+    except Exception:
+        pass
+
+    risk_count = 0
+    try:
+        risk_count = db.execute(
+            select(func.count()).select_from(RiskRecord).where(
+                RiskRecord.severity_signal == "high",
+                RiskRecord.status == "active",
+            )
+        ).scalar() or 0
+    except Exception:
+        pass
+
+    health = {
+        "active_projects": project_count,
+        "active_blockers": blocker_count,
+        "overdue_items": overdue_count,
+        "high_risks": risk_count,
+    }
+
+    # Mood rules
+    if blocker_count == 0 and overdue_count == 0 and risk_count == 0 and project_count > 0:
+        return "happy", "All clear — no blockers, no overdue items, no high risks", health
+    if risk_count >= 3 or (blocker_count >= 3 and overdue_count >= 3):
+        return "worried", f"{risk_count} high risks, {blocker_count} blockers, {overdue_count} overdue", health
+    if overdue_count >= 3:
+        return "grumpy", f"{overdue_count} overdue items need attention", health
+    if blocker_count >= 2 or risk_count >= 1:
+        return "worried", f"{blocker_count} active blockers, {risk_count} high risks", health
+
+    return "bau", "Business as usual — things are ticking along", health
+
+
+@router.get("/mood")
+def get_mood(
+    db: Session = Depends(get_db),
+) -> GlimmerMoodResponse:
+    """Get Glimmer's current mood based on portfolio health.
+
+    REQ:GlimmerPersonaPage — mood determines which avatar image set to use.
+    """
+    mood, reason, health = _determine_mood(db)
+    return GlimmerMoodResponse(
+        mood=mood,
+        reason=reason,
+        portfolio_health=health,
+    )
 
